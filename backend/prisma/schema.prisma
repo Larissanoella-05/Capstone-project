@@ -1,0 +1,213 @@
+// Umuriro Response — data model
+// React frontend -> Express API -> PostgreSQL (through Prisma)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  TECHNICIAN
+  COORDINATOR
+}
+
+enum FaultCategory {
+  POWER_OUTAGE
+  LOW_VOLTAGE
+  DAMAGED_CONNECTION
+  METER_ISSUE
+  OTHER
+}
+
+enum FaultStatus {
+  REPORTED
+  ASSIGNED
+  ON_THE_WAY
+  ARRIVED
+  WORKING
+  RESOLVED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum Outcome {
+  SUPPLY_RESTORED
+  TEMPORARY_REPAIR
+  NO_FAULT_FOUND
+  REFERRED
+}
+
+enum NotificationType {
+  FAULT_SUBMITTED
+  TECHNICIAN_ASSIGNED
+  TECHNICIAN_ON_THE_WAY
+  TECHNICIAN_ARRIVED
+  FAULT_RESOLVED
+  FAULT_CANCELLED
+  JOB_ASSIGNED
+}
+
+/// Login account shared by the three roles. The role decides which profile exists.
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  phone        String?
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+
+  customer      Customer?
+  technician    Technician?
+  coordinator   ServiceCoordinator?
+  notifications Notification[]
+  statusChanges FaultStatusHistory[]
+}
+
+model Customer {
+  id     Int  @id @default(autoincrement())
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  serviceLocations ServiceLocation[]
+  faults           FaultReport[]
+}
+
+model Technician {
+  id          Int     @id @default(autoincrement())
+  userId      Int     @unique
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  staffNumber String  @unique
+  onDuty      Boolean @default(true)
+
+  faults    FaultReport[]
+  locations TechnicianLocation[]
+}
+
+model ServiceCoordinator {
+  id     Int    @id @default(autoincrement())
+  userId Int    @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  office String @default("Ndera Sector")
+
+  assignments FaultReport[]
+}
+
+/// The customer's registered premises: the meter and where it is.
+model ServiceLocation {
+  id          Int      @id @default(autoincrement())
+  customerId  Int
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  meterNumber String   @unique
+  village     String?
+  cell        String
+  sector      String   @default("Ndera")
+  district    String   @default("Gasabo")
+  landmark    String?
+  latitude    Float
+  longitude   Float
+
+  faults FaultReport[]
+
+  @@index([customerId])
+}
+
+model FaultReport {
+  id          Int           @id @default(autoincrement())
+  reference   String        @unique
+  category    FaultCategory
+  description String?
+  contactPhone String?
+  /// Optional photo stored as a data URL (prototype only; move to object storage later)
+  photo       String?
+  priority    Priority      @default(MEDIUM)
+  status      FaultStatus   @default(REPORTED)
+
+  customerId        Int
+  customer          Customer            @relation(fields: [customerId], references: [id])
+  serviceLocationId Int
+  serviceLocation   ServiceLocation     @relation(fields: [serviceLocationId], references: [id])
+  technicianId      Int?
+  technician        Technician?         @relation(fields: [technicianId], references: [id])
+  assignedById      Int?
+  assignedBy        ServiceCoordinator? @relation(fields: [assignedById], references: [id])
+
+  // One timestamp per stage so response intervals can be measured
+  reportedAt  DateTime  @default(now())
+  assignedAt  DateTime?
+  onTheWayAt  DateTime?
+  arrivedAt   DateTime?
+  workingAt   DateTime?
+  resolvedAt  DateTime?
+  cancelledAt DateTime?
+
+  // Recorded by the technician when the fault is resolved
+  outcome               Outcome?
+  resolutionNote        String?
+  workCompleted         String?
+  /// Number of times the technician had to contact the customer for directions
+  clarificationContacts Int      @default(0)
+
+  updatedAt DateTime @updatedAt
+
+  history            FaultStatusHistory[]
+  notifications      Notification[]
+  technicianLocations TechnicianLocation[]
+
+  @@index([status])
+  @@index([customerId])
+  @@index([technicianId])
+}
+
+model FaultStatusHistory {
+  id          Int         @id @default(autoincrement())
+  faultId     Int
+  fault       FaultReport @relation(fields: [faultId], references: [id], onDelete: Cascade)
+  status      FaultStatus
+  note        String?
+  changedById Int?
+  changedBy   User?       @relation(fields: [changedById], references: [id])
+  createdAt   DateTime    @default(now())
+
+  @@index([faultId, createdAt])
+}
+
+model TechnicianLocation {
+  id           Int          @id @default(autoincrement())
+  technicianId Int
+  technician   Technician   @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+  faultId      Int?
+  fault        FaultReport? @relation(fields: [faultId], references: [id], onDelete: SetNull)
+  latitude     Float
+  longitude    Float
+  label        String?
+  recordedAt   DateTime     @default(now())
+
+  @@index([technicianId, recordedAt])
+}
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  faultId   Int?
+  fault     FaultReport?     @relation(fields: [faultId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  message   String
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId, createdAt])
+}
