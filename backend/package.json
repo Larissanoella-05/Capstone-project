@@ -9,7 +9,9 @@
     "db:seed": "node prisma/seed.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "prisma": { "seed": "node prisma/seed.js" },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -21,6 +23,7 @@
     "dotenv": "^16.6.1",
     "express": "^4.22.3",
     "morgan": "^1.12.1",
-    "prisma": "^6.19.3"
+    "prisma": "^6.19.3",
+    "zod": "^3.25.76"
   }
 }
