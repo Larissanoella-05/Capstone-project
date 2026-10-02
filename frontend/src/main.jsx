@@ -1,10 +1,19 @@
+import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import './index.css';
+import App from './App.jsx';
+import { AuthProvider } from './context/AuthContext.jsx';
+import { ToastProvider } from './context/ToastContext.jsx';
 
 createRoot(document.getElementById('root')).render(
-  <div className="p-6">
-    <div className="eyebrow text-muted">Design tokens</div>
-    <h1 className="display text-4xl">Report. Locate.</h1>
-    <button className="btn btn-volt mt-4">Report a Fault</button>
-  </div>
+  <StrictMode>
+    <BrowserRouter>
+      <AuthProvider>
+        <ToastProvider>
+          <App />
+        </ToastProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  </StrictMode>
 );
