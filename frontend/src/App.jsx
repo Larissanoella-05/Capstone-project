@@ -3,21 +3,29 @@ import { HOME_BY_ROLE, useAuth } from './context/AuthContext.jsx';
 import MobileShell from './components/MobileShell.jsx';
 import CoordinatorShell from './components/CoordinatorShell.jsx';
 import { Loading } from './components/States.jsx';
+
 import Login from './pages/Login.jsx';
 import NotFound from './pages/NotFound.jsx';
+import Notifications from './pages/Notifications.jsx';
 
+import CustomerDashboard from './pages/customer/Dashboard.jsx';
 import ReportFault from './pages/customer/ReportFault.jsx';
 import Submitted from './pages/customer/Submitted.jsx';
 import Reports from './pages/customer/Reports.jsx';
+import Tracking from './pages/customer/Tracking.jsx';
 
-import Faults from './pages/coordinator/Faults.jsx';
-import FaultDetails from './pages/coordinator/FaultDetails.jsx';
-import Assign from './pages/coordinator/Assign.jsx';
-
+import TechnicianDashboard from './pages/technician/Dashboard.jsx';
 import Jobs from './pages/technician/Jobs.jsx';
 import JobDetails from './pages/technician/JobDetails.jsx';
 import ResolveJob from './pages/technician/ResolveJob.jsx';
 
+import CoordinatorDashboard from './pages/coordinator/Dashboard.jsx';
+import Faults from './pages/coordinator/Faults.jsx';
+import FaultDetails from './pages/coordinator/FaultDetails.jsx';
+import Assign from './pages/coordinator/Assign.jsx';
+import Monitoring from './pages/coordinator/Monitoring.jsx';
+
+// Temporary. Analytics is added on Day 7.
 function Placeholder({ title }) {
   return <h1 className="display text-3xl">{title}</h1>;
 }
@@ -71,12 +79,15 @@ export default function App() {
           </RequireRole>
         }
       >
-        <Route index element={<Placeholder title="Customer dashboard" />} />
+        <Route index element={<CustomerDashboard />} />
         <Route path="report" element={<ReportFault />} />
         <Route path="submitted/:id" element={<Submitted />} />
         <Route path="reports" element={<Reports />} />
-        <Route path="faults/:id" element={<Placeholder title="Fault tracking (Day 6)" />} />
-        <Route path="notifications" element={<Placeholder title="Notifications" />} />
+        <Route path="faults/:id" element={<Tracking />} />
+        <Route
+          path="notifications"
+          element={<Notifications faultPath={(id) => `/customer/faults/${id}`} intro="Updates about your fault reports as they move through each stage." />}
+        />
       </Route>
 
       {/* ---------- TECHNICIAN ---------- */}
@@ -88,9 +99,14 @@ export default function App() {
           </RequireRole>
         }
       >
-<Route path="jobs" element={<Jobs />} />
-<Route path="jobs/:id" element={<JobDetails />} />
-<Route path="jobs/:id/resolve" element={<ResolveJob />} />
+        <Route index element={<TechnicianDashboard />} />
+        <Route path="jobs" element={<Jobs />} />
+        <Route path="jobs/:id" element={<JobDetails />} />
+        <Route path="jobs/:id/resolve" element={<ResolveJob />} />
+        <Route
+          path="notifications"
+          element={<Notifications faultPath={(id) => `/technician/jobs/${id}`} intro="New jobs assigned to you by the service coordinator." />}
+        />
       </Route>
 
       {/* ---------- COORDINATOR ---------- */}
@@ -102,9 +118,12 @@ export default function App() {
           </RequireRole>
         }
       >
+        <Route index element={<CoordinatorDashboard />} />
         <Route path="faults" element={<Faults />} />
-<Route path="faults/:id" element={<FaultDetails />} />
-<Route path="faults/:id/assign" element={<Assign />} />
+        <Route path="faults/:id" element={<FaultDetails />} />
+        <Route path="faults/:id/assign" element={<Assign />} />
+        <Route path="monitoring" element={<Monitoring />} />
+        <Route path="analytics" element={<Placeholder title="Analytics" />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />
