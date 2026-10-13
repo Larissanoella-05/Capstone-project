@@ -14,6 +14,10 @@ import Faults from './pages/coordinator/Faults.jsx';
 import FaultDetails from './pages/coordinator/FaultDetails.jsx';
 import Assign from './pages/coordinator/Assign.jsx';
 
+import Jobs from './pages/technician/Jobs.jsx';
+import JobDetails from './pages/technician/JobDetails.jsx';
+import ResolveJob from './pages/technician/ResolveJob.jsx';
+
 function Placeholder({ title }) {
   return <h1 className="display text-3xl">{title}</h1>;
 }
@@ -84,9 +88,9 @@ export default function App() {
           </RequireRole>
         }
       >
-        <Route index element={<Placeholder title="Your jobs" />} />
-        <Route path="jobs" element={<Placeholder title="My jobs" />} />
-        <Route path="notifications" element={<Placeholder title="Notifications" />} />
+<Route path="jobs" element={<Jobs />} />
+<Route path="jobs/:id" element={<JobDetails />} />
+<Route path="jobs/:id/resolve" element={<ResolveJob />} />
       </Route>
 
       {/* ---------- COORDINATOR ---------- */}
