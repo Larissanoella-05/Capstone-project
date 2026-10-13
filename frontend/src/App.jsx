@@ -6,6 +6,11 @@ import { Loading } from './components/States.jsx';
 import Login from './pages/Login.jsx';
 import NotFound from './pages/NotFound.jsx';
 
+// Day 5, Step 2: customer pages
+import ReportFault from './pages/customer/ReportFault.jsx';
+import Submitted from './pages/customer/Submitted.jsx';
+import Reports from './pages/customer/Reports.jsx';
+
 // Temporary. Replaced by the real pages on Days 5 and 6.
 function Placeholder({ title }) {
   return <h1 className="display text-3xl">{title}</h1>;
@@ -51,20 +56,46 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
 
-      <Route path="/customer" element={<RequireRole role="CUSTOMER"><MobileShell base="/customer" tabs={CUSTOMER_TABS} /></RequireRole>}>
+      {/* ---------- CUSTOMER ---------- */}
+      <Route
+        path="/customer"
+        element={
+          <RequireRole role="CUSTOMER">
+            <MobileShell base="/customer" tabs={CUSTOMER_TABS} />
+          </RequireRole>
+        }
+      >
         <Route index element={<Placeholder title="Customer dashboard" />} />
-        <Route path="report" element={<Placeholder title="Report a fault" />} />
-        <Route path="reports" element={<Placeholder title="My reports" />} />
+        <Route path="report" element={<ReportFault />} />
+        <Route path="submitted/:id" element={<Submitted />} />
+        <Route path="reports" element={<Reports />} />
+        <Route path="faults/:id" element={<Placeholder title="Fault tracking (Day 6)" />} />
         <Route path="notifications" element={<Placeholder title="Notifications" />} />
       </Route>
 
-      <Route path="/technician" element={<RequireRole role="TECHNICIAN"><MobileShell base="/technician" tabs={TECHNICIAN_TABS} /></RequireRole>}>
+      {/* ---------- TECHNICIAN ---------- */}
+      <Route
+        path="/technician"
+        element={
+          <RequireRole role="TECHNICIAN">
+            <MobileShell base="/technician" tabs={TECHNICIAN_TABS} />
+          </RequireRole>
+        }
+      >
         <Route index element={<Placeholder title="Your jobs" />} />
         <Route path="jobs" element={<Placeholder title="My jobs" />} />
         <Route path="notifications" element={<Placeholder title="Notifications" />} />
       </Route>
 
-      <Route path="/coordinator" element={<RequireRole role="COORDINATOR"><CoordinatorShell /></RequireRole>}>
+      {/* ---------- COORDINATOR ---------- */}
+      <Route
+        path="/coordinator"
+        element={
+          <RequireRole role="COORDINATOR">
+            <CoordinatorShell />
+          </RequireRole>
+        }
+      >
         <Route index element={<Placeholder title="Response overview" />} />
         <Route path="faults" element={<Placeholder title="Fault management" />} />
         <Route path="monitoring" element={<Placeholder title="Live monitoring" />} />
