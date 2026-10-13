@@ -6,12 +6,14 @@ import { Loading } from './components/States.jsx';
 import Login from './pages/Login.jsx';
 import NotFound from './pages/NotFound.jsx';
 
-// Day 5, Step 2: customer pages
 import ReportFault from './pages/customer/ReportFault.jsx';
 import Submitted from './pages/customer/Submitted.jsx';
 import Reports from './pages/customer/Reports.jsx';
 
-// Temporary. Replaced by the real pages on Days 5 and 6.
+import Faults from './pages/coordinator/Faults.jsx';
+import FaultDetails from './pages/coordinator/FaultDetails.jsx';
+import Assign from './pages/coordinator/Assign.jsx';
+
 function Placeholder({ title }) {
   return <h1 className="display text-3xl">{title}</h1>;
 }
@@ -96,10 +98,9 @@ export default function App() {
           </RequireRole>
         }
       >
-        <Route index element={<Placeholder title="Response overview" />} />
-        <Route path="faults" element={<Placeholder title="Fault management" />} />
-        <Route path="monitoring" element={<Placeholder title="Live monitoring" />} />
-        <Route path="analytics" element={<Placeholder title="Analytics" />} />
+        <Route path="faults" element={<Faults />} />
+<Route path="faults/:id" element={<FaultDetails />} />
+<Route path="faults/:id/assign" element={<Assign />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />
