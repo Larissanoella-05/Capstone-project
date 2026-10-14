@@ -20,15 +20,12 @@ import JobDetails from './pages/technician/JobDetails.jsx';
 import ResolveJob from './pages/technician/ResolveJob.jsx';
 
 import CoordinatorDashboard from './pages/coordinator/Dashboard.jsx';
+import Analytics from './pages/coordinator/Analytics.jsx';
 import Faults from './pages/coordinator/Faults.jsx';
 import FaultDetails from './pages/coordinator/FaultDetails.jsx';
 import Assign from './pages/coordinator/Assign.jsx';
 import Monitoring from './pages/coordinator/Monitoring.jsx';
 
-// Temporary. Analytics is added on Day 7.
-function Placeholder({ title }) {
-  return <h1 className="display text-3xl">{title}</h1>;
-}
 
 const CUSTOMER_TABS = [
   { to: '/customer', label: 'Home', isActive: (path) => path === '/customer' },
@@ -123,7 +120,7 @@ export default function App() {
         <Route path="faults/:id" element={<FaultDetails />} />
         <Route path="faults/:id/assign" element={<Assign />} />
         <Route path="monitoring" element={<Monitoring />} />
-        <Route path="analytics" element={<Placeholder title="Analytics" />} />
+        <Route path="analytics" element={<Analytics />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />
