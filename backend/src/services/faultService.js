@@ -2,14 +2,21 @@ import { randomUUID } from 'node:crypto';
 import { prisma } from '../lib/prisma.js';
 import { badRequest, conflict, forbidden, notFound } from '../utils/httpError.js';
 import { distanceKm } from '../utils/geo.js';
-import {
-  ACTIVE_JOB_STATUSES,
-  DEFAULT_PRIORITY,
-  OPEN_STATUSES,
-  STATUS_FLOW,
-  STATUS_TIMESTAMP,
-} from '../utils/constants.js';
+import { ACTIVE_JOB_STATUSES, CATEGORY_LABEL, DEFAULT_PRIORITY, OPEN_STATUSES, STATUS_TIMESTAMP } from '../utils/constants.js';
+import { faultStatusMachine } from '../domain/FaultStatusMachine.js';
 import { customerMessageFor, notify } from './notificationService.js';
+
+const STALE_UPDATE_MESSAGE = 'This fault was just updated by someone else. Refresh to see the latest status.';
+
+/**
+ * Updates a fault only if it is still in the state we checked (optimistic concurrency).
+ * Two people tapping a button at the same moment can no longer both succeed:
+ * the second update matches zero rows, the transaction rolls back and the user gets a 409.
+ */
+async function guardedUpdate(tx, id, expected, data) {
+  const { count } = await tx.faultReport.updateMany({ where: { id, ...expected }, data });
+  if (count === 0) throw conflict(STALE_UPDATE_MESSAGE);
+}
 
 /** Everything the three interfaces need to draw a fault. */
 const faultInclude = {
@@ -123,9 +130,9 @@ export async function listFaults(user, query = {}) {
   const term = typeof search === 'string' ? search.trim() : '';
   if (term) {
     const contains = { contains: term, mode: 'insensitive' };
-    const categoryMatches = ['POWER_OUTAGE', 'LOW_VOLTAGE', 'DAMAGED_CONNECTION', 'METER_ISSUE', 'OTHER'].filter(
-      (category) => category.replace(/_/g, ' ').toLowerCase().includes(term.toLowerCase())
-    );
+    const categoryMatches = Object.entries(CATEGORY_LABEL)
+      .filter(([, label]) => label.toLowerCase().includes(term.toLowerCase()))
+      .map(([category]) => category);
     where.OR = [
       { reference: contains },
       { description: contains },
@@ -210,9 +217,7 @@ export async function createFault(user, body) {
 /** Coordinator assigns (or reassigns) a technician to a fault. */
 export async function assignTechnician(user, id, technicianId) {
   const fault = await loadFault(user, id);
-  if (!['REPORTED', 'ASSIGNED'].includes(fault.status)) {
-    throw conflict('A technician can only be assigned before the response has started.');
-  }
+  faultStatusMachine.assertAssignable(fault.status);
 
   const technician = await prisma.technician.findUnique({ where: { id: technicianId }, include: { user: true } });
   if (!technician) throw notFound('That technician does not exist.');
@@ -220,15 +225,13 @@ export async function assignTechnician(user, id, technicianId) {
   if (fault.technicianId === technician.id) throw conflict(`${technician.user.name} is already assigned to this fault.`);
 
   await prisma.$transaction(async (tx) => {
-    await tx.faultReport.update({
-      where: { id },
-      data: {
-        technicianId: technician.id,
-        assignedById: user.coordinator.id,
-        status: 'ASSIGNED',
-        assignedAt: new Date(),
-      },
-    });
+    // Only succeeds if nobody else assigned or started the job since we loaded it.
+    await guardedUpdate(
+      tx,
+      id,
+      { status: fault.status, technicianId: fault.technicianId },
+      { technicianId: technician.id, assignedById: user.coordinator.id, status: 'ASSIGNED', assignedAt: new Date() }
+    );
     await tx.faultStatusHistory.create({
       data: { faultId: id, status: 'ASSIGNED', changedById: user.id, note: `Assigned to ${technician.user.name}` },
     });
@@ -259,27 +262,12 @@ export async function assignTechnician(user, id, technicianId) {
 export async function changeStatus(user, id, body) {
   const fault = await loadFault(user, id);
   const next = body.status;
-
-  if (next === 'CANCELLED') {
-    if (user.role !== 'COORDINATOR') throw forbidden('Only a service coordinator can cancel a report.');
-    if (!OPEN_STATUSES.includes(fault.status)) throw conflict('This report is already closed.');
-  } else {
-    if (user.role !== 'TECHNICIAN') throw forbidden('Only the assigned technician can update the response status.');
-    const currentIndex = STATUS_FLOW.indexOf(fault.status);
-    const nextIndex = STATUS_FLOW.indexOf(next);
-    if (currentIndex < 1) throw conflict('This fault has not been assigned yet or is already closed.');
-    if (nextIndex !== currentIndex + 1) {
-      const expected = STATUS_FLOW[currentIndex + 1];
-      throw conflict(
-        expected
-          ? `The next status for this fault is ${expected.replace(/_/g, ' ').toLowerCase()}.`
-          : 'This fault is already resolved.'
-      );
-    }
-    if (next === 'RESOLVED' && !body.resolutionNote) {
-      throw badRequest('An outcome note is required before a fault can be resolved.');
-    }
-  }
+  faultStatusMachine.assertTransition({
+    role: user.role,
+    from: fault.status,
+    to: next,
+    resolutionNote: body.resolutionNote,
+  });
 
   const now = new Date();
   const data = { status: next, [STATUS_TIMESTAMP[next]]: now };
@@ -291,7 +279,7 @@ export async function changeStatus(user, id, body) {
   }
 
   await prisma.$transaction(async (tx) => {
-    await tx.faultReport.update({ where: { id }, data });
+    await guardedUpdate(tx, id, { status: fault.status }, data);
     await tx.faultStatusHistory.create({
       data: { faultId: id, status: next, changedById: user.id, note: body.note || null },
     });
