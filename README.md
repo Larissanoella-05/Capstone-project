@@ -313,19 +313,33 @@ Render sets `PORT` itself. Secrets are stored only on Render and never with a `V
 
 Full method and results: [docs/TESTING.md](docs/TESTING.md). Scope evidence: [docs/SCOPE_ALIGNMENT.md](docs/SCOPE_ALIGNMENT.md).
 
+Run these in **Git Bash** from the project folder.
+
 ```bash
-# Unit tests (no database)
-cd backend && npm test
-cd frontend && npm test
+# Unit tests (no database needed)
+cd backend && npm test && cd ..
+cd frontend && npm test && npm run build && cd ..
 
-# Integration tests: use a SEPARATE database, the tests wipe and reseed it
-psql -U postgres -c "CREATE DATABASE umuriro_test;"
+# Integration tests: they WIPE and reseed their database, so they need a SEPARATE one.
+# 1. Create the test database once (asks for the postgres password)
+psql -U postgres -h localhost -c "CREATE DATABASE umuriro_test;"
+
+# 2. Type the test connection URL without it showing on screen or in your shell history:
+#    postgresql://postgres:YOUR_PASSWORD@localhost:5432/umuriro_test?schema=public
+read -rsp "Test database URL: " TEST_DATABASE_URL && export TEST_DATABASE_URL && echo
+
+# 3. Create the tables in the TEST database (once, and after each new migration)
 cd backend
-DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@localhost:5432/umuriro_test?schema=public" npx prisma migrate deploy
-TEST_DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@localhost:5432/umuriro_test?schema=public" npm run test:integration
+DATABASE_URL="$TEST_DATABASE_URL" npx prisma migrate deploy
 
-# Load test (API must be running: npm run dev)
-npm run test:perf
+# 4. Run them
+npm run test:integration
+
+# Load test (read-only), against an API started on the TEST database in a second Git Bash window:
+#   cd backend && DATABASE_URL="$TEST_DATABASE_URL" PORT=4100 npm start
+API_URL=http://localhost:4100 npm run test:perf
 ```
+
+**Safety checks.** Before the integration tests change anything, `backend/tests/integration/testDatabaseGuard.js` stops the run unless `TEST_DATABASE_URL` is set (there is no fallback to `DATABASE_URL`), its database name ends in `_test`, it is not the same database as `DATABASE_URL` in `backend/.env`, it is on `localhost`, the server confirms that database name, and every existing account in it is a demo (`@demo.rw`) account. Your development database and the deployed database can never be wiped by the tests.
 
 The same tests run automatically on GitHub Actions for every push (`.github/workflows/test.yml`).
