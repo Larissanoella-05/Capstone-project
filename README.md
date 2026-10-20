@@ -9,6 +9,8 @@ Final-year full-stack capstone project · Pilot area: Ndera Sector, Gasabo Distr
 | **GitHub repository** | https://github.com/Larissanoella-05/Capstone-project.git|
 | **Live application** | https://capstone-project-six-inky.vercel.app |
 | **Live API (health check)** | https://capstone-project-as2y.onrender.com/api/health |
+| **Walkthrough video** | _TODO: add the video link_ |
+| **Technical report (PDF)** | _TODO: add the report link_ |
 
 
 > The API runs on Render's free tier, which sleeps after about 15 minutes without traffic. If the live app is slow to sign in, open the health-check link first and wait up to a minute for it to answer.
@@ -64,6 +66,17 @@ Every status change is time-stamped and stored, which makes it possible to measu
 
 
 
+## 3. Technical requirements
+
+| Requirement | Version / detail |
+|---|---|
+| Node.js | 20 or newer (the CI workflow uses 20; development tests ran on 22) |
+| PostgreSQL | 14 or newer (tested on 16) |
+| Browsers | Current Chrome, Edge, Firefox and Safari (desktop and mobile) |
+| Devices | Customer and technician screens are designed for phones (from 360 px wide); the coordinator screens for a laptop or desktop |
+| Network | Internet access for the OpenStreetMap tiles |
+| External accounts | None needed to run locally (no paid map or SMS keys) |
+
 ## 4. Setting up the environment and the project
 
 ### Prerequisites
@@ -83,7 +96,7 @@ On Windows, run the commands below in **Git Bash**. Keep the project **outside O
 
 ```bash
 git clone https://github.com/Larissanoella-05/Capstone-project.git
-cd capstone-project
+cd Capstone-project
 ```
 
 ### Step 2: Install dependencies
@@ -168,28 +181,46 @@ Open http://localhost:5173. To check the API on its own: http://localhost:4000/a
 | `npm run dev` | Start the API, restarting on file changes |
 | `npm run db:seed` | Reset the sample data |
 | `npx prisma studio` | Browse the database tables in the browser |
+| `npm test` | Unit tests (no database needed) |
+| `npm run test:integration` | API + database tests (needs `TEST_DATABASE_URL`, see §6) |
+| `npm run test:perf` | Load test of the read endpoints against a running API |
 
 ### Project structure
 
 ```text
 ├── backend/
 │   ├── prisma/          schema.prisma, migrations/, seed.js
-│   └── src/
-│       ├── config/      environment variables
-│       ├── lib/         shared Prisma client
-│       ├── middleware/  login check, roles, validation, errors
-│       ├── routes/      API endpoints
-│       ├── services/    business rules and database access
-│       └── utils/       constants, distance calculation
+│   ├── src/
+│   │   ├── config/      environment variables
+│   │   ├── domain/      FaultStatusMachine (workflow rules), TechnicianRanker (assignment ranking)
+│   │   ├── lib/         shared Prisma client
+│   │   ├── middleware/  login check, roles, validation, errors
+│   │   ├── routes/      API endpoints (HTTP only, no business rules)
+│   │   ├── services/    use cases and database access
+│   │   ├── validators/  request-body schemas (Zod)
+│   │   └── utils/       constants, distance calculation, HTTP errors
+│   └── tests/
+│       ├── unit/        domain, validators, middleware
+│       ├── integration/ full workflow over HTTP against PostgreSQL
+│       └── performance/ load test script
 ├── frontend/
 │   └── src/
 │       ├── components/  layouts, map, status pills, loading/error states
 │       ├── context/     signed-in user, messages
 │       ├── hooks/       data loading and live refresh
-│       ├── lib/         API client, labels and formatting
+│       ├── lib/         API client, labels and formatting (+ unit tests)
 │       └── pages/       customer/, technician/, coordinator/, Login
-└── 
+├── docs/                SCOPE_ALIGNMENT.md, TESTING.md
+└── .github/workflows/   CI: runs all tests and the frontend build on every push
 ```
+
+### Code design
+
+- **Layers:** routes (HTTP) → validators (input) → services (use cases, transactions) → Prisma (data). Routes contain no business rules.
+- **Encapsulated domain rules:** `FaultStatusMachine` owns which status may follow which and who may make each change; `TechnicianRanker` owns how technicians are ordered. Both are plain classes with no database code, so they are unit tested directly.
+- **Inheritance / polymorphism:** `HttpError` subclasses `Error`; every layer throws it and one error handler turns any of them into the right HTTP response.
+- **Algorithms:** haversine great-circle distance (`utils/geo.js`); multi-key ranking (availability, distance, workload, name; O(n log n)); response-time averages computed from the stored stage timestamps (`services/statsService.js`).
+- **Data integrity:** each status change, its history row and its notifications are written in one transaction; updates only apply if the fault is still in the status that was checked, so double-taps and simultaneous assignments cannot create duplicates.
 
 ### Main API endpoints
 
@@ -200,7 +231,7 @@ Open http://localhost:5173. To check the API on its own: http://localhost:4000/a
 | POST | `/api/faults` | Customer: report a fault |
 | POST | `/api/faults/:id/assign` | Coordinator: assign a technician |
 | PATCH | `/api/faults/:id/status` | Technician: next stage · Coordinator: cancel |
-| GET | `/api/technicians?faultId=` | Coordinator: technicians sorted by distance |
+| GET | `/api/technicians?faultId=` | Coordinator: technicians ranked available → nearest → least busy, best one flagged `recommended` |
 | POST | `/api/technicians/me/location` | Technician: update position |
 | GET | `/api/notifications` | Customer, Technician |
 
@@ -278,3 +309,23 @@ Render sets `PORT` itself. Secrets are stored only on Render and never with a `V
 
 ---
 
+## 6. Testing
+
+Full method and results: [docs/TESTING.md](docs/TESTING.md). Scope evidence: [docs/SCOPE_ALIGNMENT.md](docs/SCOPE_ALIGNMENT.md).
+
+```bash
+# Unit tests (no database)
+cd backend && npm test
+cd frontend && npm test
+
+# Integration tests: use a SEPARATE database, the tests wipe and reseed it
+psql -U postgres -c "CREATE DATABASE umuriro_test;"
+cd backend
+DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@localhost:5432/umuriro_test?schema=public" npx prisma migrate deploy
+TEST_DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@localhost:5432/umuriro_test?schema=public" npm run test:integration
+
+# Load test (API must be running: npm run dev)
+npm run test:perf
+```
+
+The same tests run automatically on GitHub Actions for every push (`.github/workflows/test.yml`).
