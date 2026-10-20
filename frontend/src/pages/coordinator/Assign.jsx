@@ -22,7 +22,8 @@ export default function Assign() {
 
   const fault = faultState.data?.fault;
   const technicians = techState.data?.technicians ?? [];
-  const nearestAvailable = technicians.find((technician) => technician.availability === 'AVAILABLE');
+  // The API ranks technicians (available → nearest → least busy) and flags the best one.
+  const recommended = technicians.find((technician) => technician.recommended);
 
   const markers = useMemo(() => {
     if (!fault) return [];
@@ -112,7 +113,7 @@ export default function Assign() {
           </div>
 
           <div className="flex flex-col gap-4">
-            <h2 className="eyebrow m-0 font-normal">Technicians · sorted by distance</h2>
+            <h2 className="eyebrow m-0 font-normal">Technicians · available first, then nearest</h2>
             <FormError>{formError}</FormError>
             {technicians.length === 0 && <EmptyState title="No technicians on record" />}
             {technicians.map((technician) => {
@@ -132,8 +133,8 @@ export default function Assign() {
                     <Cell label="Location">{technician.location?.label ?? 'Not recorded'}</Cell>
                     <Cell label="Distance" className="border-l border-ink">
                       {technician.distanceKm !== null ? `${fmtKm(technician.distanceKm)} away` : '—'}
-                      {nearestAvailable?.id === technician.id && (
-                        <span className="ml-1 bg-volt px-1 font-mono text-[10px] font-medium uppercase">Nearest</span>
+                      {recommended?.id === technician.id && (
+                        <span className="ml-1 bg-volt px-1 font-mono text-[10px] font-medium uppercase">Recommended</span>
                       )}
                     </Cell>
                     <Cell label="Active jobs" className="border-l border-ink">{technician.activeJobs.length}</Cell>
