@@ -1,8 +1,8 @@
 /**
  * Integration tests: the real Express app, over HTTP, against a real PostgreSQL database.
  *
- * They RESET the database with the seed data, so they only run when TEST_DATABASE_URL
- * points at a separate test database:
+ * They RESET the database with the seed data, so they REFUSE to run unless TEST_DATABASE_URL
+ * points at a separate, local test database holding only demo data (see testDatabaseGuard.js):
  *
  *   TEST_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/umuriro_test?schema=public" npm run test:integration
  */
@@ -10,9 +10,9 @@ import { after, before, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { assertSafeTestDatabase } from './testDatabaseGuard.js';
 
 const TEST_DB = process.env.TEST_DATABASE_URL;
-const skip = TEST_DB ? false : 'set TEST_DATABASE_URL to run integration tests';
 const backendDir = fileURLToPath(new URL('../../', import.meta.url));
 
 let server;
@@ -59,8 +59,12 @@ async function assignBest(faultId) {
 
 const setStatus = (faultId, token, body) => call('PATCH', `/faults/${faultId}/status`, { token, body });
 
-describe('API integration', { skip, concurrency: false }, () => {
+describe('API integration', { concurrency: false }, () => {
   before(async () => {
+    // Fails the run, before anything is written, unless TEST_DB is a separate local demo-only database.
+    // Must run before DATABASE_URL is overwritten below, so it can compare against the real one.
+    await assertSafeTestDatabase(TEST_DB);
+
     process.env.DATABASE_URL = TEST_DB;
     process.env.JWT_SECRET ||= 'integration-test-secret';
     process.env.NODE_ENV = 'test';
@@ -96,7 +100,8 @@ describe('API integration', { skip, concurrency: false }, () => {
   });
 
   after(async () => {
-    await new Promise((resolve) => server?.close(resolve));
+    // If setup stopped early (e.g. the safety check refused), there is no server to close.
+    if (server) await new Promise((resolve) => server.close(resolve));
     await prisma?.$disconnect();
   });
 
@@ -297,15 +302,22 @@ describe('API integration', { skip, concurrency: false }, () => {
   });
 
   describe('data integrity under concurrent requests', () => {
-    it('a double-tapped status update is applied once; the second gets 409', async () => {
+    it('repeated simultaneous taps of the same status update are applied once; the rest get 409', async () => {
       const fault = await reportFault('OTHER', 'Concurrency check');
       const techKey = await assignBest(fault.id);
 
-      const results = await Promise.all([
-        setStatus(fault.id, tokens[techKey], { status: 'ON_THE_WAY' }),
-        setStatus(fault.id, tokens[techKey], { status: 'ON_THE_WAY' }),
-      ]);
-      assert.deepEqual(results.map((r) => r.status).sort(), [200, 409]);
+      // Five identical requests at once (an impatient user tapping repeatedly). Five, not two,
+      // so that the requests reliably overlap and the race is actually exercised.
+      const taps = 5;
+      // Warm-up: open enough HTTP and database connections first. Otherwise the first request runs on a
+      // warm connection and finishes before the others have even connected, and the race never happens.
+      await Promise.all(Array.from({ length: taps }, () => call('GET', `/faults/${fault.id}`, { token: tokens[techKey] })));
+      const results = await Promise.all(
+        Array.from({ length: taps }, () => setStatus(fault.id, tokens[techKey], { status: 'ON_THE_WAY' }))
+      );
+      const codes = results.map((r) => r.status);
+      assert.equal(codes.filter((code) => code === 200).length, 1, `status codes: ${codes}`);
+      assert.equal(codes.filter((code) => code === 409).length, taps - 1, `status codes: ${codes}`);
 
       const history = await prisma.faultStatusHistory.count({ where: { faultId: fault.id, status: 'ON_THE_WAY' } });
       const notices = await prisma.notification.count({ where: { faultId: fault.id, type: 'TECHNICIAN_ON_THE_WAY' } });

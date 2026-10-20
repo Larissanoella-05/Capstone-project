@@ -9,6 +9,7 @@
  * Prints, per endpoint: requests, errors, throughput and latency percentiles (ms).
  */
 import { performance } from 'node:perf_hooks';
+import { pathToFileURL } from 'node:url';
 
 const API = `${(process.env.API_URL || 'http://localhost:4000').replace(/\/$/, '')}/api`;
 const REQUESTS = Number(process.env.REQUESTS) || 200;
@@ -89,7 +90,8 @@ async function main() {
   if (rows.some((row) => row.errors > 0)) process.exitCode = 1;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Run only when started directly (pathToFileURL makes this work on Windows paths too).
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((error) => {
     console.error(error.message);
     process.exit(1);
