@@ -1,17 +1,12 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
-import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth, signToken } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import { loginSchema } from '../validators/auth.schemas.js';
 import { asyncHandler, unauthorized } from '../utils/httpError.js';
 
 const router = Router();
-
-const loginSchema = z.object({
-  email: z.string({ required_error: 'Enter your email address.' }).trim().toLowerCase().email('Enter a valid email address.'),
-  password: z.string({ required_error: 'Enter your password.' }).min(1, 'Enter your password.'),
-});
 
 function publicUser(user) {
   return {

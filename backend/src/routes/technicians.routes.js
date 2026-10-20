@@ -1,19 +1,12 @@
 import { Router } from 'express';
-import { z } from 'zod';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { asyncHandler, badRequest, forbidden } from '../utils/httpError.js';
 import * as technicians from '../services/technicianService.js';
+import { locationSchema } from '../validators/technician.schemas.js';
 
 const router = Router();
 router.use(requireAuth);
-
-const locationSchema = z.object({
-  latitude: z.coerce.number().min(-90, 'Latitude is out of range.').max(90, 'Latitude is out of range.'),
-  longitude: z.coerce.number().min(-180, 'Longitude is out of range.').max(180, 'Longitude is out of range.'),
-  faultId: z.coerce.number().int().positive().optional(),
-  label: z.string().trim().max(120).optional(),
-});
 
 // GET /api/technicians?faultId=12  (coordinator)
 router.get(
