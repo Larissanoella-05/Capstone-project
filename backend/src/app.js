@@ -22,7 +22,7 @@ export function createApp() {
     })
   );
   app.use(express.json({ limit: '2mb' }));
-  app.use(morgan('dev'));
+  if (env.nodeEnv !== 'test') app.use(morgan('dev')); // keep automated test output readable
 
   // 2. Routes
   app.use('/api/auth', authRoutes);
