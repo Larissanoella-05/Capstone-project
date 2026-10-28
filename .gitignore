@@ -14,3 +14,12 @@ build/
 *.log
 .DS_Store
 .idea/
+
+# mobile app (Expo)
+mobile/.expo/
+mobile/android/
+mobile/google-services.json
+
+# claude
+docs/agents
+.claude

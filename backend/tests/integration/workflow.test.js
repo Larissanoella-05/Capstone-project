@@ -132,6 +132,33 @@ describe('API integration', { concurrency: false }, () => {
     });
   });
 
+  describe('mobile client sessions', () => {
+    const lifetimeSeconds = (token) => {
+      const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
+      return payload.exp - payload.iat;
+    };
+
+    it('keeps the web login at 12 hours when no client is sent', async () => {
+      const res = await login('aline@demo.rw');
+      assert.equal(lifetimeSeconds(res.body.token), 12 * 60 * 60);
+    });
+
+    it('gives the mobile client a 30 day login', async () => {
+      const res = await call('POST', '/auth/login', {
+        body: { email: 'aline@demo.rw', password: 'demo1234', client: 'mobile' },
+      });
+      assert.equal(res.status, 200);
+      assert.equal(lifetimeSeconds(res.body.token), 30 * 24 * 60 * 60);
+    });
+
+    it('rejects an unknown client with 400', async () => {
+      const res = await call('POST', '/auth/login', {
+        body: { email: 'aline@demo.rw', password: 'demo1234', client: 'desktop' },
+      });
+      assert.equal(res.status, 400);
+    });
+  });
+
   describe('end-to-end fault workflow', () => {
     let fault;
     let techKey;
