@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { api, setUnauthorizedHandler, tokenStore } from '../lib/api.js';
+import { getRegisteredToken, setRegisteredToken } from '../lib/deviceToken.js';
 
 const AuthContext = createContext(null);
 
@@ -52,6 +53,16 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(async () => {
+    // Stop pushes to this phone while the session is still valid; a failure must not block signing out.
+    const pushToken = getRegisteredToken();
+    if (pushToken) {
+      try {
+        await api('/devices', { method: 'DELETE', body: { token: pushToken } });
+      } catch (error) {
+        console.warn('[push] could not unregister this phone:', error.message);
+      }
+      setRegisteredToken(null);
+    }
     await tokenStore.clear();
     setUser(null);
   }, []);
