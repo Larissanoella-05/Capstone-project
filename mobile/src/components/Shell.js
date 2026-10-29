@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext.js';
 import { colors, fonts } from '../theme.js';
@@ -45,10 +45,13 @@ export function AppHeader({ base, unread = 0 }) {
 
 /** Scrolling page body with the standard phone padding. */
 export function Screen({ children }) {
+  // Android draws edge to edge, so the system no longer shrinks the page for the keyboard; do it here.
   return (
-    <ScrollView style={{ backgroundColor: colors.white }} contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled">
-      {children}
-    </ScrollView>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.white }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView style={{ backgroundColor: colors.white }} contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled" overScrollMode="never" showsVerticalScrollIndicator={false}>
+        {children}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
