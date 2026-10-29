@@ -1,5 +1,5 @@
-import { Stub } from '../../src/components/Stub.js';
+import NotificationsList from '../../src/components/NotificationsList.js';
 
 export default function Notifications() {
-  return <Stub eyebrow="Customer" title="Alerts" />;
+  return <NotificationsList intro="Updates about your fault reports." />;
 }
