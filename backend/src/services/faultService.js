@@ -5,6 +5,7 @@ import { distanceKm } from '../utils/geo.js';
 import { ACTIVE_JOB_STATUSES, CATEGORY_LABEL, DEFAULT_PRIORITY, OPEN_STATUSES, STATUS_TIMESTAMP } from '../utils/constants.js';
 import { faultStatusMachine } from '../domain/FaultStatusMachine.js';
 import { customerMessageFor, notify } from './notificationService.js';
+import { sendPushForNotifications } from './pushService.js';
 
 const STALE_UPDATE_MESSAGE = 'This fault was just updated by someone else. Refresh to see the latest status.';
 
@@ -180,7 +181,7 @@ export async function createFault(user, body) {
     : await prisma.serviceLocation.findFirst({ where: { customerId: customer.id }, orderBy: { id: 'asc' } });
   if (!location) throw badRequest('No registered service location was found for your account.');
 
-  const id = await prisma.$transaction(async (tx) => {
+  const { id, notices } = await prisma.$transaction(async (tx) => {
     // The public reference is derived from the row id, so create first and then stamp it.
     const created = await tx.faultReport.create({
       data: {
@@ -201,16 +202,17 @@ export async function createFault(user, body) {
     await tx.faultStatusHistory.create({
       data: { faultId: created.id, status: 'REPORTED', changedById: user.id, note: 'Fault reported by customer' },
     });
-    await notify(tx, {
+    const notice = await notify(tx, {
       userId: user.id,
       faultId: created.id,
       type: 'FAULT_SUBMITTED',
       title: 'Fault Received',
       message: `We have received your electricity fault report #${reference}. A service coordinator will assign a technician.`,
     });
-    return created.id;
+    return { id: created.id, notices: [notice] };
   });
 
+  sendPushForNotifications(notices); // after the commit; never throws and is not awaited
   return getFault(user, id);
 }
 
@@ -224,7 +226,7 @@ export async function assignTechnician(user, id, technicianId) {
   if (!technician.onDuty) throw conflict(`${technician.user.name} is off duty.`);
   if (fault.technicianId === technician.id) throw conflict(`${technician.user.name} is already assigned to this fault.`);
 
-  await prisma.$transaction(async (tx) => {
+  const notices = await prisma.$transaction(async (tx) => {
     // Only succeeds if nobody else assigned or started the job since we loaded it.
     await guardedUpdate(
       tx,
@@ -235,22 +237,24 @@ export async function assignTechnician(user, id, technicianId) {
     await tx.faultStatusHistory.create({
       data: { faultId: id, status: 'ASSIGNED', changedById: user.id, note: `Assigned to ${technician.user.name}` },
     });
-    await notify(tx, {
+    const toCustomer = await notify(tx, {
       userId: fault.customer.userId,
       faultId: id,
       type: 'TECHNICIAN_ASSIGNED',
       title: 'Technician Assigned',
       message: `${technician.user.name} has been assigned to your electricity fault #${fault.reference}.`,
     });
-    await notify(tx, {
+    const toTechnician = await notify(tx, {
       userId: technician.userId,
       faultId: id,
       type: 'JOB_ASSIGNED',
       title: 'New Job Assigned',
       message: `Fault #${fault.reference} at ${fault.serviceLocation.cell} Cell has been assigned to you.`,
     });
+    return [toCustomer, toTechnician];
   });
 
+  sendPushForNotifications(notices);
   return getFault(user, id);
 }
 
@@ -278,7 +282,7 @@ export async function changeStatus(user, id, body) {
     data.clarificationContacts = body.clarificationContacts ?? 0;
   }
 
-  await prisma.$transaction(async (tx) => {
+  const notices = await prisma.$transaction(async (tx) => {
     await guardedUpdate(tx, id, { status: fault.status }, data);
     await tx.faultStatusHistory.create({
       data: { faultId: id, status: next, changedById: user.id, note: body.note || null },
@@ -315,9 +319,10 @@ export async function changeStatus(user, id, body) {
       reference: fault.reference,
       technicianName: fault.technician?.user.name,
     });
-    if (message) await notify(tx, { userId: fault.customer.userId, faultId: id, ...message });
+    return message ? [await notify(tx, { userId: fault.customer.userId, faultId: id, ...message })] : [];
   });
 
+  sendPushForNotifications(notices);
   return getFault(user, id);
 }
 
