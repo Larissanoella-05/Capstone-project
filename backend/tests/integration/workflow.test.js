@@ -279,6 +279,164 @@ describe('API integration', { concurrency: false }, () => {
     });
   });
 
+  describe('technician location posts (the mobile tracker)', () => {
+    let faultA;
+    let faultB;
+    let keyA;
+    let keyB;
+
+    before(async () => {
+      faultA = await reportFault('POWER_OUTAGE', 'Location test A');
+      keyA = await assignBest(faultA.id);
+
+      // Give the second fault to a different technician, so each owns exactly one of the two jobs.
+      faultB = await reportFault('LOW_VOLTAGE', 'Location test B');
+      const ranked = await call('GET', `/technicians?faultId=${faultB.id}`, { token: tokens.grace });
+      const other = ranked.body.technicians.find((t) => t.onDuty && technicianIds[t.id] !== keyA);
+      assert.ok(other, 'expected a second on-duty technician');
+      const res = await call('POST', `/faults/${faultB.id}/assign`, { token: tokens.grace, body: { technicianId: other.id } });
+      assert.equal(res.status, 200, JSON.stringify(res.body));
+      keyB = technicianIds[other.id];
+    });
+
+    it('an assigned technician can post a position with the faultId of their own job', async () => {
+      const res = await call('POST', '/technicians/me/location', {
+        token: tokens[keyA],
+        body: { latitude: -1.95, longitude: 30.17, faultId: faultA.id, label: 'Device location' },
+      });
+      assert.equal(res.status, 201, JSON.stringify(res.body));
+      assert.equal(res.body.location.latitude, -1.95);
+    });
+
+    it('a faultId belonging to another technician is refused (400)', async () => {
+      const res = await call('POST', '/technicians/me/location', {
+        token: tokens[keyA],
+        body: { latitude: -1.95, longitude: 30.17, faultId: faultB.id },
+      });
+      assert.equal(res.status, 400, JSON.stringify(res.body));
+      assert.equal(res.body.error.message, 'That fault is not assigned to you.');
+      assert.notEqual(keyA, keyB);
+    });
+  });
+
+  describe('device tokens and push', () => {
+    const TOKEN_ALINE = 'ExponentPushToken[integration-test-aline-0001]';
+    const TOKEN_JEAN = 'ExponentPushToken[integration-test-jean-00001]';
+    const sent = [];
+    let push;
+    let alineId;
+    let patrickId;
+
+    before(async () => {
+      push = await import('../../src/services/pushService.js');
+      // A fake Expo client: nothing leaves this machine, and every message is recorded.
+      push.setExpoClient({
+        chunkPushNotifications: (messages) => [messages],
+        sendPushNotificationsAsync: async (chunk) => {
+          sent.push(...chunk);
+          return chunk.map((_, index) => ({ status: 'ok', id: `integration-ticket-${sent.length}-${index}` }));
+        },
+        chunkPushNotificationReceiptIds: (ids) => [ids],
+        getPushNotificationReceiptsAsync: async () => ({}),
+      });
+      alineId = (await prisma.user.findUnique({ where: { email: 'aline@demo.rw' } })).id;
+      patrickId = (await prisma.user.findUnique({ where: { email: 'patrick@demo.rw' } })).id;
+      await prisma.deviceToken.deleteMany({});
+    });
+
+    after(async () => {
+      await prisma.deviceToken.deleteMany({});
+    });
+
+    const register = (key, token) => call('POST', '/devices', { token: tokens[key], body: { token } });
+    const pushesAfter = async (action) => {
+      sent.length = 0;
+      await action();
+      await push.whenPushIdle();
+      return sent.map((m) => ({ to: m.to, type: m.data.type, faultId: m.data.faultId }));
+    };
+
+    it('registering requires a signed-in user (401)', async () => {
+      assert.equal((await call('POST', '/devices', { body: { token: TOKEN_ALINE } })).status, 401);
+    });
+
+    it('rejects a malformed token (400)', async () => {
+      assert.equal((await register('aline', 'not-a-push-token')).status, 400);
+    });
+
+    it('registers a token for the signed-in user', async () => {
+      const res = await register('aline', TOKEN_ALINE);
+      assert.equal(res.status, 201, JSON.stringify(res.body));
+      const row = await prisma.deviceToken.findUnique({ where: { token: TOKEN_ALINE } });
+      assert.equal(row.userId, alineId);
+    });
+
+    it('registering the same token as another user moves it (a shared phone)', async () => {
+      assert.equal((await register('patrick', TOKEN_ALINE)).status, 201);
+      const rows = await prisma.deviceToken.findMany({ where: { token: TOKEN_ALINE } });
+      assert.equal(rows.length, 1);
+      assert.equal(rows[0].userId, patrickId);
+    });
+
+    it('DELETE removes only the signed-in user’s own token', async () => {
+      const notOwner = await call('DELETE', '/devices', { token: tokens.aline, body: { token: TOKEN_ALINE } });
+      assert.equal(notOwner.body.removed, 0);
+      assert.ok(await prisma.deviceToken.findUnique({ where: { token: TOKEN_ALINE } }));
+
+      const owner = await call('DELETE', '/devices', { token: tokens.patrick, body: { token: TOKEN_ALINE } });
+      assert.equal(owner.body.removed, 1);
+      assert.equal(await prisma.deviceToken.findUnique({ where: { token: TOKEN_ALINE } }), null);
+    });
+
+    it('sends the right pushes at each step of a fault', async () => {
+      assert.equal((await register('aline', TOKEN_ALINE)).status, 201);
+      assert.equal((await register('jeanclaude', TOKEN_JEAN)).status, 201);
+      const jeanId = Number(Object.keys(technicianIds).find((id) => technicianIds[id] === 'jeanclaude'));
+
+      let fault;
+      const reported = await pushesAfter(async () => {
+        fault = await reportFault('POWER_OUTAGE', 'Push test fault');
+      });
+      assert.deepEqual(reported, [{ to: TOKEN_ALINE, type: 'FAULT_SUBMITTED', faultId: fault.id }]);
+
+      const assigned = await pushesAfter(async () => {
+        const res = await call('POST', `/faults/${fault.id}/assign`, { token: tokens.grace, body: { technicianId: jeanId } });
+        assert.equal(res.status, 200, JSON.stringify(res.body));
+      });
+      assert.deepEqual(
+        assigned.map((m) => [m.to, m.type]).sort(),
+        [[TOKEN_ALINE, 'TECHNICIAN_ASSIGNED'], [TOKEN_JEAN, 'JOB_ASSIGNED']].sort()
+      );
+
+      const step = async (body) =>
+        pushesAfter(async () => {
+          const res = await setStatus(fault.id, tokens.jeanclaude, body);
+          assert.equal(res.status, 200, JSON.stringify(res.body));
+        });
+      assert.deepEqual((await step({ status: 'ON_THE_WAY' })).map((m) => [m.to, m.type]), [[TOKEN_ALINE, 'TECHNICIAN_ON_THE_WAY']]);
+      assert.deepEqual((await step({ status: 'ARRIVED' })).map((m) => [m.to, m.type]), [[TOKEN_ALINE, 'TECHNICIAN_ARRIVED']]);
+      assert.deepEqual(await step({ status: 'WORKING' }), []); // work starting does not notify the customer
+      assert.deepEqual(
+        (await step({ status: 'RESOLVED', outcome: 'SUPPLY_RESTORED', resolutionNote: 'Replaced the service fuse.', workCompleted: 'Fuse' })).map((m) => [m.to, m.type]),
+        [[TOKEN_ALINE, 'FAULT_RESOLVED']]
+      );
+    });
+
+    it('a push failure never fails the API request', async () => {
+      push.setExpoClient({
+        chunkPushNotifications: (messages) => [messages],
+        sendPushNotificationsAsync: async () => {
+          throw new Error('Expo is down');
+        },
+        chunkPushNotificationReceiptIds: (ids) => [ids],
+        getPushNotificationReceiptsAsync: async () => ({}),
+      });
+      const fault = await reportFault('METER_ISSUE', 'Push failure test');
+      await push.whenPushIdle();
+      assert.ok(fault.id);
+    });
+  });
+
   describe('invalid input and error handling', () => {
     it('rejects a fault without a category (400 with field details)', async () => {
       const res = await call('POST', '/faults', { token: tokens.aline, body: { description: 'no category' } });
