@@ -21,13 +21,17 @@ export function OutlineButton({ label, onPress, style }) {
   );
 }
 
+/** The API client reports status 0 when the server cannot be reached or does not answer in time. */
+export const isOffline = (error) => error?.status === 0;
+
 export function ErrorState({ error, onRetry }) {
+  const offline = isOffline(error);
   return (
     <View accessibilityRole="alert" style={styles.errorBox}>
       <View style={styles.errorBody}>
-        <Feather name="alert-triangle" size={20} color={colors.danger} style={{ marginTop: 2 }} />
+        <Feather name={offline ? 'wifi-off' : 'alert-triangle'} size={20} color={colors.danger} style={{ marginTop: 2 }} />
         <View style={{ flex: 1 }}>
-          <Text style={styles.errorTitle}>This did not load</Text>
+          <Text style={styles.errorTitle}>{offline ? 'No connection' : 'This did not load'}</Text>
           <Text style={styles.errorMessage}>{error?.message || 'Something went wrong.'}</Text>
         </View>
       </View>
@@ -67,7 +71,25 @@ export function Async({ state, label, children }) {
   if (state.loading && !state.data) return <Loading label={label} />;
   if (state.error) return <ErrorState error={state.error} onRetry={state.reload} />;
   if (!state.data) return null;
-  return children(state.data);
+  return (
+    <>
+      {state.offline ? <OfflineStrip onRetry={state.reload} /> : null}
+      {children(state.data)}
+    </>
+  );
+}
+
+/** Shown above already-loaded content when a refresh fails because the connection is down. */
+export function OfflineStrip({ onRetry }) {
+  return (
+    <View accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.offline}>
+      <Feather name="wifi-off" size={16} color={colors.ink} />
+      <Text style={styles.offlineText}>No connection. Showing the last update.</Text>
+      <Pressable accessibilityRole="button" onPress={onRetry} hitSlop={8}>
+        <Text style={styles.offlineAction}>Try again</Text>
+      </Pressable>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -81,6 +103,9 @@ const styles = StyleSheet.create({
   errorTitle: { fontFamily: fonts.black, fontSize: 16, textTransform: 'uppercase', color: colors.ink },
   errorMessage: { marginTop: 4, fontFamily: fonts.regular, fontSize: 14, color: colors.ink },
   errorFooter: { borderTopWidth: 1, borderTopColor: colors.danger, padding: 12 },
+  offline: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: colors.ink, backgroundColor: colors.voltSoft, paddingHorizontal: 12, paddingVertical: 10 },
+  offlineText: { flex: 1, fontFamily: fonts.semibold, fontSize: 13, color: colors.ink },
+  offlineAction: { fontFamily: fonts.mono, fontSize: 11, letterSpacing: 0.9, textTransform: 'uppercase', color: colors.ink, textDecorationLine: 'underline' },
   emptyBox: { alignItems: 'center' },
   emptyTitle: { marginTop: 12, fontFamily: fonts.black, fontSize: 16, textTransform: 'uppercase', color: colors.ink, textAlign: 'center' },
   emptyText: { marginTop: 4, fontFamily: fonts.regular, fontSize: 14, color: colors.muted, textAlign: 'center' },
