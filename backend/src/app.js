@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.routes.js';
 import faultRoutes from './routes/faults.routes.js';
 import technicianRoutes from './routes/technicians.routes.js';
 import notificationRoutes from './routes/notifications.routes.js';
+import deviceRoutes from './routes/devices.routes.js';
 import miscRoutes from './routes/misc.routes.js';
 import { errorHandler, notFoundHandler } from './middleware/error.js';
 
@@ -29,6 +30,7 @@ export function createApp() {
   app.use('/api/faults', faultRoutes);
   app.use('/api/technicians', technicianRoutes);
   app.use('/api/notifications', notificationRoutes);
+  app.use('/api/devices', deviceRoutes);
   app.use('/api', miscRoutes);
 
   // 3. Nothing matched: 404, then any error that happened above
