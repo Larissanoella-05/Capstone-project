@@ -75,7 +75,7 @@ const openFaults = [
 async function main() {
   console.log('Clearing existing data…');
   await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "Notification", "TechnicianLocation", "FaultStatusHistory", "FaultReport", "ServiceLocation", "ServiceCoordinator", "Technician", "Customer", "User" RESTART IDENTITY CASCADE'
+    'TRUNCATE TABLE "DeviceToken", "Notification", "TechnicianLocation", "FaultStatusHistory", "FaultReport", "ServiceLocation", "ServiceCoordinator", "Technician", "Customer", "User" RESTART IDENTITY CASCADE'
   );
 
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
