@@ -6,12 +6,15 @@ import { readFileSync } from 'node:fs';
 import * as format from './format.js';
 import * as backend from '../../../backend/src/utils/constants.js';
 
-const read = (relative) => readFileSync(new URL(relative, import.meta.url));
+// Git stores both copies with the same line endings, but on Windows a checkout may turn one into CRLF.
+// Compare the text without line-ending differences, so only a real change in content fails.
+const read = (relative) => readFileSync(new URL(relative, import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 
 describe('format.js shared with the mobile app', () => {
-  it('is byte-identical in frontend and mobile', () => {
-    assert.ok(
-      read('./format.js').equals(read('../../../mobile/src/lib/format.js')),
+  it('has the same content in frontend and mobile', () => {
+    assert.equal(
+      read('../../../mobile/src/lib/format.js'),
+      read('./format.js'),
       'mobile/src/lib/format.js differs from frontend/src/lib/format.js'
     );
   });
