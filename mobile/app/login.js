@@ -1,5 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'expo-router';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Eyebrow } from '../src/components/Bits.js';
@@ -20,6 +21,7 @@ const SLOW_AFTER_MS = 5000;
 export default function Login() {
   const { login } = useAuth();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   const [role, setRole] = useState(ROLES[0]);
   const [email, setEmail] = useState(ROLES[0].email);
@@ -66,22 +68,21 @@ export default function Login() {
   }
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.white }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
-        <View style={[styles.hero, { paddingTop: insets.top + 24 }]}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.white }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+        bounces={false}
+        overScrollMode="never"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={[styles.hero, { paddingTop: insets.top + 16 }]}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => router.back()} style={styles.back}>
+            <Feather name="arrow-left" size={22} color={colors.white} />
+          </Pressable>
           <View style={styles.brandRow}>
             <LogoMark inverse />
             <Text style={styles.brandText}>Umuriro</Text>
-          </View>
-          <Eyebrow style={{ color: colors.volt, marginTop: 40 }}>Electricity fault response</Eyebrow>
-          <Text style={styles.headline}>Report.{'\n'}Locate.{'\n'}<Text style={{ color: colors.volt }}>Respond.</Text></Text>
-          <View style={styles.facts}>
-            {[['Pilot area', 'Ndera Sector'], ['Real faults', 'Call 2727']].map(([label, value], index) => (
-              <View key={label} style={[styles.fact, index > 0 && styles.factDivider]}>
-                <Eyebrow style={{ color: colors.ash }}>{label}</Eyebrow>
-                <Text style={styles.factValue}>{value}</Text>
-              </View>
-            ))}
           </View>
         </View>
 
@@ -169,18 +170,14 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
-  hero: { backgroundColor: colors.ink, paddingHorizontal: 24, paddingBottom: 32 },
+  hero: { backgroundColor: colors.ink, paddingHorizontal: 24, paddingBottom: 20, flexDirection: 'row', alignItems: 'center', gap: 16 },
+  back: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.steel },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   brandText: { fontFamily: fonts.black, fontSize: 18, textTransform: 'uppercase', color: colors.white },
-  headline: { marginTop: 20, fontFamily: fonts.black, fontSize: 52, lineHeight: 50, letterSpacing: -1, textTransform: 'uppercase', color: colors.white },
-  facts: { marginTop: 32, flexDirection: 'row', borderWidth: 1, borderColor: colors.steel },
-  fact: { flex: 1, padding: 12 },
-  factDivider: { borderLeftWidth: 1, borderLeftColor: colors.steel },
-  factValue: { marginTop: 4, fontFamily: fonts.bold, fontSize: 14, color: colors.white },
-  form: { padding: 24, gap: 24 },
+  form: { padding: 24, gap: 20 },
   formTitle: { marginTop: 8, fontFamily: fonts.black, fontSize: 40, lineHeight: 40, textTransform: 'uppercase', color: colors.ink },
   roles: { flexDirection: 'row', borderWidth: 1, borderColor: colors.ink },
-  role: { flex: 1, minHeight: 88, padding: 12, justifyContent: 'space-between' },
+  role: { flex: 1, minHeight: 64, padding: 12, justifyContent: 'space-between' },
   roleDivider: { borderLeftWidth: 1, borderLeftColor: colors.ink },
   roleLabel: { fontFamily: fonts.black, fontSize: 14, textTransform: 'uppercase', color: colors.ink },
   hint: { fontFamily: fonts.regular, fontSize: 14, color: colors.muted },
