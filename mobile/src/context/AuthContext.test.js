@@ -1,5 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import { api, tokenStore } from '../lib/api.js';
+import { getRegisteredToken, setRegisteredToken } from '../lib/deviceToken.js';
 import { AuthProvider, HOME_BY_ROLE, useAuth } from './AuthContext.js';
 
 jest.mock('../lib/api.js', () => {
@@ -96,6 +97,58 @@ describe('AuthContext', () => {
 
     expect(result.current.user).toBeNull();
     expect(await tokenStore.get()).toBeNull();
+  });
+
+  it('unregisters this phone for pushes before signing out', async () => {
+    api.mockResolvedValue({ token: 'x', user: user('CUSTOMER') });
+    const { result } = await renderAuth();
+    await act(async () => {
+      await result.current.login('t@demo.rw', 'demo1234');
+    });
+    setRegisteredToken('ExponentPushToken[abc]');
+    api.mockClear();
+
+    await act(async () => {
+      await result.current.logout();
+    });
+
+    expect(api).toHaveBeenCalledWith('/devices', { method: 'DELETE', body: { token: 'ExponentPushToken[abc]' } });
+    expect(getRegisteredToken()).toBeNull();
+    expect(result.current.user).toBeNull();
+  });
+
+  it('still signs out when unregistering fails', async () => {
+    api.mockResolvedValue({ token: 'x', user: user('CUSTOMER') });
+    const { result } = await renderAuth();
+    await act(async () => {
+      await result.current.login('t@demo.rw', 'demo1234');
+    });
+    setRegisteredToken('ExponentPushToken[abc]');
+    api.mockRejectedValue(new Error('offline'));
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    await act(async () => {
+      await result.current.logout();
+    });
+
+    expect(result.current.user).toBeNull();
+    expect(await tokenStore.get()).toBeNull();
+  });
+
+  it('does not call the devices endpoint when no push token was registered', async () => {
+    api.mockResolvedValue({ token: 'x', user: user('CUSTOMER') });
+    const { result } = await renderAuth();
+    await act(async () => {
+      await result.current.login('t@demo.rw', 'demo1234');
+    });
+    setRegisteredToken(null);
+    api.mockClear();
+
+    await act(async () => {
+      await result.current.logout();
+    });
+
+    expect(api).not.toHaveBeenCalled();
   });
 
   it('has a home route for the two mobile roles only', () => {
