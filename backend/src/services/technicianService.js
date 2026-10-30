@@ -2,6 +2,7 @@ import { prisma } from '../lib/prisma.js';
 import { badRequest, notFound } from '../utils/httpError.js';
 import { distanceKm } from '../utils/geo.js';
 import { ACTIVE_JOB_STATUSES } from '../utils/constants.js';
+import { technicianRanker } from '../domain/TechnicianRanker.js';
 
 const technicianInclude = {
   user: { select: { id: true, name: true, phone: true, email: true } },
@@ -56,11 +57,8 @@ export async function listTechnicians({ faultId } = {}) {
   const technicians = await prisma.technician.findMany({ include: technicianInclude });
   const list = technicians.map((technician) => serializeTechnician(technician, target));
 
-  list.sort((a, b) => {
-    if (target) return (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity);
-    return a.name.localeCompare(b.name);
-  });
-  return list;
+  // Available first, then nearest, then least busy (see TechnicianRanker).
+  return technicianRanker.rank(list, { hasTarget: Boolean(target) });
 }
 
 export async function getTechnician(id) {

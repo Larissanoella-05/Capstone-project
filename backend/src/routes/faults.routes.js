@@ -1,53 +1,12 @@
 import { Router } from 'express';
-import { z } from 'zod';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { asyncHandler, badRequest } from '../utils/httpError.js';
 import * as faults from '../services/faultService.js';
+import { assignSchema, createSchema, statusSchema, updateSchema } from '../validators/fault.schemas.js';
 
 const router = Router();
 router.use(requireAuth);
-
-const CATEGORIES = ['POWER_OUTAGE', 'LOW_VOLTAGE', 'DAMAGED_CONNECTION', 'METER_ISSUE', 'OTHER'];
-const PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
-const STATUSES = ['ON_THE_WAY', 'ARRIVED', 'WORKING', 'RESOLVED', 'CANCELLED'];
-const OUTCOMES = ['SUPPLY_RESTORED', 'TEMPORARY_REPAIR', 'NO_FAULT_FOUND', 'REFERRED'];
-
-const optionalText = (max) =>
-  z.string().trim().max(max, `Keep this under ${max} characters.`).optional().or(z.literal('').transform(() => undefined));
-
-const createSchema = z.object({
-  category: z.enum(CATEGORIES, { errorMap: () => ({ message: 'Choose a fault category.' }) }),
-  description: optionalText(1000),
-  contactPhone: optionalText(30),
-  serviceLocationId: z.coerce.number().int().positive().optional(),
-  photo: z
-    .string()
-    .startsWith('data:image/', 'The photo must be an image file.')
-    .max(1_500_000, 'The photo is too large. Choose one under 1 MB.')
-    .optional()
-    .nullable(),
-});
-
-const updateSchema = z.object({
-  priority: z.enum(PRIORITIES, { errorMap: () => ({ message: 'Choose a valid priority.' }) }),
-});
-
-const statusSchema = z.object({
-  status: z.enum(STATUSES, { errorMap: () => ({ message: 'Choose a valid status.' }) }),
-  note: optionalText(500),
-  outcome: z.enum(OUTCOMES).optional(),
-  resolutionNote: optionalText(1000),
-  workCompleted: optionalText(1000),
-  clarificationContacts: z.coerce.number().int().min(0).max(50).optional(),
-});
-
-const assignSchema = z.object({
-  technicianId: z.coerce
-    .number({ invalid_type_error: 'Choose a technician.' })
-    .int()
-    .positive('Choose a technician.'),
-});
 
 function idParam(req) {
   const id = Number(req.params.id);

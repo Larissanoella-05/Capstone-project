@@ -73,6 +73,20 @@ model User {
   coordinator   ServiceCoordinator?
   notifications Notification[]
   statusChanges FaultStatusHistory[]
+  deviceTokens  DeviceToken[]
+}
+
+/// An Expo push token for one phone. A token belongs to one user at a time: signing in on a shared phone moves it.
+model DeviceToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  platform  String   @default("android")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model Customer {

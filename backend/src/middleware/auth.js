@@ -3,8 +3,8 @@ import { env } from '../config/env.js';
 import { prisma } from '../lib/prisma.js';
 import { asyncHandler, forbidden, unauthorized } from '../utils/httpError.js';
 
-export function signToken(user) {
-  return jwt.sign({ sub: user.id, role: user.role }, env.jwtSecret, { expiresIn: env.jwtExpiresIn });
+export function signToken(user, { expiresIn = env.jwtExpiresIn } = {}) {
+  return jwt.sign({ sub: user.id, role: user.role }, env.jwtSecret, { expiresIn });
 }
 
 /**

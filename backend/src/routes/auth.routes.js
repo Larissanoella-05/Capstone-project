@@ -1,17 +1,13 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
-import { z } from 'zod';
+import { env } from '../config/env.js';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth, signToken } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import { loginSchema } from '../validators/auth.schemas.js';
 import { asyncHandler, unauthorized } from '../utils/httpError.js';
 
 const router = Router();
-
-const loginSchema = z.object({
-  email: z.string({ required_error: 'Enter your email address.' }).trim().toLowerCase().email('Enter a valid email address.'),
-  password: z.string({ required_error: 'Enter your password.' }).min(1, 'Enter your password.'),
-});
 
 function publicUser(user) {
   return {
@@ -31,7 +27,7 @@ router.post(
   '/login',
   validate(loginSchema),
   asyncHandler(async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, client } = req.body;
     const user = await prisma.user.findUnique({
       where: { email },
       include: { customer: true, technician: true, coordinator: true },
@@ -41,7 +37,8 @@ router.post(
     const passwordMatches = user ? await bcrypt.compare(password, user.passwordHash) : false;
     if (!passwordMatches) throw unauthorized('The email or password is incorrect.');
 
-    res.json({ token: signToken(user), user: publicUser(user) });
+    const expiresIn = client === 'mobile' ? env.jwtExpiresInMobile : env.jwtExpiresIn;
+    res.json({ token: signToken(user, { expiresIn }), user: publicUser(user) });
   })
 );
 
