@@ -40,6 +40,9 @@ jobs:
           DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
       - name: Unit tests
         run: npm test
+        env:
+          # Some unit tests import modules that load config/env.js, which requires DATABASE_URL.
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
       - name: Integration tests (API + PostgreSQL)
         run: npm run test:integration
 
