@@ -36,11 +36,13 @@ export default function Tracking() {
               <h1 className="display mt-2 text-3xl">{CUSTOMER_HEADLINE[fault.status]}</h1>
             </div>
 
+            <div className="grid gap-5 lg:grid-cols-5 lg:items-start lg:gap-6">
+            <div className="flex min-w-0 flex-col gap-5 lg:col-span-3">
             <section className="panel">
               <MapView
                 markers={markers}
                 lines={lines}
-                className="h-64"
+                className="h-64 md:h-96 lg:h-[30rem]"
                 ariaLabel="Map showing your service location, the technician and the link between them"
               />
               <div className="grid grid-cols-2 border-t border-ink">
@@ -60,7 +62,9 @@ export default function Tracking() {
                 </div>
               )}
             </section>
+            </div>
 
+            <div className="flex min-w-0 flex-col gap-5 lg:col-span-2">
             <section className="panel">
               <div className="panel-head">Response timeline</div>
               <Timeline fault={fault} audience="customer" />
@@ -97,6 +101,8 @@ export default function Tracking() {
                 {fault.photo && <img src={fault.photo} alt="Photo attached to the report" className="max-h-64 w-full border border-line object-cover" />}
               </div>
             </section>
+            </div>
+            </div>
           </>
         );
       }}
