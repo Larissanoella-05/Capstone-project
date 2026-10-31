@@ -1,41 +1,39 @@
-This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
+# Mobile app (Expo, Android): agent instructions
 
-## Expo has changed — do not trust your training data
+The repo-wide rules in `../AGENTS.md` apply here (plan first, `npm run check` before "done").
+This file only adds what is specific to `mobile/`.
 
-Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
+Expo SDK 58, React Native 0.88, **plain JavaScript** (no TypeScript), Jest with `jest-expo`.
 
-1. Read the major version of the `expo` package in `package.json`.
-2. Fetch the matching versioned docs: `https://docs.expo.dev/versions/v<major>.0.0/`
-3. For anything else, fetch https://docs.expo.dev/llms.txt — an index of all Expo docs with corrections to common LLM misconceptions. Follow its links to the specific page you need; never answer from memory.
+## Expo changes every release: do not trust memory
 
-## Commands
+Before writing code that touches an Expo, EAS or React Native API:
 
-Use `bunx` instead of `npx` if the project uses bun (`bun.lock` present).
+1. Confirm the `expo` major version in `package.json` (currently 58).
+2. Read the matching docs: `https://docs.expo.dev/versions/v58.0.0/`.
+3. For anything else start from `https://docs.expo.dev/llms.txt`. Do not answer from memory.
 
-```bash
-npx expo install <package>  # ALWAYS use instead of npm/yarn/pnpm/bun add — resolves SDK-compatible versions
-npx expo start              # start the dev server
-npx expo lint               # lint
-npx tsc --noEmit            # typecheck
-npx expo-doctor             # diagnose dependency and config issues
-npx expo install --fix      # fix incompatible package versions
-```
+## Structure
 
-Run lint and typecheck before declaring any task done.
-
-## Navigation & Routing
-
-- Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.
-- Import `Link`, `router`, and `useLocalSearchParams` from `expo-router`.
-- Docs: https://docs.expo.dev/router/introduction.md
-
-## Building with EAS
-
-Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli <command>` in Bun projects, or `npx eas-cli@latest <command>` otherwise; substitute that for bare `eas` in docs examples.
-Docs: https://docs.expo.dev/eas/index.md
+- `app/`: Expo Router routes. Every file is a screen and `_layout.js` files define navigators.
+  Roles live in `app/customer/` and `app/technician/`; `login.js` and `welcome.js` are public.
+- `src/components/`: shared UI. `src/context/`: auth, notifications, tracking, toast.
+  `src/hooks/`: `useApi` (polling) and push registration. `src/lib/`: API client, push, location, photos,
+  secure token storage, map helpers. `src/theme.js`: colours and type.
+- Keep non-route code out of `app/`.
+- API calls go through `src/lib/api.js`, with data loaded through `useApi`. The base URL comes from
+  `EXPO_PUBLIC_API_URL` (see `.env.example` and `eas.json`).
+- The JWT is kept in `expo-secure-store` through `src/lib/tokenStore.js`, never in plain storage.
 
 ## Rules
 
-- If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
-- Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
-- Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+- Add packages with `npx expo install <package>` so the SDK-compatible version is chosen.
+  Then run `npx expo-doctor`; CI runs it too.
+- `android/` and `ios/` are generated (Continuous Native Generation). Never create or edit them by hand.
+  Configure native behaviour in `app.config.js` and config plugins.
+- Native modules need a development build, not Expo Go: `eas build --profile development`.
+- Prefer Expo modules over third-party libraries.
+- Location is foreground-only and photos are downscaled before upload. Keep both behaviours.
+- Tests: `npm test` (Jest). Mock native modules in the test file or `jest.setup.js`. Never assign to an
+  imported module; use `jest.mock` or `jest.replaceProperty`.
+- Before declaring a task done, `npx expo export --platform android` must still bundle (CI runs it).
