@@ -46,12 +46,17 @@ describe('api client', () => {
       },
     });
 
-    await expect(api('/faults')).rejects.toMatchObject({ status: 502, message: 'The request failed (502).' });
+    await expect(api('/faults')).rejects.toMatchObject({
+      status: 502,
+      message: 'The request failed (502).',
+    });
   });
 
   it('uses the message and details from the API error body', async () => {
     const details = [{ field: 'email', message: 'Enter a valid email address.' }];
-    global.fetch.mockResolvedValue(jsonResponse(400, { error: { message: 'Check the form.', details } }));
+    global.fetch.mockResolvedValue(
+      jsonResponse(400, { error: { message: 'Check the form.', details } })
+    );
 
     const error = await api('/auth/login', { method: 'POST', body: {} }).catch((e) => e);
 
@@ -64,7 +69,9 @@ describe('api client', () => {
     const handler = jest.fn();
     setUnauthorizedHandler(handler);
     await tokenStore.set('stale');
-    global.fetch.mockResolvedValue(jsonResponse(401, { error: { message: 'Your session has expired.' } }));
+    global.fetch.mockResolvedValue(
+      jsonResponse(401, { error: { message: 'Your session has expired.' } })
+    );
 
     await expect(api('/faults')).rejects.toMatchObject({ status: 401 });
 
@@ -76,7 +83,9 @@ describe('api client', () => {
     const handler = jest.fn();
     setUnauthorizedHandler(handler);
     await tokenStore.set('keep');
-    global.fetch.mockResolvedValue(jsonResponse(401, { error: { message: 'The email or password is incorrect.' } }));
+    global.fetch.mockResolvedValue(
+      jsonResponse(401, { error: { message: 'The email or password is incorrect.' } })
+    );
 
     await expect(api('/auth/login', { method: 'POST', body: {} })).rejects.toMatchObject({
       status: 401,
@@ -98,7 +107,9 @@ describe('api client', () => {
     global.fetch.mockImplementation(
       (_url, { signal }) =>
         new Promise((_resolve, reject) => {
-          signal.addEventListener('abort', () => reject(Object.assign(new Error('aborted'), { name: 'AbortError' })));
+          signal.addEventListener('abort', () =>
+            reject(Object.assign(new Error('aborted'), { name: 'AbortError' }))
+          );
         })
     );
 
@@ -116,7 +127,9 @@ describe('api client', () => {
     global.fetch.mockImplementation(
       (_url, { signal }) =>
         new Promise((_resolve, reject) => {
-          signal.addEventListener('abort', () => reject(Object.assign(new Error('aborted'), { name: 'AbortError' })));
+          signal.addEventListener('abort', () =>
+            reject(Object.assign(new Error('aborted'), { name: 'AbortError' }))
+          );
         })
     );
 

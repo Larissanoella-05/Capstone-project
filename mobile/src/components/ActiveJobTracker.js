@@ -54,7 +54,10 @@ export default function ActiveJobTracker() {
       lastPosted = { ...fix, postedAt: Date.now() };
       pending = null;
       try {
-        await api('/technicians/me/location', { method: 'POST', body: { ...fix, faultId: trackedId, label: 'Device location' } });
+        await api('/technicians/me/location', {
+          method: 'POST',
+          body: { ...fix, faultId: trackedId, label: 'Device location' },
+        });
       } catch (error) {
         console.warn('[location] could not post position:', error.message);
       }
@@ -75,10 +78,14 @@ export default function ActiveJobTracker() {
       // and give it a single retry once the time limit has passed.
       pending = fix;
       if (!timer && lastPosted) {
-        timer = setTimeout(() => {
-          timer = null;
-          if (!cancelled && pending && shouldPostLocation(lastPosted, pending, Date.now())) post(pending);
-        }, Math.max(0, lastPosted.postedAt + MIN_MS - now) + 50);
+        timer = setTimeout(
+          () => {
+            timer = null;
+            if (!cancelled && pending && shouldPostLocation(lastPosted, pending, Date.now()))
+              post(pending);
+          },
+          Math.max(0, lastPosted.postedAt + MIN_MS - now) + 50
+        );
       }
     };
 
@@ -92,7 +99,9 @@ export default function ActiveJobTracker() {
         if (cancelled) return;
         if (!permission.granted) {
           setStatus('denied');
-          warnOnce('Location is off, so the customer cannot see you on the map. Allow it in Settings.');
+          warnOnce(
+            'Location is off, so the customer cannot see you on the map. Allow it in Settings.'
+          );
           return;
         }
         subscription = await Location.watchPositionAsync(

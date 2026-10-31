@@ -35,25 +35,34 @@ export default function Tracking() {
           const technician = fault.technician;
           const approaching = fault.status === 'ON_THE_WAY' || fault.status === 'ASSIGNED';
           const onSite = fault.status === 'ARRIVED' || fault.status === 'WORKING';
-          const canCall = technician?.phone && fault.status !== 'RESOLVED' && fault.status !== 'CANCELLED';
+          const canCall =
+            technician?.phone && fault.status !== 'RESOLVED' && fault.status !== 'CANCELLED';
           return (
             <>
               <View style={styles.hero}>
                 <Eyebrow style={{ color: colors.muted }}>
                   Fault #{fault.reference} · {CATEGORY_LABEL[fault.category]}
                 </Eyebrow>
-                <Text accessibilityRole="header" style={styles.title}>{CUSTOMER_HEADLINE[fault.status]}</Text>
+                <Text accessibilityRole="header" style={styles.title}>
+                  {CUSTOMER_HEADLINE[fault.status]}
+                </Text>
               </View>
 
               <Panel>
                 <MapView markers={markers} lines={lines} height={260} />
                 <View style={styles.cells}>
-                  <Cell label="Technician" style={styles.half}>{technician?.name ?? 'Not assigned yet'}</Cell>
-                  <Cell label="Status" style={[styles.half, styles.leftRule]}>{STATUS_LABEL[fault.status]}</Cell>
+                  <Cell label="Technician" style={styles.half}>
+                    {technician?.name ?? 'Not assigned yet'}
+                  </Cell>
+                  <Cell label="Status" style={[styles.half, styles.leftRule]}>
+                    {STATUS_LABEL[fault.status]}
+                  </Cell>
                   <Cell label="Distance" style={[styles.half, styles.topRule]}>
                     {approaching ? fmtKm(technician?.distanceKm) : onSite ? 'On site' : '—'}
                   </Cell>
-                  <Cell label="Last updated" style={[styles.half, styles.leftRule, styles.topRule]}>{timeAgo(fault.updatedAt)}</Cell>
+                  <Cell label="Last updated" style={[styles.half, styles.leftRule, styles.topRule]}>
+                    {timeAgo(fault.updatedAt)}
+                  </Cell>
                 </View>
                 {canCall ? (
                   <View style={styles.callRow}>
@@ -62,7 +71,8 @@ export default function Tracking() {
                       tone="outline"
                       icon="phone"
                       onPress={async () => {
-                        if (!(await openLink(`tel:${technician.phone.replace(/\s/g, '')}`))) toast('This phone cannot make calls.', 'error');
+                        if (!(await openLink(`tel:${technician.phone.replace(/\s/g, '')}`)))
+                          toast('This phone cannot make calls.', 'error');
                       }}
                     />
                   </View>
@@ -91,7 +101,8 @@ export default function Tracking() {
                   <View>
                     <Eyebrow style={{ color: colors.muted }}>Service location</Eyebrow>
                     <Text style={styles.value}>
-                      {locationLine(fault.serviceLocation)} · Meter {fault.serviceLocation.meterNumber}
+                      {locationLine(fault.serviceLocation)} · Meter{' '}
+                      {fault.serviceLocation.meterNumber}
                     </Text>
                   </View>
                   <View>
@@ -103,7 +114,12 @@ export default function Tracking() {
                     <Text style={styles.text}>{fault.description || 'No description given.'}</Text>
                   </View>
                   {fault.photo ? (
-                    <Image source={{ uri: fault.photo }} accessibilityLabel="Photo attached to the report" resizeMode="cover" style={styles.photo} />
+                    <Image
+                      source={{ uri: fault.photo }}
+                      accessibilityLabel="Photo attached to the report"
+                      resizeMode="cover"
+                      style={styles.photo}
+                    />
                   ) : null}
                 </View>
               </Panel>
@@ -117,7 +133,15 @@ export default function Tracking() {
 
 const styles = StyleSheet.create({
   hero: { borderBottomWidth: 1, borderBottomColor: colors.ink, paddingBottom: 16 },
-  title: { marginTop: 8, fontFamily: fonts.black, fontSize: 30, lineHeight: 30, letterSpacing: -0.6, textTransform: 'uppercase', color: colors.ink },
+  title: {
+    marginTop: 8,
+    fontFamily: fonts.black,
+    fontSize: 30,
+    lineHeight: 30,
+    letterSpacing: -0.6,
+    textTransform: 'uppercase',
+    color: colors.ink,
+  },
   cells: { flexDirection: 'row', flexWrap: 'wrap', borderTopWidth: 1, borderTopColor: colors.ink },
   half: { width: '50%' },
   leftRule: { borderLeftWidth: 1, borderLeftColor: colors.ink },

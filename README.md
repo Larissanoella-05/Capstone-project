@@ -4,14 +4,13 @@
 
 Final-year full-stack capstone project · Pilot area: Ndera Sector, Gasabo District, Kigali
 
-| | |
-|---|---|
-| **GitHub repository** | https://github.com/Larissanoella-05/Capstone-project.git|
-| **Live application** | https://capstone-project-six-inky.vercel.app |
-| **Live API (health check)** | https://capstone-project-as2y.onrender.com/api/health |
-| **Walkthrough video** | _TODO: add the video link_ |
-| **Technical report (PDF)** | _TODO: add the report link_ |
-
+|                             |                                                          |
+| --------------------------- | -------------------------------------------------------- |
+| **GitHub repository**       | https://github.com/Larissanoella-05/Capstone-project.git |
+| **Live application**        | https://capstone-project-six-inky.vercel.app             |
+| **Live API (health check)** | https://capstone-project-as2y.onrender.com/api/health    |
+| **Walkthrough video**       | _TODO: add the video link_                               |
+| **Technical report (PDF)**  | _TODO: add the report link_                              |
 
 > The API runs on Render's free tier, which sleeps after about 15 minutes without traffic. If the live app is slow to sign in, open the health-check link first and wait up to a minute for it to answer.
 
@@ -33,11 +32,11 @@ All three roles read and write the same record through one API and one database,
 
 ### User roles
 
-| Role | Main tasks |
-|---|---|
-| **Customer** | Report a fault (with a photo), follow its progress on a map and timeline, receive notifications. Web and Android |
-| **Service Coordinator** | See all faults, search and filter them, assign the nearest available technician, monitor progress. Web only |
-| **Technician** | See assigned jobs, navigate to the service location, update the status, record the resolution, share live location while on a job. Web and Android |
+| Role                    | Main tasks                                                                                                                                         |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Customer**            | Report a fault (with a photo), follow its progress on a map and timeline, receive notifications. Web and Android                                   |
+| **Service Coordinator** | See all faults, search and filter them, assign the nearest available technician, monitor progress. Web only                                        |
+| **Technician**          | See assigned jobs, navigate to the service location, update the status, record the resolution, share live location while on a job. Web and Android |
 
 ### Fault statuses
 
@@ -45,42 +44,38 @@ All three roles read and write the same record through one API and one database,
 
 Every status change is time-stamped and stored, which makes it possible to measure response times (report to assignment, assignment to arrival, time on site).
 
-
-
 ## 2. Technology stack
 
-| Layer | Technology | Purpose |
-|---|---|---|
-| Frontend | React 19, Vite 8 | User interface and development/build tool |
-| | Tailwind CSS 4 | Styling, using the design system colours and fonts |
-| | React Router 7 | Navigation between screens and role-based access |
-| | Lucide React | Icons |
-| | Leaflet + OpenStreetMap | Maps (no API key or billing needed) |
-| | Recharts | Charts on the analytics page |
-| Backend | Node.js, Express 4 | REST API |
-| | Zod | Request validation |
-| | JSON Web Tokens, bcryptjs | Login tokens and password hashing |
-| Database | PostgreSQL | Relational database |
-| | Prisma 6 | Schema, migrations and database queries |
-| Android app | Expo SDK 58, React Native 0.88, Expo Router | One app for customers and technicians (plain JavaScript, `mobile/`) |
-| | MapLibre + OpenFreeMap | Maps (no API key or billing needed) |
-| | expo-location, expo-image-picker | Technician position (foreground only) and fault photos |
-| | Expo Push Service (`expo-server-sdk`), Firebase Cloud Messaging | Push notifications |
-| | EAS Build | Cloud builds of the installable APK |
-| Tools | Git, GitHub, VS Code, npm | Version control and development |
-
-
+| Layer       | Technology                                                      | Purpose                                                             |
+| ----------- | --------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Frontend    | React 19, Vite 8                                                | User interface and development/build tool                           |
+|             | Tailwind CSS 4                                                  | Styling, using the design system colours and fonts                  |
+|             | React Router 7                                                  | Navigation between screens and role-based access                    |
+|             | Lucide React                                                    | Icons                                                               |
+|             | Leaflet + OpenStreetMap                                         | Maps (no API key or billing needed)                                 |
+|             | Recharts                                                        | Charts on the analytics page                                        |
+| Backend     | Node.js, Express 4                                              | REST API                                                            |
+|             | Zod                                                             | Request validation                                                  |
+|             | JSON Web Tokens, bcryptjs                                       | Login tokens and password hashing                                   |
+| Database    | PostgreSQL                                                      | Relational database                                                 |
+|             | Prisma 6                                                        | Schema, migrations and database queries                             |
+| Android app | Expo SDK 58, React Native 0.88, Expo Router                     | One app for customers and technicians (plain JavaScript, `mobile/`) |
+|             | MapLibre + OpenFreeMap                                          | Maps (no API key or billing needed)                                 |
+|             | expo-location, expo-image-picker                                | Technician position (foreground only) and fault photos              |
+|             | Expo Push Service (`expo-server-sdk`), Firebase Cloud Messaging | Push notifications                                                  |
+|             | EAS Build                                                       | Cloud builds of the installable APK                                 |
+| Tools       | Git, GitHub, VS Code, npm                                       | Version control and development                                     |
 
 ## 3. Technical requirements
 
-| Requirement | Version / detail |
-|---|---|
-| Node.js | 20 or newer (the CI workflow uses 20; development tests ran on 22) |
-| PostgreSQL | 14 or newer (tested on 16) |
-| Browsers | Current Chrome, Edge, Firefox and Safari (desktop and mobile) |
-| Devices | Customer and technician screens are designed for phones (from 360 px wide); the coordinator screens for a laptop or desktop |
-| Network | Internet access for the OpenStreetMap tiles (web) and the OpenFreeMap tiles (Android app) |
-| Android app | An Android phone to install the APK on. The Android version and phone models tested are recorded in [docs/TESTING.md](docs/TESTING.md) |
+| Requirement       | Version / detail                                                                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Node.js           | 20 or newer (the CI workflow uses 20; development tests ran on 22)                                                                                                       |
+| PostgreSQL        | 14 or newer (tested on 16)                                                                                                                                               |
+| Browsers          | Current Chrome, Edge, Firefox and Safari (desktop and mobile)                                                                                                            |
+| Devices           | Customer and technician screens are designed for phones (from 360 px wide); the coordinator screens for a laptop or desktop                                              |
+| Network           | Internet access for the OpenStreetMap tiles (web) and the OpenFreeMap tiles (Android app)                                                                                |
+| Android app       | An Android phone to install the APK on. The Android version and phone models tested are recorded in [docs/TESTING.md](docs/TESTING.md)                                   |
 | External accounts | None needed to run the web app locally (no paid map or SMS keys). The Android app needs a free Expo account to build, and a free Firebase project for push notifications |
 
 ## 4. Setting up the environment and the project
@@ -89,12 +84,12 @@ Every status change is time-stamped and stored, which makes it possible to measu
 
 Install these first and check the versions:
 
-| Tool | Version | Check |
-|---|---|---|
-| [Node.js](https://nodejs.org) (includes npm) | 20 or newer | `node -v` |
+| Tool                                               | Version     | Check            |
+| -------------------------------------------------- | ----------- | ---------------- |
+| [Node.js](https://nodejs.org) (includes npm)       | 20 or newer | `node -v`        |
 | [PostgreSQL](https://www.postgresql.org/download/) | 14 or newer | `psql --version` |
-| [Git](https://git-scm.com) | any recent | `git --version` |
-| [VS Code](https://code.visualstudio.com) | recommended | |
+| [Git](https://git-scm.com)                         | any recent  | `git --version`  |
+| [VS Code](https://code.visualstudio.com)           | recommended |                  |
 
 On Windows, run the commands below in **Git Bash**. Keep the project **outside OneDrive**: OneDrive locks files inside `node_modules` and causes `EPERM` errors.
 
@@ -134,20 +129,20 @@ cp frontend/.env.example frontend/.env
 
 Then edit `backend/.env`:
 
-| Variable | Purpose | Example |
-|---|---|---|
-| `DATABASE_URL` | PostgreSQL connection | `postgresql://postgres:YOUR_PASSWORD@localhost:5432/umuriro?schema=public` |
-| `PORT` | API port | `4000` |
-| `JWT_SECRET` | Signs login tokens: any long random string | |
-| `JWT_EXPIRES_IN` | Web session length | `12h` |
-| `JWT_EXPIRES_IN_MOBILE` | Android app session length (the app sends `client: "mobile"` when signing in) | `30d` |
-| `EXPO_ACCESS_TOKEN` | Optional. Only if "enhanced push security" is on in your Expo account | |
-| `CORS_ORIGIN` | Frontend address allowed to call the API (no trailing slash) | `http://localhost:5173` |
+| Variable                | Purpose                                                                       | Example                                                                    |
+| ----------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `DATABASE_URL`          | PostgreSQL connection                                                         | `postgresql://postgres:YOUR_PASSWORD@localhost:5432/umuriro?schema=public` |
+| `PORT`                  | API port                                                                      | `4000`                                                                     |
+| `JWT_SECRET`            | Signs login tokens: any long random string                                    |                                                                            |
+| `JWT_EXPIRES_IN`        | Web session length                                                            | `12h`                                                                      |
+| `JWT_EXPIRES_IN_MOBILE` | Android app session length (the app sends `client: "mobile"` when signing in) | `30d`                                                                      |
+| `EXPO_ACCESS_TOKEN`     | Optional. Only if "enhanced push security" is on in your Expo account         |                                                                            |
+| `CORS_ORIGIN`           | Frontend address allowed to call the API (no trailing slash)                  | `http://localhost:5173`                                                    |
 
 `frontend/.env`:
 
-| Variable | Purpose | Example |
-|---|---|---|
+| Variable       | Purpose                                                  | Example                 |
+| -------------- | -------------------------------------------------------- | ----------------------- |
 | `VITE_API_URL` | API address, without `/api` and without a trailing slash | `http://localhost:4000` |
 
 The `.env` files contain secrets and are ignored by Git. Only the `.env.example` templates are committed.
@@ -180,18 +175,16 @@ npm run dev
 
 Open http://localhost:5173. To check the API on its own: http://localhost:4000/api/health should return `"database":"connected"`.
 
-
-
 ### Useful commands (in `backend/`)
 
-| Command | What it does |
-|---|---|
-| `npm run dev` | Start the API, restarting on file changes |
-| `npm run db:seed` | Reset the sample data |
-| `npx prisma studio` | Browse the database tables in the browser |
-| `npm test` | Unit tests (no database needed) |
+| Command                    | What it does                                             |
+| -------------------------- | -------------------------------------------------------- |
+| `npm run dev`              | Start the API, restarting on file changes                |
+| `npm run db:seed`          | Reset the sample data                                    |
+| `npx prisma studio`        | Browse the database tables in the browser                |
+| `npm test`                 | Unit tests (no database needed)                          |
 | `npm run test:integration` | API + database tests (needs `TEST_DATABASE_URL`, see §6) |
-| `npm run test:perf` | Load test of the read endpoints against a running API |
+| `npm run test:perf`        | Load test of the read endpoints against a running API    |
 
 ### Project structure
 
@@ -242,23 +235,23 @@ Open http://localhost:5173. To check the API on its own: http://localhost:4000/a
 
 ### Main API endpoints
 
-| Method | Endpoint | Used by |
-|---|---|---|
-| POST | `/api/auth/login` | All (the Android app adds `"client": "mobile"` for a 30-day session) |
-| GET | `/api/faults` · `/api/faults/:id` | All (each role sees only what it may) |
-| POST | `/api/faults` | Customer: report a fault |
-| POST | `/api/faults/:id/assign` | Coordinator: assign a technician |
-| PATCH | `/api/faults/:id/status` | Technician: next stage · Coordinator: cancel |
-| GET | `/api/technicians?faultId=` | Coordinator: technicians ranked available → nearest → least busy, best one flagged `recommended` |
-| POST | `/api/technicians/me/location` | Technician: update position |
-| GET | `/api/notifications` · PATCH `/api/notifications/read-all` · `/:id/read` | Customer, Technician |
-| POST · DELETE | `/api/devices` | Android app: register / remove this phone's push token (sign-in / sign-out) |
+| Method        | Endpoint                                                                 | Used by                                                                                          |
+| ------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| POST          | `/api/auth/login`                                                        | All (the Android app adds `"client": "mobile"` for a 30-day session)                             |
+| GET           | `/api/faults` · `/api/faults/:id`                                        | All (each role sees only what it may)                                                            |
+| POST          | `/api/faults`                                                            | Customer: report a fault                                                                         |
+| POST          | `/api/faults/:id/assign`                                                 | Coordinator: assign a technician                                                                 |
+| PATCH         | `/api/faults/:id/status`                                                 | Technician: next stage · Coordinator: cancel                                                     |
+| GET           | `/api/technicians?faultId=`                                              | Coordinator: technicians ranked available → nearest → least busy, best one flagged `recommended` |
+| POST          | `/api/technicians/me/location`                                           | Technician: update position                                                                      |
+| GET           | `/api/notifications` · PATCH `/api/notifications/read-all` · `/:id/read` | Customer, Technician                                                                             |
+| POST · DELETE | `/api/devices`                                                           | Android app: register / remove this phone's push token (sign-in / sign-out)                      |
 
 ### Mobile app (Android)
 
 `mobile/` is an Expo (React Native) app for **customers and technicians**. It talks to the same API as the web app. Coordinators use the web app; signing in as a coordinator on the phone shows "Coordinators use the web app."
 
-**What you need:** Node 20+, a free [Expo account](https://expo.dev) and an Android phone. You do **not** need Android Studio: the installable app is built in Expo's cloud (EAS). Maps, the camera, location and push are native code, so the app **cannot run in Expo Go**; it needs a *development build* (steps below).
+**What you need:** Node 20+, a free [Expo account](https://expo.dev) and an Android phone. You do **not** need Android Studio: the installable app is built in Expo's cloud (EAS). Maps, the camera, location and push are native code, so the app **cannot run in Expo Go**; it needs a _development build_ (steps below).
 
 #### 1. Install and configure
 
@@ -270,10 +263,10 @@ cp .env.example .env
 
 Edit `mobile/.env` (these values are bundled into the app, so never put a secret in an `EXPO_PUBLIC_*` variable):
 
-| Variable | Purpose | Value |
-|---|---|---|
-| `EXPO_PUBLIC_API_URL` | API address, without `/api` | Live API: `https://capstone-project-as2y.onrender.com` |
-| `EXPO_PUBLIC_MAP_STYLE_URL` | Map style | `https://tiles.openfreemap.org/styles/liberty` (no key or account) |
+| Variable                    | Purpose                     | Value                                                              |
+| --------------------------- | --------------------------- | ------------------------------------------------------------------ |
+| `EXPO_PUBLIC_API_URL`       | API address, without `/api` | Live API: `https://capstone-project-as2y.onrender.com`             |
+| `EXPO_PUBLIC_MAP_STYLE_URL` | Map style                   | `https://tiles.openfreemap.org/styles/liberty` (no key or account) |
 
 Metro reads `.env` when it bundles the JavaScript, so restart it with `--clear` after changing it. The `eas.json` build profiles set `EXPO_PUBLIC_API_URL` for installed builds.
 
@@ -325,7 +318,7 @@ This produces an APK that points at the Render API and runs on its own (no Metro
 
 #### How the technician's location works
 
-While a technician's active job is *On the way*, *Arrived* or *Working* **and the app is open on screen**, the phone shares its position: the first fix is sent at once, then at most one every 15 seconds and only after moving 25 metres or more. The app asks only for foreground location (no background permission). Locking the phone or leaving the app stops the updates; this is a deliberate limit of the prototype and keeps the app out of extra store review.
+While a technician's active job is _On the way_, _Arrived_ or _Working_ **and the app is open on screen**, the phone shares its position: the first fix is sent at once, then at most one every 15 seconds and only after moving 25 metres or more. The app asks only for foreground location (no background permission). Locking the phone or leaving the app stops the updates; this is a deliberate limit of the prototype and keeps the app out of extra store review.
 
 #### Maps
 
@@ -344,16 +337,16 @@ Device behaviour (maps, GPS, camera, push) cannot be unit tested; the manual che
 
 #### Known limits and troubleshooting
 
-| Problem | Cause | Fix |
-|---|---|---|
-| "Cannot reach the server" on the login screen | `EXPO_PUBLIC_API_URL` missing or `localhost`, so the phone calls itself | Create `mobile/.env`, then `npx expo start --dev-client --clear` |
-| "Waking the server…" for up to a minute on first sign-in | Render's free tier sleeps when idle | Wait; the app allows 70 seconds |
-| `TurboModuleRegistry … 'MLRNCameraModule' could not be found` (or another native module) | The installed APK was built before that package was added | Build and install a new development build |
-| Map area says "Map unavailable in this build" | Same as above, for MapLibre | Rebuild the development build |
-| `npm error ECONNRESET` during `npm install` or `expo export` | Unstable network | Retry; `npm cache verify`; check proxy settings |
-| `npx expo install <package>` fails to run npm on Windows | Known quirk on some Windows setups | Run `npm install <package>@<version>` using the version `npx expo-doctor` expects, and add any config plugin to `app.config.js` by hand |
-| No push arrives | Firebase steps above not done, notifications blocked in Android settings, or the phone is an emulator | Check the steps; look for `[push]` lines in the Render logs |
-| The 15-minute push receipt check does not run | It uses an in-process timer and Render's free tier sleeps | Tokens that are invalid at send time are still removed |
+| Problem                                                                                  | Cause                                                                                                 | Fix                                                                                                                                     |
+| ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| "Cannot reach the server" on the login screen                                            | `EXPO_PUBLIC_API_URL` missing or `localhost`, so the phone calls itself                               | Create `mobile/.env`, then `npx expo start --dev-client --clear`                                                                        |
+| "Waking the server…" for up to a minute on first sign-in                                 | Render's free tier sleeps when idle                                                                   | Wait; the app allows 70 seconds                                                                                                         |
+| `TurboModuleRegistry … 'MLRNCameraModule' could not be found` (or another native module) | The installed APK was built before that package was added                                             | Build and install a new development build                                                                                               |
+| Map area says "Map unavailable in this build"                                            | Same as above, for MapLibre                                                                           | Rebuild the development build                                                                                                           |
+| `npm error ECONNRESET` during `npm install` or `expo export`                             | Unstable network                                                                                      | Retry; `npm cache verify`; check proxy settings                                                                                         |
+| `npx expo install <package>` fails to run npm on Windows                                 | Known quirk on some Windows setups                                                                    | Run `npm install <package>@<version>` using the version `npx expo-doctor` expects, and add any config plugin to `app.config.js` by hand |
+| No push arrives                                                                          | Firebase steps above not done, notifications blocked in Android settings, or the phone is an emulator | Check the steps; look for `[push]` lines in the Render logs                                                                             |
+| The 15-minute push receipt check does not run                                            | It uses an in-process timer and Render's free tier sleeps                                             | Tokens that are invalid at send time are still removed                                                                                  |
 
 ---
 
@@ -361,19 +354,17 @@ Device behaviour (maps, GPS, camera, push) cannot be unit tested; the manual che
 
 The application is deployed and publicly reachable:
 
-| Part | Platform | Address |
-|---|---|---|
-| Frontend | **Vercel** | https://capstone-project-six-inky.vercel.app |
-| Backend | **Render** (web service) | https://capstone-project-as2y.onrender.com |
-| Database | **Neon** (hosted PostgreSQL) | Private; reached only by the backend |
+| Part     | Platform                     | Address                                      |
+| -------- | ---------------------------- | -------------------------------------------- |
+| Frontend | **Vercel**                   | https://capstone-project-six-inky.vercel.app |
+| Backend  | **Render** (web service)     | https://capstone-project-as2y.onrender.com   |
+| Database | **Neon** (hosted PostgreSQL) | Private; reached only by the backend         |
 
-| Part | What the platform does |
-|---|---|
-| Frontend | Builds `frontend/` with `npm run build` and serves `dist/` over HTTPS from a global CDN |
-| Backend | Runs `backend/` with `npm start`; checks `/api/health` to confirm the API and database are up |
-| Database | Managed PostgreSQL with encrypted (TLS) connections |
-
-
+| Part     | What the platform does                                                                        |
+| -------- | --------------------------------------------------------------------------------------------- |
+| Frontend | Builds `frontend/` with `npm run build` and serves `dist/` over HTTPS from a global CDN       |
+| Backend  | Runs `backend/` with `npm start`; checks `/api/health` to confirm the API and database are up |
+| Database | Managed PostgreSQL with encrypted (TLS) connections                                           |
 
 ### Steps
 
@@ -394,16 +385,16 @@ The application is deployed and publicly reachable:
 
 ### Production environment variables
 
-| Platform | Variable | Value |
-|---|---|---|
-| Render | `DATABASE_URL` | Neon connection string (secret) |
-| Render | `JWT_SECRET` | Long random string, for example from `openssl rand -hex 32` (secret) |
-| Render | `JWT_EXPIRES_IN` | `12h` |
-| Render | `JWT_EXPIRES_IN_MOBILE` | `30d` (optional: this is the default) |
-| Render | `EXPO_ACCESS_TOKEN` | Optional, only if Expo "enhanced push security" is on (secret) |
-| Render | `CORS_ORIGIN` | `https://capstone-project-six-inky.vercel.app` |
-| Render | `NODE_ENV` | `production` |
-| Vercel | `VITE_API_URL` | `https://capstone-project-as2y.onrender.com` |
+| Platform | Variable                | Value                                                                |
+| -------- | ----------------------- | -------------------------------------------------------------------- |
+| Render   | `DATABASE_URL`          | Neon connection string (secret)                                      |
+| Render   | `JWT_SECRET`            | Long random string, for example from `openssl rand -hex 32` (secret) |
+| Render   | `JWT_EXPIRES_IN`        | `12h`                                                                |
+| Render   | `JWT_EXPIRES_IN_MOBILE` | `30d` (optional: this is the default)                                |
+| Render   | `EXPO_ACCESS_TOKEN`     | Optional, only if Expo "enhanced push security" is on (secret)       |
+| Render   | `CORS_ORIGIN`           | `https://capstone-project-six-inky.vercel.app`                       |
+| Render   | `NODE_ENV`              | `production`                                                         |
+| Vercel   | `VITE_API_URL`          | `https://capstone-project-as2y.onrender.com`                         |
 
 Render sets `PORT` itself. Secrets are stored only on Render and never with a `VITE_` prefix, because Vite copies `VITE_` variables into the code sent to the browser.
 
@@ -423,11 +414,11 @@ Render sets `PORT` itself. Secrets are stored only on Render and never with a `V
 
 ### Issues met during deployment
 
-| Problem | Cause | Fix |
-|---|---|---|
-| Browser error "blocked by CORS policy" | `CORS_ORIGIN` did not exactly match the site's origin | Use the production domain, without `/login` or a trailing slash |
-| Vercel warning about a public prefix | `VITE_API_URL` was marked as a secret | It is a public address by design; saved as a normal (non-secret) variable |
-| First request is slow | Render's free tier sleeps when idle | Open `/api/health` first; a paid instance would stay awake |
+| Problem                                | Cause                                                 | Fix                                                                       |
+| -------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------- |
+| Browser error "blocked by CORS policy" | `CORS_ORIGIN` did not exactly match the site's origin | Use the production domain, without `/login` or a trailing slash           |
+| Vercel warning about a public prefix   | `VITE_API_URL` was marked as a secret                 | It is a public address by design; saved as a normal (non-secret) variable |
+| First request is slow                  | Render's free tier sleeps when idle                   | Open `/api/health` first; a paid instance would stay awake                |
 
 ---
 

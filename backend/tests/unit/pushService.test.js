@@ -1,7 +1,12 @@
 import { afterEach, beforeEach, describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { prisma } from '../../src/lib/prisma.js';
-import { checkReceipts, sendPushForNotifications, setExpoClient, whenPushIdle } from '../../src/services/pushService.js';
+import {
+  checkReceipts,
+  sendPushForNotifications,
+  setExpoClient,
+  whenPushIdle,
+} from '../../src/services/pushService.js';
 
 // The real Expo service is never contacted: a fake client records what would be sent.
 function fakeExpo({ tickets, receipts, sendError } = {}) {
@@ -20,7 +25,14 @@ function fakeExpo({ tickets, receipts, sendError } = {}) {
 }
 
 const TOKEN_A = 'ExponentPushToken[aaaaaaaaaaaaaaaaaaaaaa]';
-const notice = (userId, extra = {}) => ({ userId, faultId: 12, type: 'TECHNICIAN_ASSIGNED', title: 'Technician Assigned', message: 'Jean Claude has been assigned.', ...extra });
+const notice = (userId, extra = {}) => ({
+  userId,
+  faultId: 12,
+  type: 'TECHNICIAN_ASSIGNED',
+  title: 'Technician Assigned',
+  message: 'Jean Claude has been assigned.',
+  ...extra,
+});
 
 let deviceRows;
 let deleted;
@@ -29,7 +41,11 @@ const realDelegate = prisma.deviceToken;
 
 // The Prisma delegate has no own methods to spy on, so swap the whole delegate for a fake one.
 function useDevices(delegate) {
-  Object.defineProperty(prisma, 'deviceToken', { value: delegate, configurable: true, writable: true });
+  Object.defineProperty(prisma, 'deviceToken', {
+    value: delegate,
+    configurable: true,
+    writable: true,
+  });
 }
 
 beforeEach(() => {
@@ -103,16 +119,26 @@ describe('pushService', () => {
     const expo = fakeExpo();
     setExpoClient(expo);
 
-    await sendPushForNotifications([notice(1, { type: 'TECHNICIAN_ASSIGNED' }), notice(2, { type: 'JOB_ASSIGNED', title: 'New Job Assigned' })]);
-
-    assert.deepEqual(expo.sent.map((m) => [m.to, m.data.type]), [
-      [TOKEN_A, 'TECHNICIAN_ASSIGNED'],
-      ['ExponentPushToken[bbbbbbbbbbbbbbbbbbbbbb]', 'JOB_ASSIGNED'],
+    await sendPushForNotifications([
+      notice(1, { type: 'TECHNICIAN_ASSIGNED' }),
+      notice(2, { type: 'JOB_ASSIGNED', title: 'New Job Assigned' }),
     ]);
+
+    assert.deepEqual(
+      expo.sent.map((m) => [m.to, m.data.type]),
+      [
+        [TOKEN_A, 'TECHNICIAN_ASSIGNED'],
+        ['ExponentPushToken[bbbbbbbbbbbbbbbbbbbbbb]', 'JOB_ASSIGNED'],
+      ]
+    );
   });
 
   it('removes a token when the ticket says DeviceNotRegistered', async () => {
-    setExpoClient(fakeExpo({ tickets: [{ status: 'error', message: 'gone', details: { error: 'DeviceNotRegistered' } }] }));
+    setExpoClient(
+      fakeExpo({
+        tickets: [{ status: 'error', message: 'gone', details: { error: 'DeviceNotRegistered' } }],
+      })
+    );
 
     await sendPushForNotifications([notice(1)]);
     await whenPushIdle();
@@ -122,7 +148,11 @@ describe('pushService', () => {
   });
 
   it('removes a token when a later receipt says DeviceNotRegistered', async () => {
-    setExpoClient(fakeExpo({ receipts: { 'ticket-1': { status: 'error', details: { error: 'DeviceNotRegistered' } } } }));
+    setExpoClient(
+      fakeExpo({
+        receipts: { 'ticket-1': { status: 'error', details: { error: 'DeviceNotRegistered' } } },
+      })
+    );
 
     await checkReceipts([{ id: 'ticket-1', to: TOKEN_A }]);
 
@@ -130,7 +160,11 @@ describe('pushService', () => {
   });
 
   it('keeps the token when a receipt reports a different error', async () => {
-    setExpoClient(fakeExpo({ receipts: { 'ticket-1': { status: 'error', details: { error: 'MessageRateExceeded' } } } }));
+    setExpoClient(
+      fakeExpo({
+        receipts: { 'ticket-1': { status: 'error', details: { error: 'MessageRateExceeded' } } },
+      })
+    );
     await checkReceipts([{ id: 'ticket-1', to: TOKEN_A }]);
     assert.deepEqual(deleted, []);
   });

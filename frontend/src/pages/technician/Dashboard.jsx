@@ -1,7 +1,14 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useApi } from '../../hooks/useApi.js';
-import { CATEGORY_LABEL, firstNames, greeting, isOpen, locationLine, timeAgo } from '../../lib/format.js';
+import {
+  CATEGORY_LABEL,
+  firstNames,
+  greeting,
+  isOpen,
+  locationLine,
+  timeAgo,
+} from '../../lib/format.js';
 import { PageHeading } from '../../components/Bits.jsx';
 import { PriorityPill, StatusPill } from '../../components/Pills.jsx';
 import { Async, EmptyState } from '../../components/States.jsx';
@@ -26,7 +33,9 @@ export default function TechnicianDashboard() {
   const faults = state.data?.faults ?? [];
   const active = pickActiveJob(faults);
   const pending = faults.filter((fault) => isOpen(fault) && fault.id !== active?.id);
-  const completedToday = faults.filter((fault) => fault.status === 'RESOLVED' && isToday(fault.resolvedAt));
+  const completedToday = faults.filter(
+    (fault) => fault.status === 'RESOLVED' && isToday(fault.resolvedAt)
+  );
   const assignedToday = faults.filter((fault) => isToday(fault.assignedAt));
 
   return (
@@ -45,17 +54,25 @@ export default function TechnicianDashboard() {
                 <div className="flex flex-col gap-1 p-4">
                   <div className="font-mono text-xs">Fault #{active.reference}</div>
                   <div className="display text-[28px]">{CATEGORY_LABEL[active.category]}</div>
-                  <div className="mt-2 text-base font-bold">{locationLine(active.serviceLocation)}</div>
-                  {active.serviceLocation.landmark && <div className="text-sm">{active.serviceLocation.landmark}</div>}
+                  <div className="mt-2 text-base font-bold">
+                    {locationLine(active.serviceLocation)}
+                  </div>
+                  {active.serviceLocation.landmark && (
+                    <div className="text-sm">{active.serviceLocation.landmark}</div>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 border-t border-ink">
                   <div className="p-3">
                     <div className="eyebrow text-muted">Priority</div>
-                    <div className="mt-1.5"><PriorityPill priority={active.priority} /></div>
+                    <div className="mt-1.5">
+                      <PriorityPill priority={active.priority} />
+                    </div>
                   </div>
                   <div className="border-l border-ink p-3">
                     <div className="eyebrow text-muted">Status</div>
-                    <div className="mt-1.5"><StatusPill status={active.status} /></div>
+                    <div className="mt-1.5">
+                      <StatusPill status={active.status} />
+                    </div>
                   </div>
                 </div>
                 <div className="border-t border-ink p-3">
@@ -71,27 +88,27 @@ export default function TechnicianDashboard() {
             )}
 
             <div className="flex min-w-0 flex-col gap-5">
-            <div className="grid grid-cols-3 gap-px border border-ink bg-ink">
-              {[
-                ["Today's assignments", assignedToday.length],
-                ['Pending jobs', faults.filter(isOpen).length],
-                ['Completed today', completedToday.length],
-              ].map(([label, value]) => (
-                <div key={label} className="flex min-h-24 flex-col justify-between bg-white p-3">
-                  <div className="eyebrow text-muted">{label}</div>
-                  <div className="text-3xl font-black leading-none">{value}</div>
-                </div>
-              ))}
-            </div>
-
-            {pending.length > 0 && (
-              <section className="panel">
-                <div className="panel-head">Pending jobs</div>
-                {pending.map((fault, index) => (
-                  <JobRow key={fault.id} fault={fault} bordered={index > 0} />
+              <div className="grid grid-cols-3 gap-px border border-ink bg-ink">
+                {[
+                  ["Today's assignments", assignedToday.length],
+                  ['Pending jobs', faults.filter(isOpen).length],
+                  ['Completed today', completedToday.length],
+                ].map(([label, value]) => (
+                  <div key={label} className="flex min-h-24 flex-col justify-between bg-white p-3">
+                    <div className="eyebrow text-muted">{label}</div>
+                    <div className="text-3xl font-black leading-none">{value}</div>
+                  </div>
                 ))}
-              </section>
-            )}
+              </div>
+
+              {pending.length > 0 && (
+                <section className="panel">
+                  <div className="panel-head">Pending jobs</div>
+                  {pending.map((fault, index) => (
+                    <JobRow key={fault.id} fault={fault} bordered={index > 0} />
+                  ))}
+                </section>
+              )}
             </div>
           </div>
         )}
@@ -113,7 +130,9 @@ function JobRow({ fault, bordered }) {
       </div>
       <div className="flex shrink-0 flex-col items-end gap-2">
         <StatusPill status={fault.status} />
-        <span className="font-mono text-xs">Priority: {fault.priority[0] + fault.priority.slice(1).toLowerCase()}</span>
+        <span className="font-mono text-xs">
+          Priority: {fault.priority[0] + fault.priority.slice(1).toLowerCase()}
+        </span>
       </div>
     </Link>
   );

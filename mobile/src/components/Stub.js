@@ -8,7 +8,9 @@ export function Stub({ eyebrow, title }) {
   return (
     <Screen>
       <PageHeading eyebrow={eyebrow} title={title} />
-      <Text style={{ fontFamily: fonts.regular, fontSize: 14, color: colors.muted }}>This screen is coming soon.</Text>
+      <Text style={{ fontFamily: fonts.regular, fontSize: 14, color: colors.muted }}>
+        This screen is coming soon.
+      </Text>
     </Screen>
   );
 }

@@ -7,9 +7,30 @@ import { FormError } from '../components/States.jsx';
 
 const DEMO_PASSWORD = 'demo1234';
 const ROLES = [
-  { key: 'CUSTOMER', label: 'Customer', icon: User, email: 'aline@demo.rw', person: 'Aline Mukamana', blurb: 'Report a fault and follow the response.' },
-  { key: 'TECHNICIAN', label: 'Technician', icon: HardHat, email: 'jeanclaude@demo.rw', person: 'Jean Claude Habimana', blurb: 'See assigned jobs, navigate and update the status.' },
-  { key: 'COORDINATOR', label: 'Service Coordinator', icon: RadioTower, email: 'grace@demo.rw', person: 'Grace Ingabire', blurb: 'Receive reports, assign technicians and monitor progress.' },
+  {
+    key: 'CUSTOMER',
+    label: 'Customer',
+    icon: User,
+    email: 'aline@demo.rw',
+    person: 'Aline Mukamana',
+    blurb: 'Report a fault and follow the response.',
+  },
+  {
+    key: 'TECHNICIAN',
+    label: 'Technician',
+    icon: HardHat,
+    email: 'jeanclaude@demo.rw',
+    person: 'Jean Claude Habimana',
+    blurb: 'See assigned jobs, navigate and update the status.',
+  },
+  {
+    key: 'COORDINATOR',
+    label: 'Service Coordinator',
+    icon: RadioTower,
+    email: 'grace@demo.rw',
+    person: 'Grace Ingabire',
+    blurb: 'Receive reports, assign technicians and monitor progress.',
+  },
 ];
 
 export default function Login() {
@@ -38,7 +59,8 @@ export default function Login() {
     event.preventDefault();
     const nextErrors = {};
     if (!email.trim()) nextErrors.email = 'Enter your email address.';
-    else if (!/^\S+@\S+\.\S+$/.test(email.trim())) nextErrors.email = 'Enter a valid email address.';
+    else if (!/^\S+@\S+\.\S+$/.test(email.trim()))
+      nextErrors.email = 'Enter a valid email address.';
     if (!password) nextErrors.password = 'Enter your password.';
     setErrors(nextErrors);
     setFormError('');
@@ -75,8 +97,8 @@ export default function Login() {
             <span className="text-volt">Respond.</span>
           </h1>
           <p className="m-0 max-w-[450px] text-base leading-normal text-line">
-            A fault report linked to the registered service location, passed to a technician on a map, and followed by
-            the customer until it is resolved.
+            A fault report linked to the registered service location, passed to a technician on a
+            map, and followed by the customer until it is resolved.
           </p>
         </div>
 
@@ -102,8 +124,14 @@ export default function Login() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <div className="eyebrow" id="role-label">Demo role</div>
-            <div role="group" aria-labelledby="role-label" className="grid grid-cols-3 border border-ink">
+            <div className="eyebrow" id="role-label">
+              Demo role
+            </div>
+            <div
+              role="group"
+              aria-labelledby="role-label"
+              className="grid grid-cols-3 border border-ink"
+            >
               {ROLES.map((item, index) => {
                 const Icon = item.icon;
                 const active = item.key === role.key;
@@ -129,7 +157,9 @@ export default function Login() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="email" className="eyebrow">Email</label>
+            <label htmlFor="email" className="eyebrow">
+              Email
+            </label>
             <input
               id="email"
               type="email"
@@ -140,11 +170,17 @@ export default function Login() {
               aria-describedby={errors.email ? 'email-error' : undefined}
               onChange={(event) => setEmail(event.target.value)}
             />
-            {errors.email && <span id="email-error" className="text-sm font-semibold text-danger">{errors.email}</span>}
+            {errors.email && (
+              <span id="email-error" className="text-sm font-semibold text-danger">
+                {errors.email}
+              </span>
+            )}
           </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="password" className="eyebrow">Password</label>
+            <label htmlFor="password" className="eyebrow">
+              Password
+            </label>
             <input
               id="password"
               type="password"
@@ -156,10 +192,13 @@ export default function Login() {
               onChange={(event) => setPassword(event.target.value)}
             />
             {errors.password ? (
-              <span id="password-error" className="text-sm font-semibold text-danger">{errors.password}</span>
+              <span id="password-error" className="text-sm font-semibold text-danger">
+                {errors.password}
+              </span>
             ) : (
               <span id="password-help" className="text-sm text-muted">
-                Prototype: every demo account uses the password <span className="font-mono">demo1234</span>.
+                Prototype: every demo account uses the password{' '}
+                <span className="font-mono">demo1234</span>.
               </span>
             )}
           </div>
@@ -171,8 +210,8 @@ export default function Login() {
           </button>
 
           <p className="m-0 border-t border-line pt-4 text-sm text-muted">
-            Tip: open the app in three browser tabs and sign in with a different role in each to watch the workflow
-            update live.
+            Tip: open the app in three browser tabs and sign in with a different role in each to
+            watch the workflow update live.
           </p>
         </form>
       </div>

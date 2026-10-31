@@ -42,7 +42,9 @@ export default function NotificationsList({ intro }) {
     } catch {
       // Opening the fault matters more than the read flag.
     }
-    const route = notification.faultId ? routeForNotification(user.role, { faultId: notification.faultId }) : null;
+    const route = notification.faultId
+      ? routeForNotification(user.role, { faultId: notification.faultId })
+      : null;
     if (route) router.push(route);
   }
 
@@ -55,10 +57,18 @@ export default function NotificationsList({ intro }) {
       <Async state={state} label="Loading notifications">
         {(data) =>
           data.notifications.length === 0 ? (
-            <EmptyState title="No notifications yet">Updates about your faults will appear here.</EmptyState>
+            <EmptyState title="No notifications yet">
+              Updates about your faults will appear here.
+            </EmptyState>
           ) : (
             <>
-              <Button label="Mark all as read" tone="outline" disabled={busy || state.unread === 0} onPress={markAllRead} style={{ alignSelf: 'flex-start' }} />
+              <Button
+                label="Mark all as read"
+                tone="outline"
+                disabled={busy || state.unread === 0}
+                onPress={markAllRead}
+                style={{ alignSelf: 'flex-start' }}
+              />
               <View style={{ gap: 12 }}>
                 {data.notifications.map((notification) => (
                   <Pressable
@@ -70,7 +80,9 @@ export default function NotificationsList({ intro }) {
                   >
                     <View style={styles.top}>
                       <Text style={styles.title}>{notification.title}</Text>
-                      <Eyebrow style={{ color: colors.muted }}>{timeAgo(notification.createdAt)}</Eyebrow>
+                      <Eyebrow style={{ color: colors.muted }}>
+                        {timeAgo(notification.createdAt)}
+                      </Eyebrow>
                     </View>
                     <Text style={styles.message}>{notification.message}</Text>
                     {!notification.read ? (
@@ -95,8 +107,28 @@ const styles = StyleSheet.create({
   read: { borderColor: colors.line, backgroundColor: colors.white },
   unread: { borderColor: colors.ink, backgroundColor: colors.voltSoft },
   top: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 },
-  title: { flex: 1, fontFamily: fonts.black, fontSize: 16, textTransform: 'uppercase', color: colors.ink },
+  title: {
+    flex: 1,
+    fontFamily: fonts.black,
+    fontSize: 16,
+    textTransform: 'uppercase',
+    color: colors.ink,
+  },
   message: { marginTop: 8, fontFamily: fonts.regular, fontSize: 14, color: colors.ink },
-  pill: { alignSelf: 'flex-start', marginTop: 12, borderWidth: 1, borderColor: colors.ink, backgroundColor: colors.volt, paddingHorizontal: 8, paddingVertical: 3 },
-  pillText: { fontFamily: fonts.monoMedium, fontSize: 11, letterSpacing: 0.9, textTransform: 'uppercase', color: colors.ink },
+  pill: {
+    alignSelf: 'flex-start',
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: colors.ink,
+    backgroundColor: colors.volt,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  pillText: {
+    fontFamily: fonts.monoMedium,
+    fontSize: 11,
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
+    color: colors.ink,
+  },
 });

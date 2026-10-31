@@ -19,7 +19,10 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={show}>
       {children}
-      <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-20 z-[1100] flex justify-center px-4 md:bottom-8">
+      <div
+        aria-live="polite"
+        className="pointer-events-none fixed inset-x-0 bottom-20 z-[1100] flex justify-center px-4 md:bottom-8"
+      >
         {toast && (
           <div
             role="status"

@@ -17,7 +17,10 @@ export default function CoordinatorShell() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-white md:flex-row">
-      <nav aria-label="Main" className="flex shrink-0 flex-col border-b border-ink md:w-64 md:border-b-0 md:border-r">
+      <nav
+        aria-label="Main"
+        className="flex shrink-0 flex-col border-b border-ink md:w-64 md:border-b-0 md:border-r"
+      >
         <div className="flex h-[72px] items-center gap-3 border-b border-ink px-5">
           <LogoMark />
           <div>
@@ -40,7 +43,9 @@ export default function CoordinatorShell() {
             >
               {({ isActive }) => (
                 <>
-                  <span className={`font-mono text-[11px] font-medium ${isActive ? 'text-line' : 'text-muted'}`}>
+                  <span
+                    className={`font-mono text-[11px] font-medium ${isActive ? 'text-line' : 'text-muted'}`}
+                  >
                     {String(index + 1).padStart(2, '0')}
                   </span>
                   {link.label}

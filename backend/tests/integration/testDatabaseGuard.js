@@ -63,7 +63,10 @@ function developmentUrls() {
 }
 
 /** Checks 1–4: configuration only, no connection. Returns the validated target. */
-export function checkTestDatabaseConfig(testUrl = process.env.TEST_DATABASE_URL, devUrls = developmentUrls()) {
+export function checkTestDatabaseConfig(
+  testUrl = process.env.TEST_DATABASE_URL,
+  devUrls = developmentUrls()
+) {
   if (!testUrl) {
     throw new UnsafeTestDatabaseError(
       'TEST_DATABASE_URL is not set. Point it at a separate test database, for example:\n' +

@@ -16,7 +16,9 @@ const mockToast = jest.fn();
 jest.mock('../context/ToastContext.js', () => ({ useToast: () => mockToast }));
 
 const mockSetStatus = jest.fn();
-jest.mock('../context/TrackingContext.js', () => ({ useTracking: () => ({ status: 'idle', setStatus: mockSetStatus }) }));
+jest.mock('../context/TrackingContext.js', () => ({
+  useTracking: () => ({ status: 'idle', setStatus: mockSetStatus }),
+}));
 
 let mockFaults = [];
 jest.mock('../hooks/useApi.js', () => ({ useApi: () => ({ data: { faults: mockFaults } }) }));

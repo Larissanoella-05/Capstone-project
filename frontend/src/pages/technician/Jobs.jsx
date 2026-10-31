@@ -17,12 +17,19 @@ export default function Jobs() {
 
   return (
     <>
-      <PageHeading eyebrow={state.data ? `${faults.length} jobs in total` : 'Jobs'} title="My jobs" />
+      <PageHeading
+        eyebrow={state.data ? `${faults.length} jobs in total` : 'Jobs'}
+        title="My jobs"
+      />
 
       <Async state={state} label="Loading your jobs">
         {() => (
           <>
-            <div className="grid grid-cols-2 border border-ink md:max-w-md" role="group" aria-label="Filter jobs">
+            <div
+              className="grid grid-cols-2 border border-ink md:max-w-md"
+              role="group"
+              aria-label="Filter jobs"
+            >
               {[
                 ['OPEN', `Assigned ${open.length}`],
                 ['DONE', `Completed ${completed.length}`],
@@ -51,11 +58,16 @@ export default function Jobs() {
               <ul className="m-0 grid list-none gap-3 p-0 md:grid-cols-2 2xl:grid-cols-3">
                 {visible.map((fault) => (
                   <li key={fault.id}>
-                    <Link to={`/technician/jobs/${fault.id}`} className="panel block no-underline hover:bg-paper">
+                    <Link
+                      to={`/technician/jobs/${fault.id}`}
+                      className="panel block no-underline hover:bg-paper"
+                    >
                       <div className="flex items-start justify-between gap-3 p-4">
                         <div>
                           <div className="font-mono text-xs">#{fault.reference}</div>
-                          <div className="mt-1 text-lg font-black uppercase">{CATEGORY_LABEL[fault.category]}</div>
+                          <div className="mt-1 text-lg font-black uppercase">
+                            {CATEGORY_LABEL[fault.category]}
+                          </div>
                           <div className="mt-1 text-sm">{locationLine(fault.serviceLocation)}</div>
                         </div>
                         <StatusPill status={fault.status} />
@@ -63,7 +75,9 @@ export default function Jobs() {
                       <div className="flex items-center justify-between gap-3 border-t border-ink px-4 py-2.5">
                         <PriorityPill priority={fault.priority} withLabel />
                         <span className="font-mono text-xs">
-                          {tab === 'OPEN' ? `Reported ${fmtDateTime(fault.reportedAt)}` : `Resolved ${fmtDateTime(fault.resolvedAt ?? fault.cancelledAt)}`}
+                          {tab === 'OPEN'
+                            ? `Reported ${fmtDateTime(fault.reportedAt)}`
+                            : `Resolved ${fmtDateTime(fault.resolvedAt ?? fault.cancelledAt)}`}
                         </span>
                       </div>
                     </Link>
@@ -73,7 +87,9 @@ export default function Jobs() {
             )}
 
             {tab === 'OPEN' && visible.length > 0 && (
-              <p className="m-0 text-sm text-muted">New jobs assigned by the service coordinator appear here automatically.</p>
+              <p className="m-0 text-sm text-muted">
+                New jobs assigned by the service coordinator appear here automatically.
+              </p>
             )}
           </>
         )}

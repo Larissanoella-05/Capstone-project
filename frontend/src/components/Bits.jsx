@@ -12,7 +12,9 @@ export function KeyRow({ label, children, mono = false, last = false }) {
   return (
     <div className={`flex justify-between gap-4 py-2.5 ${last ? '' : 'border-b border-line'}`}>
       <span className="eyebrow shrink-0 leading-5 text-muted">{label}</span>
-      <span className={`text-right text-sm ${mono ? 'font-mono font-medium' : 'font-semibold'}`}>{children}</span>
+      <span className={`text-right text-sm ${mono ? 'font-mono font-medium' : 'font-semibold'}`}>
+        {children}
+      </span>
     </div>
   );
 }
@@ -51,7 +53,11 @@ export function StageBar({ status }) {
             <div
               key={stage}
               className={`h-11 p-2 ${index > 0 ? 'border-l' : ''} ${
-                done ? 'border-white bg-ink text-white' : active ? 'border-ink bg-volt' : 'border-ink text-muted'
+                done
+                  ? 'border-white bg-ink text-white'
+                  : active
+                    ? 'border-ink bg-volt'
+                    : 'border-ink text-muted'
               }`}
             >
               {String(index + 1).padStart(2, '0')}
@@ -62,7 +68,7 @@ export function StageBar({ status }) {
       <div className="eyebrow mt-2">
         {current >= 0
           ? `Stage ${current + 1} of ${STAGES.length} · ${STATUS_LABEL[status]}`
-          : STATUS_LABEL[status] ?? status}
+          : (STATUS_LABEL[status] ?? status)}
       </div>
     </div>
   );
@@ -83,7 +89,11 @@ export function Timeline({ fault, audience = 'customer' }) {
         const done = Boolean(time) && (index < current || fault.status === 'RESOLVED');
         const active = index === current && fault.status !== 'RESOLVED';
         return (
-          <li key={stage} aria-current={active ? 'step' : undefined} className="flex items-center gap-3">
+          <li
+            key={stage}
+            aria-current={active ? 'step' : undefined}
+            className="flex items-center gap-3"
+          >
             <span
               className={`flex h-7 w-7 shrink-0 items-center justify-center border ${
                 done ? 'border-ink bg-ink' : active ? 'border-ink bg-volt' : 'border-line bg-white'
@@ -94,7 +104,11 @@ export function Timeline({ fault, audience = 'customer' }) {
             </span>
             <span className={`flex-1 text-sm ${done || active ? 'font-bold' : 'text-muted'}`}>
               {labels[stage]}
-              {active && <span className="eyebrow mt-0.5 block text-[10px] font-normal text-muted">Current stage</span>}
+              {active && (
+                <span className="eyebrow mt-0.5 block text-[10px] font-normal text-muted">
+                  Current stage
+                </span>
+              )}
             </span>
             <span className="font-mono text-xs">{fmtTime(time)}</span>
           </li>

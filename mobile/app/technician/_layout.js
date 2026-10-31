@@ -10,10 +10,19 @@ const hidden = { href: null };
 function TechnicianTabs() {
   const { unread } = useNotifications();
   return (
-    <Tabs backBehavior="history" screenOptions={{ ...tabScreenOptions, header: () => <AppHeader base="/technician" unread={unread} /> }}>
+    <Tabs
+      backBehavior="history"
+      screenOptions={{
+        ...tabScreenOptions,
+        header: () => <AppHeader base="/technician" unread={unread} />,
+      }}
+    >
       <Tabs.Screen name="index" options={{ tabBarLabel: tabLabel('Home') }} />
       <Tabs.Screen name="jobs" options={{ tabBarLabel: tabLabel('Jobs') }} />
-      <Tabs.Screen name="notifications" options={{ tabBarLabel: tabLabel('Alerts'), tabBarBadge: unread > 0 ? unread : undefined }} />
+      <Tabs.Screen
+        name="notifications"
+        options={{ tabBarLabel: tabLabel('Alerts'), tabBarBadge: unread > 0 ? unread : undefined }}
+      />
       <Tabs.Screen name="jobs/[id]" options={hidden} />
       <Tabs.Screen name="jobs/[id]/resolve" options={hidden} />
     </Tabs>

@@ -24,7 +24,12 @@ export default function Reports() {
 
   return (
     <Screen>
-      <PageHeading eyebrow={state.data ? `${faults.length} ${faults.length === 1 ? 'report' : 'reports'}` : 'History'} title="My reports" />
+      <PageHeading
+        eyebrow={
+          state.data ? `${faults.length} ${faults.length === 1 ? 'report' : 'reports'}` : 'History'
+        }
+        title="My reports"
+      />
 
       <Async state={state} label="Loading your reports">
         {() => (
@@ -38,7 +43,11 @@ export default function Reports() {
                     accessibilityRole="radio"
                     accessibilityState={{ selected: active }}
                     onPress={() => setFilter(item.key)}
-                    style={[styles.filter, index > 0 && styles.filterDivider, { backgroundColor: active ? colors.ink : colors.white }]}
+                    style={[
+                      styles.filter,
+                      index > 0 && styles.filterDivider,
+                      { backgroundColor: active ? colors.ink : colors.white },
+                    ]}
                   >
                     <Eyebrow style={{ color: active ? colors.white : colors.ink }}>
                       {item.label} {faults.filter(item.test).length}
@@ -51,14 +60,25 @@ export default function Reports() {
             {visible.length === 0 ? (
               <EmptyState
                 title={faults.length ? 'Nothing in this list' : 'No reports yet'}
-                action={<Button label="Report a Fault" onPress={() => router.navigate('/customer/report')} />}
+                action={
+                  <Button
+                    label="Report a Fault"
+                    onPress={() => router.navigate('/customer/report')}
+                  />
+                }
               >
-                {faults.length ? 'Choose another filter to see your other reports.' : 'When you report a fault it is listed here.'}
+                {faults.length
+                  ? 'Choose another filter to see your other reports.'
+                  : 'When you report a fault it is listed here.'}
               </EmptyState>
             ) : (
               <View style={{ gap: 12 }}>
                 {visible.map((fault) => (
-                  <Pressable key={fault.id} accessibilityRole="link" onPress={() => router.push(`/customer/faults/${fault.id}`)}>
+                  <Pressable
+                    key={fault.id}
+                    accessibilityRole="link"
+                    onPress={() => router.push(`/customer/faults/${fault.id}`)}
+                  >
                     <Panel>
                       <View style={styles.cardTop}>
                         <View style={{ flex: 1 }}>
@@ -92,9 +112,23 @@ const styles = StyleSheet.create({
   filter: { flex: 1, height: 44, alignItems: 'center', justifyContent: 'center' },
   filterDivider: { borderLeftWidth: 1, borderLeftColor: colors.ink },
   cardTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, padding: 16 },
-  cardBottom: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, borderTopWidth: 1, borderTopColor: colors.ink, paddingHorizontal: 16, paddingVertical: 10 },
+  cardBottom: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.ink,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
   ref: { fontFamily: fonts.mono, fontSize: 12, color: colors.ink },
-  category: { marginTop: 4, fontFamily: fonts.black, fontSize: 18, textTransform: 'uppercase', color: colors.ink },
+  category: {
+    marginTop: 4,
+    fontFamily: fonts.black,
+    fontSize: 18,
+    textTransform: 'uppercase',
+    color: colors.ink,
+  },
   location: { marginTop: 4, fontFamily: fonts.regular, fontSize: 14, color: colors.ink },
   meta: { fontFamily: fonts.mono, fontSize: 12, color: colors.ink },
 });

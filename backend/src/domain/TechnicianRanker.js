@@ -15,9 +15,16 @@ export class TechnicianRanker {
 
   /** @param {{ availability: string, distanceKm: number|null, activeJobs: unknown[], name: string }[]} technicians */
   rank(technicians, { hasTarget = true } = {}) {
-    const ordered = [...technicians].sort(hasTarget ? TechnicianRanker.compare : TechnicianRanker.compareByName);
-    const recommendedId = hasTarget ? ordered.find((t) => t.availability === 'AVAILABLE')?.id : undefined;
-    return ordered.map((technician) => ({ ...technician, recommended: technician.id === recommendedId }));
+    const ordered = [...technicians].sort(
+      hasTarget ? TechnicianRanker.compare : TechnicianRanker.compareByName
+    );
+    const recommendedId = hasTarget
+      ? ordered.find((t) => t.availability === 'AVAILABLE')?.id
+      : undefined;
+    return ordered.map((technician) => ({
+      ...technician,
+      recommended: technician.id === recommendedId,
+    }));
   }
 
   static compareByName(a, b) {

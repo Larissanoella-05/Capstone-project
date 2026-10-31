@@ -27,11 +27,17 @@ function fakeResponse() {
 
 describe('distanceKm (haversine)', () => {
   it('is zero for the same point', () => {
-    assert.equal(distanceKm({ latitude: -1.95, longitude: 30.17 }, { latitude: -1.95, longitude: 30.17 }), 0);
+    assert.equal(
+      distanceKm({ latitude: -1.95, longitude: 30.17 }, { latitude: -1.95, longitude: 30.17 }),
+      0
+    );
   });
 
   it('matches a known distance: Kigali centre to Ndera ≈ 11 km', () => {
-    const km = distanceKm({ latitude: -1.9441, longitude: 30.0619 }, { latitude: -1.9503, longitude: 30.1731 });
+    const km = distanceKm(
+      { latitude: -1.9441, longitude: 30.0619 },
+      { latitude: -1.9503, longitude: 30.1731 }
+    );
     assert.ok(km > 11 && km < 13, `got ${km}`);
   });
 
@@ -55,8 +61,14 @@ describe('request validation schemas', () => {
 
   it('rejects an unknown category, a non-image photo and a 1001-character description', () => {
     assert.equal(createSchema.safeParse({ category: 'FIRE' }).success, false);
-    assert.equal(createSchema.safeParse({ category: 'OTHER', photo: 'data:text/plain;base64,AAA' }).success, false);
-    assert.equal(createSchema.safeParse({ category: 'OTHER', description: 'x'.repeat(1001) }).success, false);
+    assert.equal(
+      createSchema.safeParse({ category: 'OTHER', photo: 'data:text/plain;base64,AAA' }).success,
+      false
+    );
+    assert.equal(
+      createSchema.safeParse({ category: 'OTHER', description: 'x'.repeat(1001) }).success,
+      false
+    );
   });
 
   it('does not let clients set REPORTED or ASSIGNED through the status endpoint', () => {
@@ -66,8 +78,14 @@ describe('request validation schemas', () => {
   });
 
   it('rejects negative or huge clarification counts', () => {
-    assert.equal(statusSchema.safeParse({ status: 'RESOLVED', clarificationContacts: -1 }).success, false);
-    assert.equal(statusSchema.safeParse({ status: 'RESOLVED', clarificationContacts: 51 }).success, false);
+    assert.equal(
+      statusSchema.safeParse({ status: 'RESOLVED', clarificationContacts: -1 }).success,
+      false
+    );
+    assert.equal(
+      statusSchema.safeParse({ status: 'RESOLVED', clarificationContacts: 51 }).success,
+      false
+    );
   });
 
   it('coerces technicianId and rejects zero', () => {
@@ -82,7 +100,10 @@ describe('request validation schemas', () => {
   });
 
   it('normalises the login email and rejects malformed ones', () => {
-    assert.equal(loginSchema.parse({ email: '  Aline@Demo.RW ', password: 'x' }).email, 'aline@demo.rw');
+    assert.equal(
+      loginSchema.parse({ email: '  Aline@Demo.RW ', password: 'x' }).email,
+      'aline@demo.rw'
+    );
     assert.equal(loginSchema.safeParse({ email: 'not-an-email', password: 'x' }).success, false);
   });
 });
@@ -132,7 +153,10 @@ describe('errorHandler', () => {
 
 describe('customerMessageFor', () => {
   it('uses the technician’s first two names and the fault reference', () => {
-    const message = customerMessageFor('ON_THE_WAY', { reference: 'FR-1001', technicianName: 'Jean Claude Habimana' });
+    const message = customerMessageFor('ON_THE_WAY', {
+      reference: 'FR-1001',
+      technicianName: 'Jean Claude Habimana',
+    });
     assert.equal(message.type, 'TECHNICIAN_ON_THE_WAY');
     assert.match(message.message, /^Jean Claude is on the way/);
     assert.match(message.message, /FR-1001/);

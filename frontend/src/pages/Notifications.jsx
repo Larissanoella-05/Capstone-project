@@ -57,10 +57,17 @@ export default function Notifications({ faultPath, intro }) {
       <Async state={state} label="Loading notifications">
         {(data) =>
           data.notifications.length === 0 ? (
-            <EmptyState title="No notifications yet">Updates about your faults will appear here.</EmptyState>
+            <EmptyState title="No notifications yet">
+              Updates about your faults will appear here.
+            </EmptyState>
           ) : (
             <>
-              <button type="button" className="btn btn-outline self-start" disabled={busy || unread === 0} onClick={markAllRead}>
+              <button
+                type="button"
+                className="btn btn-outline self-start"
+                disabled={busy || unread === 0}
+                onClick={markAllRead}
+              >
                 Mark all as read
               </button>
               <ul className="m-0 grid list-none gap-3 p-0 md:grid-cols-2 2xl:grid-cols-3">
@@ -75,10 +82,14 @@ export default function Notifications({ faultPath, intro }) {
                     >
                       <div className="flex items-start justify-between gap-3">
                         <span className="text-base font-black uppercase">{notification.title}</span>
-                        <span className="eyebrow shrink-0 text-muted">{timeAgo(notification.createdAt)}</span>
+                        <span className="eyebrow shrink-0 text-muted">
+                          {timeAgo(notification.createdAt)}
+                        </span>
                       </div>
                       <p className="mb-0 mt-2 text-sm">{notification.message}</p>
-                      {!notification.read && <span className="pill mt-3 border-ink bg-volt">New</span>}
+                      {!notification.read && (
+                        <span className="pill mt-3 border-ink bg-volt">New</span>
+                      )}
                     </button>
                   </li>
                 ))}

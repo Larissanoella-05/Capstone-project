@@ -13,7 +13,8 @@ try {
 
 // Centre of the pilot area: Ndera Sector, Gasabo District, Kigali. MapLibre takes [longitude, latitude].
 const NDERA_CENTRE = [30.171, -1.9495];
-const MAP_STYLE = process.env.EXPO_PUBLIC_MAP_STYLE_URL || 'https://tiles.openfreemap.org/styles/liberty';
+const MAP_STYLE =
+  process.env.EXPO_PUBLIC_MAP_STYLE_URL || 'https://tiles.openfreemap.org/styles/liberty';
 
 const SIZE = { site: 22, unassigned: 22, technician: 24, onsite: 24 };
 
@@ -21,7 +22,12 @@ const SIZE = { site: 22, unassigned: 22, technician: 24, onsite: 24 };
 const MARKER_STYLE = {
   unassigned: { backgroundColor: colors.danger, borderWidth: 2, borderColor: colors.white },
   site: { backgroundColor: colors.ink, borderWidth: 2, borderColor: colors.white },
-  technician: { backgroundColor: colors.volt, borderWidth: 3, borderColor: colors.ink, borderRadius: 12 },
+  technician: {
+    backgroundColor: colors.volt,
+    borderWidth: 3,
+    borderColor: colors.ink,
+    borderRadius: 12,
+  },
   onsite: { backgroundColor: colors.ok, borderWidth: 3, borderColor: colors.ink, borderRadius: 12 },
 };
 
@@ -43,12 +49,21 @@ export default function MapView(props) {
   return <MapLibreView {...props} />;
 }
 
-function MapLibreView({ markers = [], lines = [], interactive = true, height = 240, label = 'Map of the service location and the technician' }) {
+function MapLibreView({
+  markers = [],
+  lines = [],
+  interactive = true,
+  height = 240,
+  label = 'Map of the service location and the technician',
+}) {
   const { Camera, GeoJSONSource, Layer, Map, Marker } = MapLibre;
   const cameraRef = useRef(null);
   const fittedKeyRef = useRef('');
 
-  const valid = useMemo(() => markers.filter((m) => Number.isFinite(m.lat) && Number.isFinite(m.lng)), [markers]);
+  const valid = useMemo(
+    () => markers.filter((m) => Number.isFinite(m.lat) && Number.isFinite(m.lng)),
+    [markers]
+  );
 
   const lineData = useMemo(
     () => ({
@@ -65,7 +80,10 @@ function MapLibreView({ markers = [], lines = [], interactive = true, height = 2
   // Re-frame only when the set of markers changes, not on every position update,
   // so the map does not jump while someone is looking at it.
   useEffect(() => {
-    const key = valid.map((m) => m.id).sort().join('|');
+    const key = valid
+      .map((m) => m.id)
+      .sort()
+      .join('|');
     if (key === fittedKeyRef.current || !cameraRef.current) return;
     fittedKeyRef.current = key;
     try {
@@ -74,10 +92,13 @@ function MapLibreView({ markers = [], lines = [], interactive = true, height = 2
       } else if (valid.length > 1) {
         const lngs = valid.map((m) => m.lng);
         const lats = valid.map((m) => m.lat);
-        cameraRef.current.fitBounds([Math.min(...lngs), Math.min(...lats), Math.max(...lngs), Math.max(...lats)], {
-          padding: { top: 40, right: 40, bottom: 40, left: 40 },
-          duration: 0,
-        });
+        cameraRef.current.fitBounds(
+          [Math.min(...lngs), Math.min(...lats), Math.max(...lngs), Math.max(...lats)],
+          {
+            padding: { top: 40, right: 40, bottom: 40, left: 40 },
+            duration: 0,
+          }
+        );
       }
     } catch (error) {
       // The native camera was not ready yet; forget the key so the next update tries again.
@@ -108,11 +129,23 @@ function MapLibreView({ markers = [], lines = [], interactive = true, height = 2
         attribution
       >
         {/* maxZoom is a Camera prop, not a fitBounds option: it stops markers metres apart zooming in too far. */}
-        <Camera ref={cameraRef} maxZoom={16} initialViewState={{ center: valid[0] ? [valid[0].lng, valid[0].lat] : NDERA_CENTRE, zoom: 14 }} />
+        <Camera
+          ref={cameraRef}
+          maxZoom={16}
+          initialViewState={{
+            center: valid[0] ? [valid[0].lng, valid[0].lat] : NDERA_CENTRE,
+            zoom: 14,
+          }}
+        />
 
         {lines.length > 0 ? (
           <GeoJSONSource id="links" data={lineData}>
-            <Layer id="links-line" type="line" layout={{ 'line-cap': 'butt' }} paint={{ 'line-color': colors.ink, 'line-width': 4, 'line-dasharray': [0.5, 2] }} />
+            <Layer
+              id="links-line"
+              type="line"
+              layout={{ 'line-cap': 'butt' }}
+              paint={{ 'line-color': colors.ink, 'line-width': 4, 'line-dasharray': [0.5, 2] }}
+            />
           </GeoJSONSource>
         ) : null}
 
@@ -120,13 +153,21 @@ function MapLibreView({ markers = [], lines = [], interactive = true, height = 2
           const size = SIZE[marker.kind] ?? 22;
           return (
             <Marker key={marker.id} id={marker.id} lngLat={[marker.lng, marker.lat]}>
-              <View accessibilityLabel={marker.label} style={[{ width: size, height: size }, MARKER_STYLE[marker.kind]]} />
+              <View
+                accessibilityLabel={marker.label}
+                style={[{ width: size, height: size }, MARKER_STYLE[marker.kind]]}
+              />
             </Marker>
           );
         })}
       </Map>
       {interactive && !unlocked ? (
-        <Pressable accessibilityRole="button" accessibilityLabel="Tap to move and zoom the map" onPress={() => setUnlocked(true)} style={styles.lock}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Tap to move and zoom the map"
+          onPress={() => setUnlocked(true)}
+          style={styles.lock}
+        >
           <View style={styles.lockPill}>
             <Text style={styles.lockText}>Tap to move the map</Text>
           </View>
@@ -138,9 +179,25 @@ function MapLibreView({ markers = [], lines = [], interactive = true, height = 2
 
 const styles = StyleSheet.create({
   map: { flex: 1 },
-  lock: { ...StyleSheet.absoluteFillObject, justifyContent: 'flex-end', alignItems: 'center', padding: 12 },
+  lock: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    padding: 12,
+  },
   lockPill: { backgroundColor: colors.ink, paddingHorizontal: 12, paddingVertical: 6 },
-  lockText: { fontFamily: fonts.mono, fontSize: 11, letterSpacing: 0.9, textTransform: 'uppercase', color: colors.white },
+  lockText: {
+    fontFamily: fonts.mono,
+    fontSize: 11,
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
+    color: colors.white,
+  },
   missing: { alignItems: 'center', justifyContent: 'center', backgroundColor: colors.paper },
-  missingText: { fontFamily: fonts.mono, fontSize: 12, textTransform: 'uppercase', color: colors.muted },
+  missingText: {
+    fontFamily: fonts.mono,
+    fontSize: 12,
+    textTransform: 'uppercase',
+    color: colors.muted,
+  },
 });

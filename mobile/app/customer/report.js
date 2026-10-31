@@ -1,7 +1,15 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { Button, Eyebrow, PageHeading } from '../../src/components/Bits.js';
 import { Screen } from '../../src/components/Shell.js';
 import { FormError } from '../../src/components/States.js';
@@ -46,7 +54,8 @@ export default function ReportFault() {
   async function onSubmit() {
     const nextErrors = {};
     if (!category) nextErrors.category = 'Choose a fault category.';
-    if (description.length > 1000) nextErrors.description = 'Keep the description under 1000 characters.';
+    if (description.length > 1000)
+      nextErrors.description = 'Keep the description under 1000 characters.';
     if (contactPhone && !/^[+\d][\d\s-]{7,}$/.test(contactPhone.trim())) {
       nextErrors.contactPhone = 'Enter a phone number such as +250 788 300 114.';
     }
@@ -90,7 +99,10 @@ export default function ReportFault() {
 
       <View style={{ gap: 8 }}>
         <Eyebrow>01 · Fault category</Eyebrow>
-        <View accessibilityRole="radiogroup" style={[styles.group, { borderColor: errors.category ? colors.danger : colors.ink }]}>
+        <View
+          accessibilityRole="radiogroup"
+          style={[styles.group, { borderColor: errors.category ? colors.danger : colors.ink }]}
+        >
           {CATEGORIES.map((item, index) => {
             const active = category === item.value;
             return (
@@ -102,9 +114,15 @@ export default function ReportFault() {
                   setCategory(item.value);
                   setErrors((current) => ({ ...current, category: undefined }));
                 }}
-                style={[styles.option, index < CATEGORIES.length - 1 && styles.optionDivider, { backgroundColor: active ? colors.volt : colors.white }]}
+                style={[
+                  styles.option,
+                  index < CATEGORIES.length - 1 && styles.optionDivider,
+                  { backgroundColor: active ? colors.volt : colors.white },
+                ]}
               >
-                <View style={[styles.radio, active && styles.radioOn]}>{active ? <View style={styles.radioDot} /> : null}</View>
+                <View style={[styles.radio, active && styles.radioOn]}>
+                  {active ? <View style={styles.radioDot} /> : null}
+                </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.optionLabel}>{item.label}</Text>
                   <Text style={styles.optionHint}>{item.hint}</Text>
@@ -142,9 +160,20 @@ export default function ReportFault() {
         </View>
         {photo ? (
           <View style={styles.photoRow}>
-            <Image source={{ uri: photo.uri }} accessibilityLabel="Selected fault photo" style={styles.thumb} />
-            <Text numberOfLines={1} style={styles.photoName}>{photo.name}</Text>
-            <Pressable accessibilityRole="button" accessibilityLabel="Remove photo" onPress={() => setPhoto(null)} style={styles.remove}>
+            <Image
+              source={{ uri: photo.uri }}
+              accessibilityLabel="Selected fault photo"
+              style={styles.thumb}
+            />
+            <Text numberOfLines={1} style={styles.photoName}>
+              {photo.name}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Remove photo"
+              onPress={() => setPhoto(null)}
+              style={styles.remove}
+            >
               <Feather name="x" size={18} color={colors.ink} />
             </Pressable>
           </View>
@@ -155,8 +184,20 @@ export default function ReportFault() {
           </View>
         ) : (
           <View style={{ flexDirection: 'row', gap: 12 }}>
-            <Button label="Take photo" tone="outline" icon="camera" onPress={() => choosePhoto('camera')} style={styles.photoButton} />
-            <Button label="Choose photo" tone="outline" icon="image" onPress={() => choosePhoto('library')} style={styles.photoButton} />
+            <Button
+              label="Take photo"
+              tone="outline"
+              icon="camera"
+              onPress={() => choosePhoto('camera')}
+              style={styles.photoButton}
+            />
+            <Button
+              label="Choose photo"
+              tone="outline"
+              icon="image"
+              onPress={() => choosePhoto('library')}
+              style={styles.photoButton}
+            />
           </View>
         )}
         {errors.photo ? <Text style={styles.error}>{errors.photo}</Text> : null}
@@ -180,20 +221,30 @@ export default function ReportFault() {
           <Eyebrow style={{ color: colors.muted }}>Loading your service location…</Eyebrow>
         ) : location ? (
           <>
-            <Eyebrow style={{ color: colors.muted }}>Service location · Meter {location.meterNumber}</Eyebrow>
+            <Eyebrow style={{ color: colors.muted }}>
+              Service location · Meter {location.meterNumber}
+            </Eyebrow>
             <Text style={styles.locationLine}>{locationLine(location)}</Text>
-            <Text style={styles.locationNote}>Your registered service location will automatically be associated with this report.</Text>
+            <Text style={styles.locationNote}>
+              Your registered service location will automatically be associated with this report.
+            </Text>
           </>
         ) : (
           <Text style={[styles.error, { fontSize: 14 }]}>
-            {locations.error?.message || 'No registered service location was found for your account.'}
+            {locations.error?.message ||
+              'No registered service location was found for your account.'}
           </Text>
         )}
       </View>
 
       <FormError>{formError}</FormError>
 
-      <Button label={submitting ? 'Submitting…' : 'Submit Fault'} onPress={onSubmit} disabled={submitting || photoBusy || !location} style={{ minHeight: 56 }} />
+      <Button
+        label={submitting ? 'Submitting…' : 'Submit Fault'}
+        onPress={onSubmit}
+        disabled={submitting || photoBusy || !location}
+        style={{ minHeight: 56 }}
+      />
     </Screen>
   );
 }
@@ -201,25 +252,89 @@ export default function ReportFault() {
 const styles = StyleSheet.create({
   sub: { marginTop: 12, fontFamily: fonts.regular, fontSize: 14, color: colors.muted },
   group: { borderWidth: 1 },
-  option: { minHeight: 60, flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 14, paddingVertical: 10 },
+  option: {
+    minHeight: 60,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
   optionDivider: { borderBottomWidth: 1, borderBottomColor: colors.ink },
-  radio: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: colors.ink, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.white },
+  radio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.white,
+  },
   radioOn: { backgroundColor: colors.white },
   radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.ink },
-  optionLabel: { fontFamily: fonts.black, fontSize: 16, textTransform: 'uppercase', color: colors.ink },
+  optionLabel: {
+    fontFamily: fonts.black,
+    fontSize: 16,
+    textTransform: 'uppercase',
+    color: colors.ink,
+  },
   optionHint: { fontFamily: fonts.regular, fontSize: 13, color: colors.ink },
   labelRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  field: { minHeight: 48, borderWidth: 1, borderColor: colors.ink, paddingHorizontal: 12, paddingVertical: 10, fontFamily: fonts.regular, fontSize: 16, color: colors.ink, backgroundColor: colors.white },
+  field: {
+    minHeight: 48,
+    borderWidth: 1,
+    borderColor: colors.ink,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontFamily: fonts.regular,
+    fontSize: 16,
+    color: colors.ink,
+    backgroundColor: colors.white,
+  },
   multiline: { minHeight: 110 },
   fieldInvalid: { borderColor: colors.danger },
   error: { fontFamily: fonts.semibold, fontSize: 14, color: colors.danger },
-  photoRow: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: colors.ink, padding: 8 },
+  photoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 1,
+    borderColor: colors.ink,
+    padding: 8,
+  },
   thumb: { width: 64, height: 64, borderWidth: 1, borderColor: colors.line },
   photoName: { flex: 1, fontFamily: fonts.semibold, fontSize: 14, color: colors.ink },
-  remove: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.ink },
-  busy: { minHeight: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, borderWidth: 1, borderColor: colors.line },
+  remove: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.ink,
+  },
+  busy: {
+    minHeight: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    borderWidth: 1,
+    borderColor: colors.line,
+  },
   photoButton: { flex: 1, paddingHorizontal: 8, borderStyle: 'dashed' },
-  locationCard: { borderWidth: 1, borderColor: colors.ink, backgroundColor: colors.paper, padding: 16, gap: 4 },
-  locationLine: { fontFamily: fonts.black, fontSize: 18, textTransform: 'uppercase', color: colors.ink },
+  locationCard: {
+    borderWidth: 1,
+    borderColor: colors.ink,
+    backgroundColor: colors.paper,
+    padding: 16,
+    gap: 4,
+  },
+  locationLine: {
+    fontFamily: fonts.black,
+    fontSize: 18,
+    textTransform: 'uppercase',
+    color: colors.ink,
+  },
   locationNote: { marginTop: 4, fontFamily: fonts.regular, fontSize: 14, color: colors.ink },
 });

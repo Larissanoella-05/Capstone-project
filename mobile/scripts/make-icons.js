@@ -14,7 +14,14 @@ const VOLT = [0xff, 0xd4, 0x00];
 const WHITE = [0xff, 0xff, 0xff];
 
 // favicon.svg path "M13 2 4 14h7l-1 8 9-12h-7z", in a 24 x 24 box.
-const BOLT = [[13, 2], [4, 14], [11, 14], [10, 22], [19, 10], [12, 10]];
+const BOLT = [
+  [13, 2],
+  [4, 14],
+  [11, 14],
+  [10, 22],
+  [19, 10],
+  [12, 10],
+];
 const BOLT_CENTRE = [11.5, 12]; // middle of the bolt's bounding box (x 4..19, y 2..22)
 const BOLT_HEIGHT = 20;
 
@@ -31,7 +38,10 @@ function insidePolygon(x, y, points) {
 /** size: canvas in pixels. boltFraction: bolt height as a share of the canvas. background: [r,g,b] or null (transparent). */
 function render(size, { boltFraction, boltColor, background = null }) {
   const scale = (boltFraction * size) / BOLT_HEIGHT;
-  const polygon = BOLT.map(([x, y]) => [size / 2 + (x - BOLT_CENTRE[0]) * scale, size / 2 + (y - BOLT_CENTRE[1]) * scale]);
+  const polygon = BOLT.map(([x, y]) => [
+    size / 2 + (x - BOLT_CENTRE[0]) * scale,
+    size / 2 + (y - BOLT_CENTRE[1]) * scale,
+  ]);
   const minX = Math.max(0, Math.floor(Math.min(...polygon.map((p) => p[0]))) - 1);
   const maxX = Math.min(size - 1, Math.ceil(Math.max(...polygon.map((p) => p[0]))) + 1);
   const minY = Math.max(0, Math.floor(Math.min(...polygon.map((p) => p[1]))) - 1);
@@ -43,13 +53,16 @@ function render(size, { boltFraction, boltColor, background = null }) {
       let coverage = 0;
       if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
         let hits = 0;
-        for (let sy = 0; sy < 4; sy++) for (let sx = 0; sx < 4; sx++) if (insidePolygon(x + (sx + 0.5) / 4, y + (sy + 0.5) / 4, polygon)) hits++;
+        for (let sy = 0; sy < 4; sy++)
+          for (let sx = 0; sx < 4; sx++)
+            if (insidePolygon(x + (sx + 0.5) / 4, y + (sy + 0.5) / 4, polygon)) hits++;
         coverage = hits / 16;
       }
       const at = (y * size + x) * 4;
       if (background) {
         // Opaque background with the bolt blended over it.
-        for (let c = 0; c < 3; c++) pixels[at + c] = Math.round(background[c] * (1 - coverage) + boltColor[c] * coverage);
+        for (let c = 0; c < 3; c++)
+          pixels[at + c] = Math.round(background[c] * (1 - coverage) + boltColor[c] * coverage);
         pixels[at + 3] = 255;
       } else {
         pixels[at] = boltColor[0];
@@ -109,16 +122,40 @@ const flat = (size, colour) => {
 
 // The adaptive icon is cropped to a circle or squircle, so its foreground must stay inside the central ~60%.
 const FILES = [
-  { file: 'icon.png', size: 1024, pixels: (s) => render(s, { boltFraction: 0.58, boltColor: VOLT, background: INK }) },
-  { file: 'android-icon-foreground.png', size: 512, pixels: (s) => render(s, { boltFraction: 0.46, boltColor: VOLT }) },
+  {
+    file: 'icon.png',
+    size: 1024,
+    pixels: (s) => render(s, { boltFraction: 0.58, boltColor: VOLT, background: INK }),
+  },
+  {
+    file: 'android-icon-foreground.png',
+    size: 512,
+    pixels: (s) => render(s, { boltFraction: 0.46, boltColor: VOLT }),
+  },
   { file: 'android-icon-background.png', size: 512, pixels: (s) => flat(s, INK) },
   // Android draws the monochrome (themed) icon from the alpha channel only.
-  { file: 'android-icon-monochrome.png', size: 432, pixels: (s) => render(s, { boltFraction: 0.46, boltColor: WHITE }) },
+  {
+    file: 'android-icon-monochrome.png',
+    size: 432,
+    pixels: (s) => render(s, { boltFraction: 0.46, boltColor: WHITE }),
+  },
   // Status-bar icon for notifications: white on transparent, as large as the 96 px box allows.
-  { file: 'notification-icon.png', size: 96, pixels: (s) => render(s, { boltFraction: 0.86, boltColor: WHITE }) },
+  {
+    file: 'notification-icon.png',
+    size: 96,
+    pixels: (s) => render(s, { boltFraction: 0.86, boltColor: WHITE }),
+  },
   // On the splash screen the bolt sits on the plain #0B0B0B background set in app.config.js.
-  { file: 'splash-icon.png', size: 1024, pixels: (s) => render(s, { boltFraction: 0.8, boltColor: VOLT }) },
-  { file: 'favicon.png', size: 48, pixels: (s) => render(s, { boltFraction: 0.6, boltColor: VOLT, background: INK }) },
+  {
+    file: 'splash-icon.png',
+    size: 1024,
+    pixels: (s) => render(s, { boltFraction: 0.8, boltColor: VOLT }),
+  },
+  {
+    file: 'favicon.png',
+    size: 48,
+    pixels: (s) => render(s, { boltFraction: 0.6, boltColor: VOLT, background: INK }),
+  },
 ];
 
 const assets = path.join(__dirname, '..', 'assets');

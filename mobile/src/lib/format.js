@@ -44,9 +44,21 @@ export const CUSTOMER_TIMELINE_LABEL = {
 
 export const CATEGORIES = [
   { value: 'POWER_OUTAGE', label: 'Power outage', hint: 'No electricity at the premises' },
-  { value: 'LOW_VOLTAGE', label: 'Low voltage', hint: 'Dim lights, appliances not running properly' },
-  { value: 'DAMAGED_CONNECTION', label: 'Damaged connection', hint: 'Fallen, sparking or exposed service wire' },
-  { value: 'METER_ISSUE', label: 'Meter issue', hint: 'Meter blank, not loading or showing an error' },
+  {
+    value: 'LOW_VOLTAGE',
+    label: 'Low voltage',
+    hint: 'Dim lights, appliances not running properly',
+  },
+  {
+    value: 'DAMAGED_CONNECTION',
+    label: 'Damaged connection',
+    hint: 'Fallen, sparking or exposed service wire',
+  },
+  {
+    value: 'METER_ISSUE',
+    label: 'Meter issue',
+    hint: 'Meter blank, not loading or showing an error',
+  },
   { value: 'OTHER', label: 'Other', hint: 'Anything not listed above' },
 ];
 export const CATEGORY_LABEL = Object.fromEntries(CATEGORIES.map((c) => [c.value, c.label]));
@@ -84,7 +96,11 @@ export function fmtDateTime(value) {
 }
 
 export function fmtDate(value = new Date()) {
-  return new Date(value).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  return new Date(value).toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
 }
 
 export function timeAgo(value) {
@@ -105,8 +121,13 @@ export function minutesBetween(from, to) {
 }
 
 export const fmtMinutes = (value) => (value === null || value === undefined ? '—' : `${value} min`);
-export const fmtKm = (value) => (value === null || value === undefined ? '—' : `${value.toFixed(1)} km`);
-export const firstNames = (name = '') => name.split(' ').slice(0, name.startsWith('Jean') ? 2 : 1).join(' ');
+export const fmtKm = (value) =>
+  value === null || value === undefined ? '—' : `${value.toFixed(1)} km`;
+export const firstNames = (name = '') =>
+  name
+    .split(' ')
+    .slice(0, name.startsWith('Jean') ? 2 : 1)
+    .join(' ');
 
 export function greeting() {
   const hour = new Date().getHours();

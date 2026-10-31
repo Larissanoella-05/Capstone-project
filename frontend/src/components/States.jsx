@@ -2,7 +2,10 @@ import { AlertTriangle, Inbox, LoaderCircle } from 'lucide-react';
 
 export function Loading({ label = 'Loading' }) {
   return (
-    <div role="status" className="flex items-center justify-center gap-3 border border-line px-4 py-10 text-muted">
+    <div
+      role="status"
+      className="flex items-center justify-center gap-3 border border-line px-4 py-10 text-muted"
+    >
       <LoaderCircle size={18} className="animate-spin" aria-hidden="true" />
       <span className="eyebrow">{label}…</span>
     </div>
@@ -45,7 +48,10 @@ export function EmptyState({ title, children, action }) {
 export function FormError({ children }) {
   if (!children) return null;
   return (
-    <p role="alert" className="flex items-start gap-2 border border-danger bg-white p-3 text-sm font-semibold text-danger">
+    <p
+      role="alert"
+      className="flex items-start gap-2 border border-danger bg-white p-3 text-sm font-semibold text-danger"
+    >
       <AlertTriangle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
       {children}
     </p>

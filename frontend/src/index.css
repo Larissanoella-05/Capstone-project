@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* Design tokens from the approved Umuriro style guide */
 @theme {
@@ -14,8 +14,8 @@
   --color-ok: #2b6a3f;
   --color-warn: #a8480f;
 
-  --font-sans: "Archivo", "Helvetica Neue", Arial, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+  --font-sans: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
 }
 
 @layer base {
@@ -38,7 +38,7 @@
   .on-ink :focus-visible {
     outline-color: var(--color-volt);
   }
-  input[type="radio"] {
+  input[type='radio'] {
     accent-color: var(--color-ink);
   }
 }
@@ -138,7 +138,7 @@
   .field::placeholder {
     color: var(--color-muted);
   }
-  .field[aria-invalid="true"] {
+  .field[aria-invalid='true'] {
     border-color: var(--color-danger);
     box-shadow: inset 0 0 0 1px var(--color-danger);
   }
@@ -210,7 +210,7 @@
   border-radius: 50%;
 }
 .map-marker--technician::after {
-  content: "";
+  content: '';
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -222,7 +222,9 @@
   border-radius: 50%;
 }
 .map-marker--selected {
-  box-shadow: 0 0 0 4px var(--color-volt), 0 0 0 5px var(--color-ink);
+  box-shadow:
+    0 0 0 4px var(--color-volt),
+    0 0 0 5px var(--color-ink);
 }
 
 @media (prefers-reduced-motion: reduce) {

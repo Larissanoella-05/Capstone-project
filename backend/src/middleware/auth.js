@@ -34,7 +34,9 @@ export const requireAuth = asyncHandler(async (req, _res, next) => {
 });
 
 /** Allows the route only for the listed roles. */
-export const requireRole = (...roles) => (req, _res, next) => {
-  if (!roles.includes(req.user.role)) return next(forbidden());
-  next();
-};
+export const requireRole =
+  (...roles) =>
+  (req, _res, next) => {
+    if (!roles.includes(req.user.role)) return next(forbidden());
+    next();
+  };

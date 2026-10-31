@@ -66,7 +66,9 @@ export async function checkReceipts(sent) {
 async function send(notifications) {
   try {
     if (!notifications?.length) return;
-    const tokens = await prisma.deviceToken.findMany({ where: { userId: { in: [...new Set(notifications.map((n) => n.userId))] } } });
+    const tokens = await prisma.deviceToken.findMany({
+      where: { userId: { in: [...new Set(notifications.map((n) => n.userId))] } },
+    });
     if (!tokens.length) return;
 
     const messages = [];
@@ -100,7 +102,9 @@ async function send(notifications) {
         }
       });
     }
-    console.log(`[push] sent ${sent.length} message(s) (${[...new Set(notifications.map((n) => n.type))].join(', ')})`);
+    console.log(
+      `[push] sent ${sent.length} message(s) (${[...new Set(notifications.map((n) => n.type))].join(', ')})`
+    );
 
     if (sent.length) setTimeout(() => checkReceipts(sent), RECEIPT_DELAY_MS).unref();
   } catch (error) {

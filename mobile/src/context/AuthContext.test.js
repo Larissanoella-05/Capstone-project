@@ -60,7 +60,9 @@ describe('AuthContext', () => {
     const { result } = await renderAuth();
 
     await act(async () => {
-      await expect(result.current.login('grace@demo.rw', 'demo1234')).rejects.toThrow('Coordinators use the web app.');
+      await expect(result.current.login('grace@demo.rw', 'demo1234')).rejects.toThrow(
+        'Coordinators use the web app.'
+      );
     });
 
     expect(result.current.user).toBeNull();
@@ -112,7 +114,10 @@ describe('AuthContext', () => {
       await result.current.logout();
     });
 
-    expect(api).toHaveBeenCalledWith('/devices', { method: 'DELETE', body: { token: 'ExponentPushToken[abc]' } });
+    expect(api).toHaveBeenCalledWith('/devices', {
+      method: 'DELETE',
+      body: { token: 'ExponentPushToken[abc]' },
+    });
     expect(getRegisteredToken()).toBeNull();
     expect(result.current.user).toBeNull();
   });

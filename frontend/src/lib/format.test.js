@@ -17,7 +17,13 @@ import {
 describe('format helpers', () => {
   it('has a label for every stage and category', () => {
     for (const stage of [...STAGES, 'CANCELLED']) assert.ok(STATUS_LABEL[stage], stage);
-    for (const category of ['POWER_OUTAGE', 'LOW_VOLTAGE', 'DAMAGED_CONNECTION', 'METER_ISSUE', 'OTHER']) {
+    for (const category of [
+      'POWER_OUTAGE',
+      'LOW_VOLTAGE',
+      'DAMAGED_CONNECTION',
+      'METER_ISSUE',
+      'OTHER',
+    ]) {
       assert.ok(CATEGORY_LABEL[category], category);
     }
   });

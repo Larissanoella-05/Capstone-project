@@ -2,7 +2,13 @@ import { z } from 'zod';
 
 /** Request-body rules for the fault endpoints. Kept apart from the routes so they can be tested and reused. */
 
-export const CATEGORIES = ['POWER_OUTAGE', 'LOW_VOLTAGE', 'DAMAGED_CONNECTION', 'METER_ISSUE', 'OTHER'];
+export const CATEGORIES = [
+  'POWER_OUTAGE',
+  'LOW_VOLTAGE',
+  'DAMAGED_CONNECTION',
+  'METER_ISSUE',
+  'OTHER',
+];
 export const PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
 const STATUSES = ['ON_THE_WAY', 'ARRIVED', 'WORKING', 'RESOLVED', 'CANCELLED'];
 export const OUTCOMES = ['SUPPLY_RESTORED', 'TEMPORARY_REPAIR', 'NO_FAULT_FOUND', 'REFERRED'];

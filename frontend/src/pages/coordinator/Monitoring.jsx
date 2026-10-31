@@ -29,7 +29,9 @@ export default function Monitoring() {
         id: `tech-${technician.id}`,
         lat: technician.location.latitude,
         lng: technician.location.longitude,
-        kind: technician.activeJobs.some((job) => ['ARRIVED', 'WORKING'].includes(job.status)) ? 'onsite' : 'technician',
+        kind: technician.activeJobs.some((job) => ['ARRIVED', 'WORKING'].includes(job.status))
+          ? 'onsite'
+          : 'technician',
         label: technician.name,
       }));
     // A link is drawn only while a technician is travelling to a fault.
@@ -48,12 +50,22 @@ export default function Monitoring() {
   return (
     <>
       <CoordinatorHeading
-        eyebrow={faultsState.data ? `${faults.length} active faults · ${technicians.length} technicians on duty` : 'Ndera Sector'}
+        eyebrow={
+          faultsState.data
+            ? `${faults.length} active faults · ${technicians.length} technicians on duty`
+            : 'Ndera Sector'
+        }
         title="Live monitoring"
       />
 
       {error ? (
-        <ErrorState error={error} onRetry={() => { faultsState.reload(); techState.reload(); }} />
+        <ErrorState
+          error={error}
+          onRetry={() => {
+            faultsState.reload();
+            techState.reload();
+          }}
+        />
       ) : !faultsState.data || !techState.data ? (
         <Loading label="Loading the live map" />
       ) : (
@@ -77,32 +89,55 @@ export default function Monitoring() {
                     <div className="font-mono text-xs">{selected.reference}</div>
                     <h2 className="display mt-1 text-2xl">{CATEGORY_LABEL[selected.category]}</h2>
                   </div>
-                  <button type="button" aria-label="Close fault details" className="flex h-9 w-9 cursor-pointer items-center justify-center border border-ink bg-white" onClick={() => select(null)}>
+                  <button
+                    type="button"
+                    aria-label="Close fault details"
+                    className="flex h-9 w-9 cursor-pointer items-center justify-center border border-ink bg-white"
+                    onClick={() => select(null)}
+                  >
                     <X size={16} aria-hidden="true" />
                   </button>
                 </div>
                 <div className="px-4 py-1">
                   <KeyRow label="Technician">{selected.technician?.name ?? 'Not assigned'}</KeyRow>
-                  <KeyRow label="Status"><StatusPill status={selected.status} audience="coordinator" /></KeyRow>
-                  <KeyRow label="Priority"><PriorityPill priority={selected.priority} /></KeyRow>
+                  <KeyRow label="Status">
+                    <StatusPill status={selected.status} audience="coordinator" />
+                  </KeyRow>
+                  <KeyRow label="Priority">
+                    <PriorityPill priority={selected.priority} />
+                  </KeyRow>
                   <KeyRow label="Location">{locationLine(selected.serviceLocation)}</KeyRow>
                   <KeyRow label="Distance remaining" mono>
-                    {['ASSIGNED', 'ON_THE_WAY'].includes(selected.status) ? fmtKm(selected.technician?.distanceKm) : ['ARRIVED', 'WORKING'].includes(selected.status) ? 'On site' : '—'}
+                    {['ASSIGNED', 'ON_THE_WAY'].includes(selected.status)
+                      ? fmtKm(selected.technician?.distanceKm)
+                      : ['ARRIVED', 'WORKING'].includes(selected.status)
+                        ? 'On site'
+                        : '—'}
                   </KeyRow>
-                  <KeyRow label="Last updated" last>{timeAgo(selected.updatedAt)}</KeyRow>
+                  <KeyRow label="Last updated" last>
+                    {timeAgo(selected.updatedAt)}
+                  </KeyRow>
                 </div>
                 {selected.serviceLocation.landmark && (
-                  <p className="m-0 border-t border-ink bg-paper p-4 text-sm">{selected.serviceLocation.landmark}</p>
+                  <p className="m-0 border-t border-ink bg-paper p-4 text-sm">
+                    {selected.serviceLocation.landmark}
+                  </p>
                 )}
                 <div className="flex flex-col gap-3 border-t border-ink p-3">
                   {selected.status === 'REPORTED' && (
-                    <Link to={`/coordinator/faults/${selected.id}/assign`} className="btn btn-volt">Assign Technician</Link>
+                    <Link to={`/coordinator/faults/${selected.id}/assign`} className="btn btn-volt">
+                      Assign Technician
+                    </Link>
                   )}
-                  <Link to={`/coordinator/faults/${selected.id}`} className="btn btn-ink">Open fault</Link>
+                  <Link to={`/coordinator/faults/${selected.id}`} className="btn btn-ink">
+                    Open fault
+                  </Link>
                 </div>
               </aside>
             ) : (
-              <p className="eyebrow m-0 border border-line p-4 text-muted">Select a fault on the map or in the list to see its progress.</p>
+              <p className="eyebrow m-0 border border-line p-4 text-muted">
+                Select a fault on the map or in the list to see its progress.
+              </p>
             )}
 
             <section className="panel">
@@ -121,8 +156,12 @@ export default function Monitoring() {
                     }`}
                   >
                     <span>
-                      <span className="block font-mono text-xs">{fault.reference} · {fault.serviceLocation.cell}</span>
-                      <span className="block text-sm font-bold">{fault.technician?.name ?? 'No technician'}</span>
+                      <span className="block font-mono text-xs">
+                        {fault.reference} · {fault.serviceLocation.cell}
+                      </span>
+                      <span className="block text-sm font-bold">
+                        {fault.technician?.name ?? 'No technician'}
+                      </span>
                     </span>
                     <StatusPill status={fault.status} audience="coordinator" />
                   </button>
