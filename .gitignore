@@ -20,6 +20,8 @@ mobile/.expo/
 mobile/android/
 mobile/google-services.json
 
-# claude
+# claude and agent files
+.claude/
 docs/agents
-.claude/settings.local.json
+CLAUDE.md
+AGENTS.md
