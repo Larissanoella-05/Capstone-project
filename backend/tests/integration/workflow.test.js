@@ -426,6 +426,73 @@ describe('API integration', { concurrency: false }, () => {
     });
   });
 
+  describe('SMS notices (FR11, FR12)', () => {
+    const sms = [];
+    let smsService;
+
+    before(async () => {
+      smsService = await import('../../src/services/smsService.js');
+      smsService.setSmsProvider({
+        send: async (message) => {
+          sms.push(message);
+        },
+      });
+    });
+
+    after(() => {
+      smsService.setSmsProvider(new smsService.LogSmsProvider());
+    });
+
+    const smsAfter = async (action) => {
+      sms.length = 0;
+      await action();
+      await smsService.whenSmsIdle();
+      return [...sms];
+    };
+
+    it('sends one SMS when a report is received and one when a technician is assigned, and no others', async () => {
+      let fault;
+      const received = await smsAfter(async () => {
+        fault = await reportFault('POWER_OUTAGE', 'SMS test fault');
+      });
+      assert.ok(fault.contactPhone, 'the demo customer should have a phone number');
+      assert.equal(received.length, 1);
+      assert.equal(received[0].to, fault.contactPhone);
+      assert.match(received[0].text, new RegExp(fault.reference));
+
+      let techKey;
+      const assigned = await smsAfter(async () => {
+        techKey = await assignBest(fault.id);
+      });
+      assert.equal(assigned.length, 1, 'the technician’s own job notice is not sent by SMS');
+      assert.equal(assigned[0].to, fault.contactPhone);
+      assert.match(assigned[0].text, /assigned/i);
+
+      const rest = await smsAfter(async () => {
+        for (const status of ['ON_THE_WAY', 'ARRIVED', 'WORKING']) {
+          assert.equal((await setStatus(fault.id, tokens[techKey], { status })).status, 200);
+        }
+      });
+      assert.deepEqual(rest, []);
+    });
+
+    it('a failing gateway never fails the API request', async () => {
+      smsService.setSmsProvider({
+        send: async () => {
+          throw new Error('gateway down');
+        },
+      });
+      const fault = await reportFault('OTHER', 'SMS gateway failure');
+      await smsService.whenSmsIdle();
+      assert.ok(fault.id);
+      smsService.setSmsProvider({
+        send: async (message) => {
+          sms.push(message);
+        },
+      });
+    });
+  });
+
   describe('device tokens and push', () => {
     const TOKEN_ALINE = 'ExponentPushToken[integration-test-aline-0001]';
     const TOKEN_JEAN = 'ExponentPushToken[integration-test-jean-00001]';

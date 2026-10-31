@@ -12,6 +12,7 @@ import {
 import { faultStatusMachine } from '../domain/FaultStatusMachine.js';
 import { customerMessageFor, notify } from './notificationService.js';
 import { sendPushForNotifications } from './pushService.js';
+import { sendSmsForNotifications } from './smsService.js';
 
 const STALE_UPDATE_MESSAGE =
   'This fault was just updated by someone else. Refresh to see the latest status.';
@@ -195,6 +196,8 @@ export async function createFault(user, body) {
       });
   if (!location) throw badRequest('No registered service location was found for your account.');
 
+  const contactPhone = body.contactPhone || user.phone;
+
   const { id, notices } = await prisma.$transaction(async (tx) => {
     // The public reference is derived from the row id, so create first and then stamp it.
     const created = await tx.faultReport.create({
@@ -202,7 +205,7 @@ export async function createFault(user, body) {
         reference: `TMP-${randomUUID()}`,
         category: body.category,
         description: body.description || null,
-        contactPhone: body.contactPhone || user.phone,
+        contactPhone,
         photo: body.photo || null,
         priority: DEFAULT_PRIORITY[body.category] ?? 'MEDIUM',
         status: 'REPORTED',
@@ -232,6 +235,7 @@ export async function createFault(user, body) {
   });
 
   sendPushForNotifications(notices); // after the commit; never throws and is not awaited
+  sendSmsForNotifications(notices, contactPhone);
   return getFault(user, id);
 }
 
@@ -288,6 +292,7 @@ export async function assignTechnician(user, id, technicianId) {
   });
 
   sendPushForNotifications(notices);
+  sendSmsForNotifications(notices, fault.contactPhone || fault.customer.user.phone);
   return getFault(user, id);
 }
 
