@@ -11,14 +11,21 @@ import { api } from '../lib/api.js';
  * Returns { data, error, loading, reload }.
  */
 export function useApi(path, { interval = 0 } = {}) {
-  const [state, setState] = useState({ data: null, error: null, loading: Boolean(path), offline: false });
+  const [state, setState] = useState({
+    data: null,
+    error: null,
+    loading: Boolean(path),
+    offline: false,
+  });
   const activePath = useRef(path);
 
   const [appActive, setAppActive] = useState(AppState.currentState === 'active');
   const [focused, setFocused] = useState(true);
 
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', (next) => setAppActive(next === 'active'));
+    const subscription = AppState.addEventListener('change', (next) =>
+      setAppActive(next === 'active')
+    );
     return () => subscription.remove();
   }, []);
 
@@ -35,7 +42,8 @@ export function useApi(path, { interval = 0 } = {}) {
       if (!silent) setState((current) => ({ ...current, loading: true }));
       try {
         const data = await api(path);
-        if (activePath.current === path) setState({ data, error: null, loading: false, offline: false });
+        if (activePath.current === path)
+          setState({ data, error: null, loading: false, offline: false });
       } catch (error) {
         if (activePath.current !== path) return;
         // On a background refresh keep showing the last good data instead of an error screen,

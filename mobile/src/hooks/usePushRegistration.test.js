@@ -36,11 +36,16 @@ describe('usePushRegistration', () => {
   });
 
   it('registers this phone once after sign-in', async () => {
-    const { rerender } = await renderHook(({ user }) => usePushRegistration(user), { initialProps: { user: aline } });
+    const { rerender } = await renderHook(({ user }) => usePushRegistration(user), {
+      initialProps: { user: aline },
+    });
     await settle();
 
     expect(api).toHaveBeenCalledTimes(1);
-    expect(api).toHaveBeenCalledWith('/devices', { method: 'POST', body: { token: 'ExponentPushToken[first]', platform: 'android' } });
+    expect(api).toHaveBeenCalledWith('/devices', {
+      method: 'POST',
+      body: { token: 'ExponentPushToken[first]', platform: 'android' },
+    });
     expect(getRegisteredToken()).toBe('ExponentPushToken[first]');
 
     // A re-render for the same user (a new object, same id) must not register again.
@@ -55,12 +60,17 @@ describe('usePushRegistration', () => {
 
     await act(async () => onTokenChange({ data: 'ExponentPushToken[second]' }));
 
-    expect(api).toHaveBeenLastCalledWith('/devices', { method: 'POST', body: { token: 'ExponentPushToken[second]', platform: 'android' } });
+    expect(api).toHaveBeenLastCalledWith('/devices', {
+      method: 'POST',
+      body: { token: 'ExponentPushToken[second]', platform: 'android' },
+    });
     expect(getRegisteredToken()).toBe('ExponentPushToken[second]');
   });
 
   it('registers for the new user when someone else signs in on the same phone', async () => {
-    const { rerender } = await renderHook(({ user }) => usePushRegistration(user), { initialProps: { user: aline } });
+    const { rerender } = await renderHook(({ user }) => usePushRegistration(user), {
+      initialProps: { user: aline },
+    });
     await settle();
     await rerender({ user: { id: 2, role: 'TECHNICIAN' } });
     await settle();
@@ -83,7 +93,9 @@ describe('usePushRegistration', () => {
   });
 
   it('stops listening for token changes on sign-out', async () => {
-    const { rerender } = await renderHook(({ user }) => usePushRegistration(user), { initialProps: { user: aline } });
+    const { rerender } = await renderHook(({ user }) => usePushRegistration(user), {
+      initialProps: { user: aline },
+    });
     await settle();
     await rerender({ user: null });
     expect(removeListener).toHaveBeenCalled();

@@ -29,7 +29,11 @@ import { colors, fonts } from '../../../src/theme.js';
 
 // What the main button does at each stage.
 const NEXT_ACTION = {
-  ASSIGNED: { status: 'ON_THE_WAY', label: 'Start Response: On the Way', done: 'Status updated: On the Way.' },
+  ASSIGNED: {
+    status: 'ON_THE_WAY',
+    label: 'Start Response: On the Way',
+    done: 'Status updated: On the Way.',
+  },
   ON_THE_WAY: { status: 'ARRIVED', label: 'Mark as Arrived', done: 'Status updated: Arrived.' },
   ARRIVED: { status: 'WORKING', label: 'Start Work', done: 'Status updated: Working.' },
 };
@@ -79,7 +83,9 @@ export default function JobDetails() {
                 <Eyebrow style={{ color: colors.muted }}>
                   Fault #{fault.reference} · Reported {fmtTime(fault.reportedAt)}
                 </Eyebrow>
-                <Text accessibilityRole="header" style={styles.title}>{CATEGORY_LABEL[fault.category]}</Text>
+                <Text accessibilityRole="header" style={styles.title}>
+                  {CATEGORY_LABEL[fault.category]}
+                </Text>
                 <View style={styles.pills}>
                   <PriorityPill priority={fault.priority} withLabel />
                   <StatusPill status={fault.status} />
@@ -91,10 +97,16 @@ export default function JobDetails() {
                 <View style={styles.block}>
                   <Eyebrow style={{ color: colors.muted }}>Service location</Eyebrow>
                   <Text style={styles.location}>{locationLine(location)}</Text>
-                  <Text style={styles.text}>{[location.village && `${location.village} village`, location.landmark].filter(Boolean).join('. ')}</Text>
+                  <Text style={styles.text}>
+                    {[location.village && `${location.village} village`, location.landmark]
+                      .filter(Boolean)
+                      .join('. ')}
+                  </Text>
                   <Text style={[styles.mono, { marginTop: 8 }]}>
                     {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
-                    {approaching && fault.technician?.distanceKm != null ? ` · ${fmtKm(fault.technician.distanceKm)} away` : ''}
+                    {approaching && Number.isFinite(fault.technician?.distanceKm)
+                      ? ` · ${fmtKm(fault.technician.distanceKm)} away`
+                      : ''}
                   </Text>
                 </View>
                 <View style={styles.blockPadded}>
@@ -103,7 +115,10 @@ export default function JobDetails() {
                     tone="outline"
                     icon="navigation"
                     onPress={() =>
-                      open(`https://www.google.com/maps/dir/?api=1&destination=${location.latitude},${location.longitude}`, 'No app can open directions.')
+                      open(
+                        `https://www.google.com/maps/dir/?api=1&destination=${location.latitude},${location.longitude}`,
+                        'No app can open directions.'
+                      )
                     }
                   />
                 </View>
@@ -117,13 +132,37 @@ export default function JobDetails() {
                   const done = step < stageIndex || fault.status === 'RESOLVED';
                   const active = step === stageIndex && fault.status !== 'RESOLVED';
                   return (
-                    <View key={stage} accessible accessibilityState={{ selected: active }} style={[styles.stage, index > 0 && styles.stageDivider, active && { backgroundColor: colors.volt }]}>
-                      <View style={[styles.box, done && { backgroundColor: colors.ink, borderColor: colors.ink }, active && { borderColor: colors.ink, backgroundColor: colors.white }]}>
+                    <View
+                      key={stage}
+                      accessible
+                      accessibilityState={{ selected: active }}
+                      style={[
+                        styles.stage,
+                        index > 0 && styles.stageDivider,
+                        active && { backgroundColor: colors.volt },
+                      ]}
+                    >
+                      <View
+                        style={[
+                          styles.box,
+                          done && { backgroundColor: colors.ink, borderColor: colors.ink },
+                          active && { borderColor: colors.ink, backgroundColor: colors.white },
+                        ]}
+                      >
                         {done ? <Feather name="check" size={14} color={colors.white} /> : null}
                         {active ? <View style={styles.core} /> : null}
                       </View>
-                      <Text style={[styles.stageLabel, done || active ? { fontFamily: fonts.bold } : { color: colors.muted }]}>{STATUS_LABEL[stage]}</Text>
-                      <Text style={styles.mono}>{active ? `Now · ${fmtTime(time)}` : fmtTime(time)}</Text>
+                      <Text
+                        style={[
+                          styles.stageLabel,
+                          done || active ? { fontFamily: fonts.bold } : { color: colors.muted },
+                        ]}
+                      >
+                        {STATUS_LABEL[stage]}
+                      </Text>
+                      <Text style={styles.mono}>
+                        {active ? `Now · ${fmtTime(time)}` : fmtTime(time)}
+                      </Text>
                     </View>
                   );
                 })}
@@ -132,9 +171,18 @@ export default function JobDetails() {
                   <View style={styles.actions}>
                     <FormError>{actionError}</FormError>
                     {next ? (
-                      <Button label={busy ? 'Updating…' : next.label} disabled={busy} onPress={() => advance(fault, next)} style={{ minHeight: 56 }} />
+                      <Button
+                        label={busy ? 'Updating…' : next.label}
+                        disabled={busy}
+                        onPress={() => advance(fault, next)}
+                        style={{ minHeight: 56 }}
+                      />
                     ) : (
-                      <Button label="Record Resolution" onPress={() => router.push(`/technician/jobs/${fault.id}/resolve`)} style={{ minHeight: 56 }} />
+                      <Button
+                        label="Record Resolution"
+                        onPress={() => router.push(`/technician/jobs/${fault.id}/resolve`)}
+                        style={{ minHeight: 56 }}
+                      />
                     )}
                   </View>
                 ) : null}
@@ -154,7 +202,9 @@ export default function JobDetails() {
                         {fault.workCompleted}
                       </Text>
                     ) : null}
-                    <Text style={[styles.mono, { color: colors.muted }]}>Completed {fmtDateTime(fault.resolvedAt)}</Text>
+                    <Text style={[styles.mono, { color: colors.muted }]}>
+                      Completed {fmtDateTime(fault.resolvedAt)}
+                    </Text>
                   </View>
                 </Panel>
               ) : null}
@@ -162,25 +212,54 @@ export default function JobDetails() {
               <Panel>
                 <PanelHead>Description</PanelHead>
                 <View style={styles.body}>
-                  <Text style={styles.text}>{fault.description || 'The customer did not add a description.'}</Text>
-                  {fault.photo ? <Image source={{ uri: fault.photo }} accessibilityLabel="Photo attached by the customer" resizeMode="cover" style={styles.photo} /> : null}
+                  <Text style={styles.text}>
+                    {fault.description || 'The customer did not add a description.'}
+                  </Text>
+                  {fault.photo ? (
+                    <Image
+                      source={{ uri: fault.photo }}
+                      accessibilityLabel="Photo attached by the customer"
+                      resizeMode="cover"
+                      style={styles.photo}
+                    />
+                  ) : null}
                 </View>
               </Panel>
 
               <Panel>
                 <PanelHead>Customer</PanelHead>
-                <View style={[styles.body, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
+                <View
+                  style={[
+                    styles.body,
+                    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+                  ]}
+                >
                   <View style={{ flex: 1 }}>
                     <Text style={styles.customer}>{fault.customer.name}</Text>
                     <Text style={styles.mono}>Meter {location.meterNumber}</Text>
                   </View>
                   {customerPhone ? (
-                    <Button label="Call" tone="outline" icon="phone" onPress={() => open(`tel:${customerPhone.replace(/\s/g, '')}`, 'This phone cannot make calls.')} style={{ minHeight: 44 }} />
+                    <Button
+                      label="Call"
+                      tone="outline"
+                      icon="phone"
+                      onPress={() =>
+                        open(
+                          `tel:${customerPhone.replace(/\s/g, '')}`,
+                          'This phone cannot make calls.'
+                        )
+                      }
+                      style={{ minHeight: 44 }}
+                    />
                   ) : null}
                 </View>
               </Panel>
 
-              <Button label="Back to my jobs" tone="outline" onPress={() => router.navigate('/technician/jobs')} />
+              <Button
+                label="Back to my jobs"
+                tone="outline"
+                onPress={() => router.navigate('/technician/jobs')}
+              />
             </>
           );
         }}
@@ -192,16 +271,27 @@ export default function JobDetails() {
 const TRACKING_NOTICE = {
   starting: ['loader', 'Starting location sharing…', false],
   sharing: ['map-pin', 'Sharing your location with the customer while this app is open.', false],
-  denied: ['alert-triangle', 'Location is off, so the customer cannot see you. Allow location for Umuriro in Settings.', true],
+  denied: [
+    'alert-triangle',
+    'Location is off, so the customer cannot see you. Allow location for Umuriro in Settings.',
+    true,
+  ],
   error: ['alert-triangle', 'Could not read your location. Check that GPS is on.', true],
-  idle: ['pause-circle', 'Location sharing is paused. Keep this app open to share your position.', false],
+  idle: [
+    'pause-circle',
+    'Location sharing is paused. Keep this app open to share your position.',
+    false,
+  ],
 };
 
 /** Says what the tracker is really doing, including when permission was refused or GPS is off. */
 function TrackingNotice({ status }) {
   const [icon, message, problem] = TRACKING_NOTICE[status] ?? TRACKING_NOTICE.idle;
   return (
-    <View accessibilityLiveRegion="polite" style={[styles.sharing, problem && styles.sharingProblem]}>
+    <View
+      accessibilityLiveRegion="polite"
+      style={[styles.sharing, problem && styles.sharingProblem]}
+    >
       <Feather name={icon} size={18} color={problem ? colors.danger : colors.ink} />
       <Text style={[styles.sharingText, problem && { color: colors.danger }]}>{message}</Text>
     </View>
@@ -211,20 +301,55 @@ function TrackingNotice({ status }) {
 const styles = StyleSheet.create({
   sharingProblem: { backgroundColor: colors.white, borderColor: colors.danger },
   hero: { borderBottomWidth: 1, borderBottomColor: colors.ink, paddingBottom: 16 },
-  title: { marginTop: 8, fontFamily: fonts.black, fontSize: 30, lineHeight: 30, letterSpacing: -0.6, textTransform: 'uppercase', color: colors.ink },
+  title: {
+    marginTop: 8,
+    fontFamily: fonts.black,
+    fontSize: 30,
+    lineHeight: 30,
+    letterSpacing: -0.6,
+    textTransform: 'uppercase',
+    color: colors.ink,
+  },
   pills: { marginTop: 12, flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   block: { borderTopWidth: 1, borderTopColor: colors.ink, padding: 16 },
   blockPadded: { borderTopWidth: 1, borderTopColor: colors.ink, padding: 12 },
-  location: { marginTop: 4, fontFamily: fonts.black, fontSize: 18, textTransform: 'uppercase', color: colors.ink },
+  location: {
+    marginTop: 4,
+    fontFamily: fonts.black,
+    fontSize: 18,
+    textTransform: 'uppercase',
+    color: colors.ink,
+  },
   text: { marginTop: 4, fontFamily: fonts.regular, fontSize: 14, color: colors.ink },
   mono: { fontFamily: fonts.mono, fontSize: 12, color: colors.ink },
-  stage: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12 },
+  stage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
   stageDivider: { borderTopWidth: 1, borderTopColor: colors.line },
-  box: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.line },
+  box: {
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.line,
+  },
   core: { width: 8, height: 8, backgroundColor: colors.ink },
   stageLabel: { flex: 1, fontFamily: fonts.regular, fontSize: 14, color: colors.ink },
   actions: { gap: 12, borderTopWidth: 1, borderTopColor: colors.ink, padding: 12 },
-  sharing: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: colors.ink, backgroundColor: colors.voltSoft, padding: 12 },
+  sharing: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderWidth: 1,
+    borderColor: colors.ink,
+    backgroundColor: colors.voltSoft,
+    padding: 12,
+  },
   sharingText: { flex: 1, fontFamily: fonts.semibold, fontSize: 14, color: colors.ink },
   body: { padding: 16, gap: 8 },
   outcome: { fontFamily: fonts.black, fontSize: 16, textTransform: 'uppercase', color: colors.ink },

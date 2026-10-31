@@ -3,14 +3,20 @@ import { requireAuth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { asyncHandler, badRequest } from '../utils/httpError.js';
 import * as faults from '../services/faultService.js';
-import { assignSchema, createSchema, statusSchema, updateSchema } from '../validators/fault.schemas.js';
+import {
+  assignSchema,
+  createSchema,
+  statusSchema,
+  updateSchema,
+} from '../validators/fault.schemas.js';
 
 const router = Router();
 router.use(requireAuth);
 
 function idParam(req) {
   const id = Number(req.params.id);
-  if (!Number.isInteger(id) || id <= 0) throw badRequest('The fault id in the address is not valid.');
+  if (!Number.isInteger(id) || id <= 0)
+    throw badRequest('The fault id in the address is not valid.');
   return id;
 }
 
@@ -66,7 +72,9 @@ router.post(
   requireRole('COORDINATOR'),
   validate(assignSchema),
   asyncHandler(async (req, res) => {
-    res.json({ fault: await faults.assignTechnician(req.user, idParam(req), req.body.technicianId) });
+    res.json({
+      fault: await faults.assignTechnician(req.user, idParam(req), req.body.technicianId),
+    });
   })
 );
 

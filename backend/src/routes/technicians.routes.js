@@ -14,7 +14,8 @@ router.get(
   requireRole('COORDINATOR'),
   asyncHandler(async (req, res) => {
     const faultId = req.query.faultId ? Number(req.query.faultId) : undefined;
-    if (req.query.faultId && !Number.isInteger(faultId)) throw badRequest('faultId must be a number.');
+    if (req.query.faultId && !Number.isInteger(faultId))
+      throw badRequest('faultId must be a number.');
     res.json({ technicians: await technicians.listTechnicians({ faultId }) });
   })
 );

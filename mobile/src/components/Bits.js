@@ -1,11 +1,21 @@
 import { Feather } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { CUSTOMER_TIMELINE_LABEL, STAGES, STATUS_LABEL, STATUS_TIME_FIELD, fmtTime } from '../lib/format.js';
+import {
+  CUSTOMER_TIMELINE_LABEL,
+  STAGES,
+  STATUS_LABEL,
+  STATUS_TIME_FIELD,
+  fmtTime,
+} from '../lib/format.js';
 import { colors, fonts } from '../theme.js';
 
 /** A bordered white box, like the web's `.panel`. */
 export function Panel({ children, style, ...rest }) {
-  return <View style={[styles.panel, style]} {...rest}>{children}</View>;
+  return (
+    <View style={[styles.panel, style]} {...rest}>
+      {children}
+    </View>
+  );
 }
 
 /** The black strip at the top of a panel. */
@@ -60,10 +70,19 @@ export function StageBar({ status }) {
               style={[
                 styles.stageBox,
                 index > 0 && { borderLeftWidth: 1 },
-                done ? { backgroundColor: colors.ink, borderColor: colors.white } : active ? { backgroundColor: colors.volt } : null,
+                done
+                  ? { backgroundColor: colors.ink, borderColor: colors.white }
+                  : active
+                    ? { backgroundColor: colors.volt }
+                    : null,
               ]}
             >
-              <Text style={[styles.stageText, { color: done ? colors.white : active ? colors.ink : colors.muted }]}>
+              <Text
+                style={[
+                  styles.stageText,
+                  { color: done ? colors.white : active ? colors.ink : colors.muted },
+                ]}
+              >
                 {String(index + 1).padStart(2, '0')}
               </Text>
             </View>
@@ -71,7 +90,9 @@ export function StageBar({ status }) {
         })}
       </View>
       <Eyebrow style={{ marginTop: 8 }}>
-        {current >= 0 ? `Stage ${current + 1} of ${STAGES.length} · ${STATUS_LABEL[status]}` : STATUS_LABEL[status] ?? status}
+        {current >= 0
+          ? `Stage ${current + 1} of ${STAGES.length} · ${STATUS_LABEL[status]}`
+          : (STATUS_LABEL[status] ?? status)}
       </Eyebrow>
     </View>
   );
@@ -88,14 +109,30 @@ export function Timeline({ fault, audience = 'customer' }) {
         const done = Boolean(time) && (index < current || fault.status === 'RESOLVED');
         const active = index === current && fault.status !== 'RESOLVED';
         return (
-          <View key={stage} accessible accessibilityState={{ selected: active }} style={styles.timelineRow}>
-            <View style={[styles.timelineDot, done ? styles.dotDone : active ? styles.dotActive : null]}>
+          <View
+            key={stage}
+            accessible
+            accessibilityState={{ selected: active }}
+            style={styles.timelineRow}
+          >
+            <View
+              style={[styles.timelineDot, done ? styles.dotDone : active ? styles.dotActive : null]}
+            >
               {done ? <Feather name="check" size={16} color={colors.white} /> : null}
               {active ? <View style={styles.dotCore} /> : null}
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.timelineLabel, done || active ? { fontFamily: fonts.bold } : { color: colors.muted }]}>{labels[stage]}</Text>
-              {active ? <Eyebrow style={{ fontSize: 10, color: colors.muted }}>Current stage</Eyebrow> : null}
+              <Text
+                style={[
+                  styles.timelineLabel,
+                  done || active ? { fontFamily: fonts.bold } : { color: colors.muted },
+                ]}
+              >
+                {labels[stage]}
+              </Text>
+              {active ? (
+                <Eyebrow style={{ fontSize: 10, color: colors.muted }}>Current stage</Eyebrow>
+              ) : null}
             </View>
             <Text style={styles.timelineTime}>{fmtTime(time)}</Text>
           </View>
@@ -103,8 +140,15 @@ export function Timeline({ fault, audience = 'customer' }) {
       })}
       {fault.status === 'CANCELLED' ? (
         <View style={styles.timelineRow}>
-          <View style={[styles.timelineDot, { backgroundColor: colors.danger, borderColor: colors.danger }]} />
-          <Text style={[styles.timelineLabel, { flex: 1, fontFamily: fonts.bold }]}>Report cancelled</Text>
+          <View
+            style={[
+              styles.timelineDot,
+              { backgroundColor: colors.danger, borderColor: colors.danger },
+            ]}
+          />
+          <Text style={[styles.timelineLabel, { flex: 1, fontFamily: fonts.bold }]}>
+            Report cancelled
+          </Text>
           <Text style={styles.timelineTime}>{fmtTime(fault.cancelledAt)}</Text>
         </View>
       ) : null}
@@ -115,8 +159,14 @@ export function Timeline({ fault, audience = 'customer' }) {
 const MAP_LEGEND = {
   unassigned: ['Unassigned fault', { backgroundColor: colors.danger }],
   site: ['Assigned / on the way', { backgroundColor: colors.ink }],
-  onsite: ['Technician on site', { backgroundColor: colors.ok, borderRadius: 7, borderWidth: 2, borderColor: colors.ink }],
-  technician: ['Technician', { backgroundColor: colors.volt, borderRadius: 7, borderWidth: 2, borderColor: colors.ink }],
+  onsite: [
+    'Technician on site',
+    { backgroundColor: colors.ok, borderRadius: 7, borderWidth: 2, borderColor: colors.ink },
+  ],
+  technician: [
+    'Technician',
+    { backgroundColor: colors.volt, borderRadius: 7, borderWidth: 2, borderColor: colors.ink },
+  ],
 };
 
 /** The small key under a map. */
@@ -163,7 +213,9 @@ export function PageHeading({ eyebrow, title, children }) {
   return (
     <View style={styles.heading}>
       {eyebrow ? <Eyebrow style={{ color: colors.muted }}>{eyebrow}</Eyebrow> : null}
-      <Text accessibilityRole="header" style={styles.title}>{title}</Text>
+      <Text accessibilityRole="header" style={styles.title}>
+        {title}
+      </Text>
       {children}
     </View>
   );
@@ -171,25 +223,74 @@ export function PageHeading({ eyebrow, title, children }) {
 
 const styles = StyleSheet.create({
   panel: { borderWidth: 1, borderColor: colors.ink, backgroundColor: colors.white },
-  panelHead: { borderBottomWidth: 1, borderBottomColor: colors.ink, backgroundColor: colors.ink, paddingHorizontal: 16, paddingVertical: 10 },
-  panelHeadText: { fontFamily: fonts.mono, fontSize: 11, letterSpacing: 0.9, textTransform: 'uppercase', color: colors.white },
-  button: { minHeight: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderWidth: 1, paddingHorizontal: 20 },
-  buttonText: { fontFamily: fonts.bold, fontSize: 15, letterSpacing: 1.2, textTransform: 'uppercase' },
+  panelHead: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.ink,
+    backgroundColor: colors.ink,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  panelHeadText: {
+    fontFamily: fonts.mono,
+    fontSize: 11,
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
+    color: colors.white,
+  },
+  button: {
+    minHeight: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    borderWidth: 1,
+    paddingHorizontal: 20,
+  },
+  buttonText: {
+    fontFamily: fonts.bold,
+    fontSize: 15,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  },
   stageRow: { flexDirection: 'row', borderWidth: 1, borderColor: colors.ink },
   stageBox: { flex: 1, height: 44, padding: 8, borderColor: colors.ink },
   stageText: { fontFamily: fonts.mono, fontSize: 11 },
   timeline: { padding: 16, gap: 14 },
   timelineRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  timelineDot: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.line, backgroundColor: colors.white },
+  timelineDot: {
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.white,
+  },
   dotDone: { backgroundColor: colors.ink, borderColor: colors.ink },
   dotActive: { backgroundColor: colors.volt, borderColor: colors.ink },
   dotCore: { width: 8, height: 8, backgroundColor: colors.ink },
   timelineLabel: { fontFamily: fonts.regular, fontSize: 14, color: colors.ink },
   timelineTime: { fontFamily: fonts.mono, fontSize: 12, color: colors.ink },
-  legend: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 20, rowGap: 8, borderTopWidth: 1, borderTopColor: colors.ink, paddingHorizontal: 16, paddingVertical: 12 },
+  legend: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    columnGap: 20,
+    rowGap: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.ink,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   swatch: { width: 14, height: 14 },
-  eyebrow: { fontFamily: fonts.mono, fontSize: 11, lineHeight: 16, letterSpacing: 0.9, textTransform: 'uppercase', color: colors.ink },
+  eyebrow: {
+    fontFamily: fonts.mono,
+    fontSize: 11,
+    lineHeight: 16,
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
+    color: colors.ink,
+  },
   keyRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 16, paddingVertical: 10 },
   hairline: { borderBottomWidth: 1, borderBottomColor: colors.line },
   keyLabel: { color: colors.muted, flexShrink: 0, lineHeight: 20 },
@@ -199,5 +300,13 @@ const styles = StyleSheet.create({
   cell: { padding: 12 },
   cellValue: { marginTop: 4, fontSize: 14, fontFamily: fonts.semibold, color: colors.ink },
   heading: { borderBottomWidth: 1, borderBottomColor: colors.ink, paddingBottom: 16 },
-  title: { marginTop: 8, fontFamily: fonts.black, fontSize: 30, lineHeight: 30, letterSpacing: -0.6, textTransform: 'uppercase', color: colors.ink },
+  title: {
+    marginTop: 8,
+    fontFamily: fonts.black,
+    fontSize: 30,
+    lineHeight: 30,
+    letterSpacing: -0.6,
+    textTransform: 'uppercase',
+    color: colors.ink,
+  },
 });

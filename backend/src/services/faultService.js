@@ -2,12 +2,19 @@ import { randomUUID } from 'node:crypto';
 import { prisma } from '../lib/prisma.js';
 import { badRequest, conflict, forbidden, notFound } from '../utils/httpError.js';
 import { distanceKm } from '../utils/geo.js';
-import { ACTIVE_JOB_STATUSES, CATEGORY_LABEL, DEFAULT_PRIORITY, OPEN_STATUSES, STATUS_TIMESTAMP } from '../utils/constants.js';
+import {
+  ACTIVE_JOB_STATUSES,
+  CATEGORY_LABEL,
+  DEFAULT_PRIORITY,
+  OPEN_STATUSES,
+  STATUS_TIMESTAMP,
+} from '../utils/constants.js';
 import { faultStatusMachine } from '../domain/FaultStatusMachine.js';
 import { customerMessageFor, notify } from './notificationService.js';
 import { sendPushForNotifications } from './pushService.js';
 
-const STALE_UPDATE_MESSAGE = 'This fault was just updated by someone else. Refresh to see the latest status.';
+const STALE_UPDATE_MESSAGE =
+  'This fault was just updated by someone else. Refresh to see the latest status.';
 
 /**
  * Updates a fault only if it is still in the state we checked (optimistic concurrency).
@@ -20,7 +27,7 @@ async function guardedUpdate(tx, id, expected, data) {
 }
 
 /** Everything the three interfaces need to draw a fault. */
-const faultInclude = {
+const faultInclude = /** @satisfies {import('@prisma/client').Prisma.FaultReportInclude} */ ({
   customer: { include: { user: { select: { id: true, name: true, phone: true } } } },
   serviceLocation: true,
   technician: {
@@ -33,7 +40,7 @@ const faultInclude = {
     orderBy: { createdAt: 'asc' },
     include: { changedBy: { select: { name: true, role: true } } },
   },
-};
+});
 
 /** Turns a database row into the JSON shape shared by all three roles. */
 export function serializeFault(fault) {
@@ -112,6 +119,7 @@ function scopeFor(user) {
 }
 
 export async function listFaults(user, query = {}) {
+  /** @type {import('@prisma/client').Prisma.FaultReportWhereInput} */
   const where = { ...scopeFor(user) };
   const { status, priority, search, date } = query;
 
@@ -130,10 +138,10 @@ export async function listFaults(user, query = {}) {
 
   const term = typeof search === 'string' ? search.trim() : '';
   if (term) {
-    const contains = { contains: term, mode: 'insensitive' };
+    const contains = { contains: term, mode: /** @type {const} */ ('insensitive') };
     const categoryMatches = Object.entries(CATEGORY_LABEL)
       .filter(([, label]) => label.toLowerCase().includes(term.toLowerCase()))
-      .map(([category]) => category);
+      .map(([category]) => /** @type {import('@prisma/client').FaultCategory} */ (category));
     where.OR = [
       { reference: contains },
       { description: contains },
@@ -177,8 +185,13 @@ export async function createFault(user, body) {
   const customer = user.customer;
 
   const location = body.serviceLocationId
-    ? await prisma.serviceLocation.findFirst({ where: { id: body.serviceLocationId, customerId: customer.id } })
-    : await prisma.serviceLocation.findFirst({ where: { customerId: customer.id }, orderBy: { id: 'asc' } });
+    ? await prisma.serviceLocation.findFirst({
+        where: { id: body.serviceLocationId, customerId: customer.id },
+      })
+    : await prisma.serviceLocation.findFirst({
+        where: { customerId: customer.id },
+        orderBy: { id: 'asc' },
+      });
   if (!location) throw badRequest('No registered service location was found for your account.');
 
   const { id, notices } = await prisma.$transaction(async (tx) => {
@@ -200,7 +213,12 @@ export async function createFault(user, body) {
     await tx.faultReport.update({ where: { id: created.id }, data: { reference } });
 
     await tx.faultStatusHistory.create({
-      data: { faultId: created.id, status: 'REPORTED', changedById: user.id, note: 'Fault reported by customer' },
+      data: {
+        faultId: created.id,
+        status: 'REPORTED',
+        changedById: user.id,
+        note: 'Fault reported by customer',
+      },
     });
     const notice = await notify(tx, {
       userId: user.id,
@@ -221,10 +239,14 @@ export async function assignTechnician(user, id, technicianId) {
   const fault = await loadFault(user, id);
   faultStatusMachine.assertAssignable(fault.status);
 
-  const technician = await prisma.technician.findUnique({ where: { id: technicianId }, include: { user: true } });
+  const technician = await prisma.technician.findUnique({
+    where: { id: technicianId },
+    include: { user: true },
+  });
   if (!technician) throw notFound('That technician does not exist.');
   if (!technician.onDuty) throw conflict(`${technician.user.name} is off duty.`);
-  if (fault.technicianId === technician.id) throw conflict(`${technician.user.name} is already assigned to this fault.`);
+  if (fault.technicianId === technician.id)
+    throw conflict(`${technician.user.name} is already assigned to this fault.`);
 
   const notices = await prisma.$transaction(async (tx) => {
     // Only succeeds if nobody else assigned or started the job since we loaded it.
@@ -232,10 +254,20 @@ export async function assignTechnician(user, id, technicianId) {
       tx,
       id,
       { status: fault.status, technicianId: fault.technicianId },
-      { technicianId: technician.id, assignedById: user.coordinator.id, status: 'ASSIGNED', assignedAt: new Date() }
+      {
+        technicianId: technician.id,
+        assignedById: user.coordinator.id,
+        status: 'ASSIGNED',
+        assignedAt: new Date(),
+      }
     );
     await tx.faultStatusHistory.create({
-      data: { faultId: id, status: 'ASSIGNED', changedById: user.id, note: `Assigned to ${technician.user.name}` },
+      data: {
+        faultId: id,
+        status: 'ASSIGNED',
+        changedById: user.id,
+        note: `Assigned to ${technician.user.name}`,
+      },
     });
     const toCustomer = await notify(tx, {
       userId: fault.customer.userId,
@@ -319,7 +351,9 @@ export async function changeStatus(user, id, body) {
       reference: fault.reference,
       technicianName: fault.technician?.user.name,
     });
-    return message ? [await notify(tx, { userId: fault.customer.userId, faultId: id, ...message })] : [];
+    return message
+      ? [await notify(tx, { userId: fault.customer.userId, faultId: id, ...message })]
+      : [];
   });
 
   sendPushForNotifications(notices);

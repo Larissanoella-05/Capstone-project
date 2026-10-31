@@ -15,7 +15,11 @@ export function Loading({ label = 'Loading' }) {
 /** A square outlined button, used by the retry actions. */
 export function OutlineButton({ label, onPress, style }) {
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.outline, pressed && styles.pressed, style]}>
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [styles.outline, pressed && styles.pressed, style]}
+    >
       <Text style={styles.outlineText}>{label}</Text>
     </Pressable>
   );
@@ -29,7 +33,12 @@ export function ErrorState({ error, onRetry }) {
   return (
     <View accessibilityRole="alert" style={styles.errorBox}>
       <View style={styles.errorBody}>
-        <Feather name={offline ? 'wifi-off' : 'alert-triangle'} size={20} color={colors.danger} style={{ marginTop: 2 }} />
+        <Feather
+          name={offline ? 'wifi-off' : 'alert-triangle'}
+          size={20}
+          color={colors.danger}
+          style={{ marginTop: 2 }}
+        />
         <View style={{ flex: 1 }}>
           <Text style={styles.errorTitle}>{offline ? 'No connection' : 'This did not load'}</Text>
           <Text style={styles.errorMessage}>{error?.message || 'Something went wrong.'}</Text>
@@ -95,20 +104,75 @@ export function OfflineStrip({ onRetry }) {
 const styles = StyleSheet.create({
   box: { borderWidth: 1, borderColor: colors.line, paddingHorizontal: 16, paddingVertical: 32 },
   centerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 },
-  outline: { minHeight: 44, borderWidth: 1, borderColor: colors.ink, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20 },
-  outlineText: { fontFamily: fonts.bold, fontSize: 14, letterSpacing: 1.1, textTransform: 'uppercase', color: colors.ink },
+  outline: {
+    minHeight: 44,
+    borderWidth: 1,
+    borderColor: colors.ink,
+    backgroundColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  outlineText: {
+    fontFamily: fonts.bold,
+    fontSize: 14,
+    letterSpacing: 1.1,
+    textTransform: 'uppercase',
+    color: colors.ink,
+  },
   pressed: { backgroundColor: colors.paper },
   errorBox: { borderWidth: 1, borderColor: colors.danger },
   errorBody: { flexDirection: 'row', gap: 12, padding: 16 },
-  errorTitle: { fontFamily: fonts.black, fontSize: 16, textTransform: 'uppercase', color: colors.ink },
+  errorTitle: {
+    fontFamily: fonts.black,
+    fontSize: 16,
+    textTransform: 'uppercase',
+    color: colors.ink,
+  },
   errorMessage: { marginTop: 4, fontFamily: fonts.regular, fontSize: 14, color: colors.ink },
   errorFooter: { borderTopWidth: 1, borderTopColor: colors.danger, padding: 12 },
-  offline: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: colors.ink, backgroundColor: colors.voltSoft, paddingHorizontal: 12, paddingVertical: 10 },
+  offline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderColor: colors.ink,
+    backgroundColor: colors.voltSoft,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
   offlineText: { flex: 1, fontFamily: fonts.semibold, fontSize: 13, color: colors.ink },
-  offlineAction: { fontFamily: fonts.mono, fontSize: 11, letterSpacing: 0.9, textTransform: 'uppercase', color: colors.ink, textDecorationLine: 'underline' },
+  offlineAction: {
+    fontFamily: fonts.mono,
+    fontSize: 11,
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
+    color: colors.ink,
+    textDecorationLine: 'underline',
+  },
   emptyBox: { alignItems: 'center' },
-  emptyTitle: { marginTop: 12, fontFamily: fonts.black, fontSize: 16, textTransform: 'uppercase', color: colors.ink, textAlign: 'center' },
-  emptyText: { marginTop: 4, fontFamily: fonts.regular, fontSize: 14, color: colors.muted, textAlign: 'center' },
-  formError: { flexDirection: 'row', gap: 8, borderWidth: 1, borderColor: colors.danger, backgroundColor: colors.white, padding: 12 },
+  emptyTitle: {
+    marginTop: 12,
+    fontFamily: fonts.black,
+    fontSize: 16,
+    textTransform: 'uppercase',
+    color: colors.ink,
+    textAlign: 'center',
+  },
+  emptyText: {
+    marginTop: 4,
+    fontFamily: fonts.regular,
+    fontSize: 14,
+    color: colors.muted,
+    textAlign: 'center',
+  },
+  formError: {
+    flexDirection: 'row',
+    gap: 8,
+    borderWidth: 1,
+    borderColor: colors.danger,
+    backgroundColor: colors.white,
+    padding: 12,
+  },
   formErrorText: { flex: 1, fontFamily: fonts.semibold, fontSize: 14, color: colors.danger },
 });

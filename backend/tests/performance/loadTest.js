@@ -27,7 +27,9 @@ export function percentile(sorted, p) {
 async function timedGet(path, token) {
   const start = performance.now();
   try {
-    const response = await fetch(`${API}${path}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+    const response = await fetch(`${API}${path}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
     await response.arrayBuffer();
     return { ms: performance.now() - start, ok: response.ok };
   } catch {
@@ -73,14 +75,25 @@ async function main() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: EMAIL, password: PASSWORD }),
   });
-  if (!loginResponse.ok) throw new Error(`Login failed (${loginResponse.status}). Is the API running and seeded?`);
+  if (!loginResponse.ok)
+    throw new Error(`Login failed (${loginResponse.status}). Is the API running and seeded?`);
   const { token } = await loginResponse.json();
 
-  const faults = await (await fetch(`${API}/faults?status=ALL`, { headers: { Authorization: `Bearer ${token}` } })).json();
+  const faults = await (
+    await fetch(`${API}/faults?status=ALL`, { headers: { Authorization: `Bearer ${token}` } })
+  ).json();
   const faultId = faults.faults?.[0]?.id;
 
-  console.log(`Load test against ${API}: ${REQUESTS} requests per endpoint, ${CONCURRENCY} concurrent\n`);
-  const endpoints = ['/health', '/faults?status=ALL', '/stats/overview', '/stats/analytics', '/notifications'];
+  console.log(
+    `Load test against ${API}: ${REQUESTS} requests per endpoint, ${CONCURRENCY} concurrent\n`
+  );
+  const endpoints = [
+    '/health',
+    '/faults?status=ALL',
+    '/stats/overview',
+    '/stats/analytics',
+    '/notifications',
+  ];
   if (faultId) endpoints.push(`/faults/${faultId}`, `/technicians?faultId=${faultId}`);
 
   const rows = [];

@@ -4,15 +4,20 @@ import { distanceKm } from '../utils/geo.js';
 import { ACTIVE_JOB_STATUSES } from '../utils/constants.js';
 import { technicianRanker } from '../domain/TechnicianRanker.js';
 
-const technicianInclude = {
+const technicianInclude = /** @satisfies {import('@prisma/client').Prisma.TechnicianInclude} */ ({
   user: { select: { id: true, name: true, phone: true, email: true } },
   locations: { orderBy: { recordedAt: 'desc' }, take: 1 },
   faults: {
     where: { status: { in: ACTIVE_JOB_STATUSES } },
-    select: { id: true, reference: true, status: true, serviceLocation: { select: { cell: true } } },
+    select: {
+      id: true,
+      reference: true,
+      status: true,
+      serviceLocation: { select: { cell: true } },
+    },
     orderBy: { assignedAt: 'asc' },
   },
-};
+});
 
 function serializeTechnician(technician, target) {
   const location = technician.locations[0] ?? null;
@@ -42,7 +47,10 @@ function serializeTechnician(technician, target) {
   };
 }
 
-/** All technicians. With a faultId they are sorted by distance to that fault. */
+/**
+ * All technicians. With a faultId they are sorted by distance to that fault.
+ * @param {{ faultId?: number }} [options]
+ */
 export async function listTechnicians({ faultId } = {}) {
   let target = null;
   if (faultId) {
@@ -62,7 +70,10 @@ export async function listTechnicians({ faultId } = {}) {
 }
 
 export async function getTechnician(id) {
-  const technician = await prisma.technician.findUnique({ where: { id }, include: technicianInclude });
+  const technician = await prisma.technician.findUnique({
+    where: { id },
+    include: technicianInclude,
+  });
   if (!technician) throw notFound('That technician does not exist.');
   return serializeTechnician(technician, null);
 }
@@ -70,11 +81,19 @@ export async function getTechnician(id) {
 /** Stores a new position for the signed-in technician (simulated or from the device). */
 export async function recordLocation(user, { latitude, longitude, faultId, label }) {
   if (faultId) {
-    const fault = await prisma.faultReport.findFirst({ where: { id: faultId, technicianId: user.technician.id } });
+    const fault = await prisma.faultReport.findFirst({
+      where: { id: faultId, technicianId: user.technician.id },
+    });
     if (!fault) throw badRequest('That fault is not assigned to you.');
   }
   const location = await prisma.technicianLocation.create({
-    data: { technicianId: user.technician.id, faultId: faultId ?? null, latitude, longitude, label: label ?? null },
+    data: {
+      technicianId: user.technician.id,
+      faultId: faultId ?? null,
+      latitude,
+      longitude,
+      label: label ?? null,
+    },
   });
   return {
     latitude: location.latitude,

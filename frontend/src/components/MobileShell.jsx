@@ -25,8 +25,14 @@ export default function MobileShell({ base, tabs, roleLabel }) {
   return (
     <div className="flex min-h-dvh flex-col bg-white md:flex-row">
       {/* Sidebar: tablet and desktop */}
-      <nav aria-label="Main" className="hidden shrink-0 flex-col border-r border-ink md:sticky md:top-0 md:flex md:h-dvh md:w-64">
-        <Link to={base} className="flex h-[72px] items-center gap-3 border-b border-ink px-5 no-underline">
+      <nav
+        aria-label="Main"
+        className="hidden shrink-0 flex-col border-r border-ink md:sticky md:top-0 md:flex md:h-dvh md:w-64"
+      >
+        <Link
+          to={base}
+          className="flex h-[72px] items-center gap-3 border-b border-ink px-5 no-underline"
+        >
           <LogoMark />
           <div>
             <div className="text-lg font-black uppercase leading-none">Umuriro</div>
@@ -46,7 +52,9 @@ export default function MobileShell({ base, tabs, roleLabel }) {
                   index === tabs.length - 1 ? 'border-b' : ''
                 } ${active ? 'bg-ink text-white' : 'hover:bg-paper'}`}
               >
-                <span className={`font-mono text-[11px] font-medium ${active ? 'text-line' : 'text-muted'}`}>
+                <span
+                  className={`font-mono text-[11px] font-medium ${active ? 'text-line' : 'text-muted'}`}
+                >
                   {String(index + 1).padStart(2, '0')}
                 </span>
                 <span className="flex-1">{tab.label}</span>

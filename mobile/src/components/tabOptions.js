@@ -8,14 +8,33 @@ export const tabScreenOptions = {
   tabBarActiveBackgroundColor: colors.ink,
   tabBarInactiveBackgroundColor: colors.white,
   tabBarIconStyle: { display: 'none' },
-  tabBarStyle: { height: 64, borderTopWidth: 1, borderTopColor: colors.ink, backgroundColor: colors.white },
-  tabBarItemStyle: { justifyContent: 'center', borderLeftWidth: StyleSheet.hairlineWidth, borderLeftColor: colors.ink },
+  tabBarStyle: {
+    height: 64,
+    borderTopWidth: 1,
+    borderTopColor: colors.ink,
+    backgroundColor: colors.white,
+  },
+  tabBarItemStyle: {
+    justifyContent: 'center',
+    borderLeftWidth: StyleSheet.hairlineWidth,
+    borderLeftColor: colors.ink,
+  },
 };
 
 /** A tab label in the monospace caps style of the web tab bar. */
 export const tabLabel = (title) =>
   function TabLabel({ color }) {
     return (
-      <Text style={{ color, fontFamily: fonts.monoMedium, fontSize: 10, letterSpacing: 0.8, textTransform: 'uppercase' }}>{title}</Text>
+      <Text
+        style={{
+          color,
+          fontFamily: fonts.monoMedium,
+          fontSize: 10,
+          letterSpacing: 0.8,
+          textTransform: 'uppercase',
+        }}
+      >
+        {title}
+      </Text>
     );
   };

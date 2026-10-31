@@ -42,7 +42,14 @@ export const useToast = () => useContext(ToastContext);
 
 const styles = StyleSheet.create({
   host: { position: 'absolute', left: 0, right: 0, alignItems: 'center', paddingHorizontal: 16 },
-  toast: { maxWidth: 440, borderWidth: 1, borderColor: colors.ink, backgroundColor: colors.ink, paddingHorizontal: 16, paddingVertical: 12 },
+  toast: {
+    maxWidth: 440,
+    borderWidth: 1,
+    borderColor: colors.ink,
+    backgroundColor: colors.ink,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
   error: { backgroundColor: colors.danger },
   text: { color: colors.white, fontFamily: fonts.bold, fontSize: 14 },
 });

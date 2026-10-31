@@ -10,7 +10,8 @@
     "test": "node --test tests/unit/*.test.js",
     "test:integration": "node --test --test-concurrency=1 tests/integration/*.test.js",
     "test:all": "npm test && npm run test:integration",
-    "test:perf": "node tests/performance/loadTest.js"
+    "test:perf": "node tests/performance/loadTest.js",
+    "typecheck": "tsc -p jsconfig.json"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
@@ -33,5 +34,14 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
   }
 }

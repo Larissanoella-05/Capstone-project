@@ -46,8 +46,9 @@ export default function CustomerDashboard() {
               <CurrentFault fault={current} />
             ) : (
               <EmptyState title="No open fault">
-                You have no fault in progress. If your power, voltage, connection or meter has a problem, report it
-                and a technician will be sent to your registered service location.
+                You have no fault in progress. If your power, voltage, connection or meter has a
+                problem, report it and a technician will be sent to your registered service
+                location.
               </EmptyState>
             )}
 
@@ -57,7 +58,9 @@ export default function CustomerDashboard() {
                 <Link to="/customer/reports">View all</Link>
               </div>
               {recent.length === 0 ? (
-                <p className="m-0 p-4 text-sm text-muted">Your earlier reports will be listed here.</p>
+                <p className="m-0 p-4 text-sm text-muted">
+                  Your earlier reports will be listed here.
+                </p>
               ) : (
                 recent.map((fault, index) => (
                   <Link
@@ -69,7 +72,9 @@ export default function CustomerDashboard() {
                   >
                     <div>
                       <div className="font-mono text-xs">#{fault.reference}</div>
-                      <div className="mt-0.5 text-base font-black uppercase">{CATEGORY_LABEL[fault.category]}</div>
+                      <div className="mt-0.5 text-base font-black uppercase">
+                        {CATEGORY_LABEL[fault.category]}
+                      </div>
                     </div>
                     <StatusPill status={fault.status} />
                   </Link>
@@ -94,7 +99,9 @@ function CurrentFault({ fault }) {
       </div>
       <div className="lg:grid lg:grid-cols-2">
         <div className="flex flex-col px-5 pb-5 pt-2">
-          <KeyRow label="Report ID" mono>#{fault.reference}</KeyRow>
+          <KeyRow label="Report ID" mono>
+            #{fault.reference}
+          </KeyRow>
           <KeyRow label="Fault category">{CATEGORY_LABEL[fault.category]}</KeyRow>
           <KeyRow label="Technician">{fault.technician?.name ?? 'Not assigned yet'}</KeyRow>
           <KeyRow label="Location">{locationLine(fault.serviceLocation)}</KeyRow>

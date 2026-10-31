@@ -21,7 +21,7 @@ export default function Assign() {
   const [formError, setFormError] = useState('');
 
   const fault = faultState.data?.fault;
-  const technicians = techState.data?.technicians ?? [];
+  const technicians = useMemo(() => techState.data?.technicians ?? [], [techState.data]);
   // The API ranks technicians (available → nearest → least busy) and flags the best one.
   const recommended = technicians.find((technician) => technician.recommended);
 
@@ -55,14 +55,26 @@ export default function Assign() {
   }
 
   const error = faultState.error || techState.error;
-  if (error) return <ErrorState error={error} onRetry={() => { faultState.reload(); techState.reload(); }} />;
+  if (error)
+    return (
+      <ErrorState
+        error={error}
+        onRetry={() => {
+          faultState.reload();
+          techState.reload();
+        }}
+      />
+    );
   if (!fault || !techState.data) return <Loading label="Loading technicians" />;
 
   const assignable = ['REPORTED', 'ASSIGNED'].includes(fault.status);
 
   return (
     <>
-      <Link to={`/coordinator/faults/${fault.id}`} className="eyebrow -mb-4 flex items-center gap-2 self-start">
+      <Link
+        to={`/coordinator/faults/${fault.id}`}
+        className="eyebrow -mb-4 flex items-center gap-2 self-start"
+      >
         <ArrowLeft size={14} aria-hidden="true" />
         Fault #{fault.reference}
       </Link>
@@ -77,7 +89,11 @@ export default function Assign() {
       {!assignable ? (
         <EmptyState
           title="This fault can no longer be reassigned"
-          action={<Link to={`/coordinator/faults/${fault.id}`} className="btn btn-ink">Open fault</Link>}
+          action={
+            <Link to={`/coordinator/faults/${fault.id}`} className="btn btn-ink">
+              Open fault
+            </Link>
+          }
         >
           The response has already started or the report is closed.
         </EmptyState>
@@ -91,23 +107,35 @@ export default function Assign() {
                 className="h-[400px]"
                 ariaLabel={`Map showing fault ${fault.reference} and the positions of ${technicians.length} technicians`}
               />
-              <MapLegend items={[fault.status === 'REPORTED' ? 'unassigned' : 'site', 'technician']} />
+              <MapLegend
+                items={[fault.status === 'REPORTED' ? 'unassigned' : 'site', 'technician']}
+              />
             </section>
 
             <section className="panel">
               <h2 className="panel-head m-0 font-normal">Fault information</h2>
               <div className="px-4 py-1">
-                <KeyRow label="Fault ID" mono>#{fault.reference}</KeyRow>
-                <KeyRow label="Priority"><PriorityPill priority={fault.priority} /></KeyRow>
+                <KeyRow label="Fault ID" mono>
+                  #{fault.reference}
+                </KeyRow>
+                <KeyRow label="Priority">
+                  <PriorityPill priority={fault.priority} />
+                </KeyRow>
                 <KeyRow label="Reported">{fmtDateTime(fault.reportedAt)}</KeyRow>
                 <KeyRow label="Customer">{fault.customer.name}</KeyRow>
                 <KeyRow label="Location">{locationLine(fault.serviceLocation)}</KeyRow>
-                <KeyRow label="Meter number" mono>{fault.serviceLocation.meterNumber}</KeyRow>
-                <KeyRow label="Landmark note" last>{fault.serviceLocation.landmark || '—'}</KeyRow>
+                <KeyRow label="Meter number" mono>
+                  {fault.serviceLocation.meterNumber}
+                </KeyRow>
+                <KeyRow label="Landmark note" last>
+                  {fault.serviceLocation.landmark || '—'}
+                </KeyRow>
               </div>
               <div className="border-t border-ink p-4">
                 <div className="eyebrow text-muted">Description</div>
-                <p className="mb-0 mt-1 text-sm">{fault.description || 'The customer did not add a description.'}</p>
+                <p className="mb-0 mt-1 text-sm">
+                  {fault.description || 'The customer did not add a description.'}
+                </p>
               </div>
             </section>
           </div>
@@ -132,12 +160,18 @@ export default function Assign() {
                   <div className="grid grid-cols-3 border-t border-ink">
                     <Cell label="Location">{technician.location?.label ?? 'Not recorded'}</Cell>
                     <Cell label="Distance" className="border-l border-ink">
-                      {technician.distanceKm !== null ? `${fmtKm(technician.distanceKm)} away` : '—'}
+                      {technician.distanceKm !== null
+                        ? `${fmtKm(technician.distanceKm)} away`
+                        : '—'}
                       {recommended?.id === technician.id && (
-                        <span className="ml-1 bg-volt px-1 font-mono text-[10px] font-medium uppercase">Recommended</span>
+                        <span className="ml-1 bg-volt px-1 font-mono text-[10px] font-medium uppercase">
+                          Recommended
+                        </span>
                       )}
                     </Cell>
-                    <Cell label="Active jobs" className="border-l border-ink">{technician.activeJobs.length}</Cell>
+                    <Cell label="Active jobs" className="border-l border-ink">
+                      {technician.activeJobs.length}
+                    </Cell>
                   </div>
                   <div className="border-t border-ink p-3">
                     <button
@@ -146,7 +180,11 @@ export default function Assign() {
                       disabled={Boolean(assigning) || isCurrent || !technician.onDuty}
                       onClick={() => assign(technician)}
                     >
-                      {isCurrent ? 'Currently assigned' : assigning === technician.id ? 'Assigning…' : `Assign ${firstNames(technician.name)}`}
+                      {isCurrent
+                        ? 'Currently assigned'
+                        : assigning === technician.id
+                          ? 'Assigning…'
+                          : `Assign ${firstNames(technician.name)}`}
                     </button>
                   </div>
                 </article>

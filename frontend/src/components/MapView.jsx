@@ -52,7 +52,8 @@ export default function MapView({
     });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
     layerRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
@@ -76,10 +77,18 @@ export default function MapView({
     layer.clearLayers();
 
     lines.forEach((points) => {
-      L.polyline(points, { color: '#0B0B0B', weight: 4, opacity: 1, dashArray: '2 8', lineCap: 'square' }).addTo(layer);
+      L.polyline(points, {
+        color: '#0B0B0B',
+        weight: 4,
+        opacity: 1,
+        dashArray: '2 8',
+        lineCap: 'square',
+      }).addTo(layer);
     });
 
-    const valid = markers.filter((marker) => Number.isFinite(marker.lat) && Number.isFinite(marker.lng));
+    const valid = markers.filter(
+      (marker) => Number.isFinite(marker.lat) && Number.isFinite(marker.lng)
+    );
     valid.forEach((marker) => {
       const leafletMarker = L.marker([marker.lat, marker.lng], {
         icon: iconFor(marker.kind, marker.id === selectedId),
@@ -87,13 +96,17 @@ export default function MapView({
         title: marker.label,
         zIndexOffset: marker.kind === 'technician' || marker.kind === 'onsite' ? 500 : 0,
       }).addTo(layer);
-      if (marker.label) leafletMarker.bindTooltip(marker.label, { direction: 'top', offset: [0, -12] });
+      if (marker.label)
+        leafletMarker.bindTooltip(marker.label, { direction: 'top', offset: [0, -12] });
       if (marker.onClick) leafletMarker.on('click', marker.onClick);
     });
 
     // Re-frame only when the set of markers changes, not on every position update,
     // so the map does not jump while someone is looking at it.
-    const key = valid.map((marker) => marker.id).sort().join('|');
+    const key = valid
+      .map((marker) => marker.id)
+      .sort()
+      .join('|');
     if (key !== fittedKeyRef.current) {
       fittedKeyRef.current = key;
       if (valid.length === 1) map.setView([valid[0].lat, valid[0].lng], 16);
@@ -106,7 +119,14 @@ export default function MapView({
     }
   }, [markers, lines, selectedId]);
 
-  return <div ref={containerRef} role="application" aria-label={ariaLabel} className={`z-0 w-full ${className}`} />;
+  return (
+    <div
+      ref={containerRef}
+      role="application"
+      aria-label={ariaLabel}
+      className={`z-0 w-full ${className}`}
+    />
+  );
 }
 
 /** Helpers that turn API objects into markers, so every screen draws them the same way. */
@@ -141,7 +161,11 @@ export function faultMapParts(fault) {
   const technician = showTechnician ? technicianMarker(fault.technician, { onSite }) : null;
   if (technician) {
     markers.push(technician);
-    if (!onSite) lines.push([[technician.lat, technician.lng], [markers[0].lat, markers[0].lng]]);
+    if (!onSite)
+      lines.push([
+        [technician.lat, technician.lng],
+        [markers[0].lat, markers[0].lng],
+      ]);
   }
   return { markers, lines };
 }

@@ -1,10 +1,21 @@
-/** The order a fault moves through. A technician can only move one step forward. */
+/** @typedef {import('@prisma/client').FaultStatus} FaultStatus */
+
+/**
+ * The order a fault moves through. A technician can only move one step forward.
+ * @type {FaultStatus[]}
+ */
 export const STATUS_FLOW = ['REPORTED', 'ASSIGNED', 'ON_THE_WAY', 'ARRIVED', 'WORKING', 'RESOLVED'];
 
-/** Statuses that count as "open" (still needing work). */
+/**
+ * Statuses that count as "open" (still needing work).
+ * @type {FaultStatus[]}
+ */
 export const OPEN_STATUSES = ['REPORTED', 'ASSIGNED', 'ON_THE_WAY', 'ARRIVED', 'WORKING'];
 
-/** Statuses where a technician is busy with the fault. */
+/**
+ * Statuses where a technician is busy with the fault.
+ * @type {FaultStatus[]}
+ */
 export const ACTIVE_JOB_STATUSES = ['ASSIGNED', 'ON_THE_WAY', 'ARRIVED', 'WORKING'];
 
 /** Which timestamp column is stamped when a fault enters a status. */

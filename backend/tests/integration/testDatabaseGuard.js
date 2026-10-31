@@ -63,7 +63,10 @@ function developmentUrls() {
 }
 
 /** Checks 1–4: configuration only, no connection. Returns the validated target. */
-export function checkTestDatabaseConfig(testUrl = process.env.TEST_DATABASE_URL, devUrls = developmentUrls()) {
+export function checkTestDatabaseConfig(
+  testUrl = process.env.TEST_DATABASE_URL,
+  devUrls = developmentUrls()
+) {
   if (!testUrl) {
     throw new UnsafeTestDatabaseError(
       'TEST_DATABASE_URL is not set. Point it at a separate test database, for example:\n' +
@@ -107,12 +110,16 @@ export function checkTestDatabaseConfig(testUrl = process.env.TEST_DATABASE_URL,
 export async function verifyTestDatabaseContents(testUrl, target) {
   const client = new PrismaClient({ datasourceUrl: testUrl });
   try {
-    const [{ current_database: actual }] = await client.$queryRaw`SELECT current_database()`;
+    const [{ current_database: actual }] = /** @type {{ current_database: string }[]} */ (
+      await client.$queryRaw`SELECT current_database()`
+    );
     if (actual !== target.database) {
       throw new UnsafeTestDatabaseError(`Connected to "${actual}", expected "${target.database}".`);
     }
 
-    const [{ exists }] = await client.$queryRaw`SELECT to_regclass('"User"') IS NOT NULL AS exists`;
+    const [{ exists }] = /** @type {{ exists: boolean }[]} */ (
+      await client.$queryRaw`SELECT to_regclass('"User"') IS NOT NULL AS exists`
+    );
     if (!exists) {
       throw new UnsafeTestDatabaseError(
         `The tables do not exist in "${actual}" yet. Run the migrations against the TEST database first:\n` +
@@ -120,7 +127,9 @@ export async function verifyTestDatabaseContents(testUrl, target) {
       );
     }
 
-    const emails = await client.$queryRaw`SELECT email FROM "User"`;
+    const emails = /** @type {{ email: string }[]} */ (
+      await client.$queryRaw`SELECT email FROM "User"`
+    );
     const real = emails.filter(({ email }) => !SYNTHETIC_EMAIL.test(email));
     if (real.length) {
       throw new UnsafeTestDatabaseError(

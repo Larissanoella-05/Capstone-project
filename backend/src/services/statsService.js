@@ -1,7 +1,8 @@
 import { prisma } from '../lib/prisma.js';
 import { ACTIVE_JOB_STATUSES, OPEN_STATUSES, STATUS_FLOW } from '../utils/constants.js';
 
-const minutesBetween = (from, to) => (from && to ? (new Date(to) - new Date(from)) / 60000 : null);
+const minutesBetween = (from, to) =>
+  from && to ? (new Date(to).getTime() - new Date(from).getTime()) / 60000 : null;
 
 function average(values) {
   const valid = values.filter((value) => value !== null && value >= 0);
@@ -20,7 +21,10 @@ export async function getOverview() {
   const [byStatus, technicians, resolvedToday, timed] = await Promise.all([
     prisma.faultReport.groupBy({ by: ['status'], _count: { _all: true } }),
     prisma.technician.findMany({
-      select: { onDuty: true, _count: { select: { faults: { where: { status: { in: ACTIVE_JOB_STATUSES } } } } } },
+      select: {
+        onDuty: true,
+        _count: { select: { faults: { where: { status: { in: ACTIVE_JOB_STATUSES } } } } },
+      },
     }),
     prisma.faultReport.count({ where: { status: 'RESOLVED', resolvedAt: { gte: startOfDay() } } }),
     prisma.faultReport.findMany({
@@ -42,7 +46,9 @@ export async function getOverview() {
     resolvedToday,
     techniciansOnDuty: onDuty.length,
     techniciansAvailable: onDuty.filter((technician) => technician._count.faults === 0).length,
-    averageResponseMinutes: average(timed.map((fault) => minutesBetween(fault.reportedAt, fault.arrivedAt))),
+    averageResponseMinutes: average(
+      timed.map((fault) => minutesBetween(fault.reportedAt, fault.arrivedAt))
+    ),
   };
 }
 
@@ -71,7 +77,8 @@ export async function getAnalytics() {
     days.push({
       date: start,
       label: offset === 0 ? 'Today' : start.toLocaleDateString('en-GB', { weekday: 'short' }),
-      completed: resolved.filter((fault) => fault.resolvedAt >= start && fault.resolvedAt < end).length,
+      completed: resolved.filter((fault) => fault.resolvedAt >= start && fault.resolvedAt < end)
+        .length,
     });
   }
 
@@ -82,7 +89,9 @@ export async function getAnalytics() {
       responseMinutes: average(faults.map((f) => minutesBetween(f.reportedAt, f.arrivedAt))),
       assignmentMinutes: average(faults.map((f) => minutesBetween(f.reportedAt, f.assignedAt))),
       arrivalMinutes: average(faults.map((f) => minutesBetween(f.assignedAt, f.arrivedAt))),
-      locationIdentificationMinutes: average(faults.map((f) => minutesBetween(f.assignedAt, f.onTheWayAt))),
+      locationIdentificationMinutes: average(
+        faults.map((f) => minutesBetween(f.assignedAt, f.onTheWayAt))
+      ),
       travelMinutes: average(faults.map((f) => minutesBetween(f.onTheWayAt, f.arrivedAt))),
       onSiteMinutes: average(faults.map((f) => minutesBetween(f.arrivedAt, f.resolvedAt))),
     },
@@ -90,7 +99,11 @@ export async function getAnalytics() {
       total: totalContacts,
       perJob: resolved.length ? Math.round((totalContacts / resolved.length) * 10) / 10 : null,
       jobsWithNoContactPercent: resolved.length
-        ? Math.round((resolved.filter((fault) => fault.clarificationContacts === 0).length / resolved.length) * 100)
+        ? Math.round(
+            (resolved.filter((fault) => fault.clarificationContacts === 0).length /
+              resolved.length) *
+              100
+          )
         : null,
     },
     statusDistribution: STATUS_FLOW.map((status) => ({

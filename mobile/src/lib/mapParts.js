@@ -30,10 +30,16 @@ export function faultMapParts(fault) {
   const markers = [faultMarker(fault)];
   const lines = [];
   const onSite = ON_SITE_STATUSES.includes(fault.status);
-  const technician = SITE_STATUSES.includes(fault.status) ? technicianMarker(fault.technician, { onSite }) : null;
+  const technician = SITE_STATUSES.includes(fault.status)
+    ? technicianMarker(fault.technician, { onSite })
+    : null;
   if (technician) {
     markers.push(technician);
-    if (!onSite) lines.push([[technician.lat, technician.lng], [markers[0].lat, markers[0].lng]]);
+    if (!onSite)
+      lines.push([
+        [technician.lat, technician.lng],
+        [markers[0].lat, markers[0].lng],
+      ]);
   }
   return { markers, lines };
 }

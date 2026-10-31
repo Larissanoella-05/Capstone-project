@@ -3,7 +3,9 @@ import { Zap } from 'lucide-react';
 /** The square bolt mark. `inverse` is the yellow-on-black variant used on the login panel. */
 export function LogoMark({ inverse = false }) {
   return (
-    <div className={`flex h-10 w-10 shrink-0 items-center justify-center ${inverse ? 'bg-volt' : 'bg-ink'}`}>
+    <div
+      className={`flex h-10 w-10 shrink-0 items-center justify-center ${inverse ? 'bg-volt' : 'bg-ink'}`}
+    >
       <Zap size={20} strokeWidth={0} fill={inverse ? '#0B0B0B' : '#FFD400'} aria-hidden="true" />
     </div>
   );

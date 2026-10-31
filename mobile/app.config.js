@@ -5,7 +5,9 @@ const path = require('path');
 // ./google-services.json (git-ignored). With neither, the app still builds and bundles (CI) but cannot get push tokens.
 const googleServicesFile =
   process.env.GOOGLE_SERVICES_JSON ||
-  (fs.existsSync(path.join(__dirname, 'google-services.json')) ? './google-services.json' : undefined);
+  (fs.existsSync(path.join(__dirname, 'google-services.json'))
+    ? './google-services.json'
+    : undefined);
 
 // Expo reads this file instead of app.json. Native settings are added by config plugins, not by hand.
 module.exports = {
@@ -54,7 +56,8 @@ module.exports = {
         'expo-location',
         {
           // Foreground only: no background-location permission and no foreground service, so no Play review for it.
-          locationWhenInUsePermission: 'Umuriro shares your position with the customer while you are on a job.',
+          locationWhenInUsePermission:
+            'Umuriro shares your position with the customer while you are on a job.',
           locationAlwaysPermission: false,
           isAndroidBackgroundLocationEnabled: false,
           isAndroidForegroundServiceEnabled: false,
@@ -72,7 +75,8 @@ module.exports = {
       [
         'expo-image-picker',
         {
-          cameraPermission: 'Umuriro uses the camera so you can attach a photo of the fault to your report.',
+          cameraPermission:
+            'Umuriro uses the camera so you can attach a photo of the fault to your report.',
           photosPermission: 'Umuriro reads a photo you choose so you can attach it to your report.',
           microphonePermission: false,
         },

@@ -43,7 +43,10 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = useCallback(async (email, password) => {
-    const data = await api('/auth/login', { method: 'POST', body: { email, password, client: 'mobile' } });
+    const data = await api('/auth/login', {
+      method: 'POST',
+      body: { email, password, client: 'mobile' },
+    });
     if (data.user.role === 'COORDINATOR') {
       throw new Error('Coordinators use the web app.');
     }

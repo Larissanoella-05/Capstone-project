@@ -8,7 +8,8 @@ import * as backend from '../../../backend/src/utils/constants.js';
 
 // Git stores both copies with the same line endings, but on Windows a checkout may turn one into CRLF.
 // Compare the text without line-ending differences, so only a real change in content fails.
-const read = (relative) => readFileSync(new URL(relative, import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+const read = (relative) =>
+  readFileSync(new URL(relative, import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 
 describe('format.js shared with the mobile app', () => {
   it('has the same content in frontend and mobile', () => {
@@ -25,11 +26,20 @@ describe('format.js shared with the mobile app', () => {
   });
 
   it('has a label for every status the API can stamp', () => {
-    assert.deepEqual(Object.keys(format.STATUS_LABEL).sort(), Object.keys(backend.STATUS_TIMESTAMP).sort());
+    assert.deepEqual(
+      Object.keys(format.STATUS_LABEL).sort(),
+      Object.keys(backend.STATUS_TIMESTAMP).sort()
+    );
   });
 
   it('has a label for every fault category', () => {
-    assert.deepEqual(format.CATEGORIES.map((c) => c.value).sort(), Object.keys(format.CATEGORY_LABEL).sort());
-    assert.deepEqual(Object.keys(format.CATEGORY_LABEL).sort(), Object.keys(backend.CATEGORY_LABEL).sort());
+    assert.deepEqual(
+      format.CATEGORIES.map((c) => c.value).sort(),
+      Object.keys(format.CATEGORY_LABEL).sort()
+    );
+    assert.deepEqual(
+      Object.keys(format.CATEGORY_LABEL).sort(),
+      Object.keys(backend.CATEGORY_LABEL).sort()
+    );
   });
 });

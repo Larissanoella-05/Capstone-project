@@ -4,7 +4,11 @@ const MAX_WIDTH = 1280;
 const QUALITIES = [0.6, 0.4, 0.3];
 
 export function fitsPhotoLimit(dataUrl) {
-  return typeof dataUrl === 'string' && dataUrl.startsWith('data:image/') && dataUrl.length <= MAX_DATA_URL_LENGTH;
+  return (
+    typeof dataUrl === 'string' &&
+    dataUrl.startsWith('data:image/') &&
+    dataUrl.length <= MAX_DATA_URL_LENGTH
+  );
 }
 
 /**
@@ -22,7 +26,8 @@ export async function pickAndPreparePhoto(source) {
     if (!permission.granted) throw new Error('Allow camera access in Settings to take a photo.');
   }
 
-  const launch = source === 'camera' ? ImagePicker.launchCameraAsync : ImagePicker.launchImageLibraryAsync;
+  const launch =
+    source === 'camera' ? ImagePicker.launchCameraAsync : ImagePicker.launchImageLibraryAsync;
   const picked = await launch({ mediaTypes: ['images'], quality: 1 });
   if (picked.canceled || !picked.assets?.length) return null;
   const asset = picked.assets[0];
@@ -34,7 +39,8 @@ export async function pickAndPreparePhoto(source) {
       base64: true,
     });
     const dataUrl = `data:image/jpeg;base64,${result.base64}`;
-    if (fitsPhotoLimit(dataUrl)) return { name: asset.fileName || 'photo.jpg', uri: result.uri, dataUrl };
+    if (fitsPhotoLimit(dataUrl))
+      return { name: asset.fileName || 'photo.jpg', uri: result.uri, dataUrl };
   }
   throw new Error('That photo is too large to send. Try another one.');
 }

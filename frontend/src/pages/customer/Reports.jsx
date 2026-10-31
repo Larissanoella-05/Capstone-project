@@ -21,14 +21,20 @@ export default function Reports() {
   return (
     <>
       <PageHeading
-        eyebrow={state.data ? `${faults.length} ${faults.length === 1 ? 'report' : 'reports'}` : 'History'}
+        eyebrow={
+          state.data ? `${faults.length} ${faults.length === 1 ? 'report' : 'reports'}` : 'History'
+        }
         title="My reports"
       />
 
       <Async state={state} label="Loading your reports">
         {() => (
           <>
-            <div className="grid grid-cols-3 border border-ink md:max-w-md" role="group" aria-label="Filter reports">
+            <div
+              className="grid grid-cols-3 border border-ink md:max-w-md"
+              role="group"
+              aria-label="Filter reports"
+            >
               {FILTERS.map((item, index) => (
                 <button
                   key={item.key}
@@ -53,17 +59,24 @@ export default function Reports() {
                   </Link>
                 }
               >
-                {faults.length ? 'Choose another filter to see your other reports.' : 'When you report a fault it is listed here.'}
+                {faults.length
+                  ? 'Choose another filter to see your other reports.'
+                  : 'When you report a fault it is listed here.'}
               </EmptyState>
             ) : (
               <ul className="m-0 grid list-none gap-3 p-0 md:grid-cols-2 2xl:grid-cols-3">
                 {visible.map((fault) => (
                   <li key={fault.id}>
-                    <Link to={`/customer/faults/${fault.id}`} className="panel block no-underline hover:bg-paper">
+                    <Link
+                      to={`/customer/faults/${fault.id}`}
+                      className="panel block no-underline hover:bg-paper"
+                    >
                       <div className="flex items-start justify-between gap-3 p-4">
                         <div>
                           <div className="font-mono text-xs">#{fault.reference}</div>
-                          <div className="mt-1 text-lg font-black uppercase">{CATEGORY_LABEL[fault.category]}</div>
+                          <div className="mt-1 text-lg font-black uppercase">
+                            {CATEGORY_LABEL[fault.category]}
+                          </div>
                           <div className="mt-1 text-sm">{locationLine(fault.serviceLocation)}</div>
                         </div>
                         <StatusPill status={fault.status} />

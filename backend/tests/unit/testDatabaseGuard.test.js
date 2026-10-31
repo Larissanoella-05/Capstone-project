@@ -1,16 +1,22 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { UnsafeTestDatabaseError, checkTestDatabaseConfig } from '../integration/testDatabaseGuard.js';
+import {
+  UnsafeTestDatabaseError,
+  checkTestDatabaseConfig,
+} from '../integration/testDatabaseGuard.js';
 
 const DEV = 'postgresql://user:pw@localhost:5432/umuriro_database?schema=public';
 const TEST = 'postgresql://user:pw@localhost:5432/umuriro_test?schema=public';
 
 const refuses = (testUrl, devUrls, messagePart) =>
-  assert.throws(() => checkTestDatabaseConfig(testUrl, devUrls), (error) => {
-    assert.ok(error instanceof UnsafeTestDatabaseError);
-    assert.match(error.message, messagePart);
-    return true;
-  });
+  assert.throws(
+    () => checkTestDatabaseConfig(testUrl, devUrls),
+    (error) => {
+      assert.ok(error instanceof UnsafeTestDatabaseError);
+      assert.match(error.message, messagePart);
+      return true;
+    }
+  );
 
 describe('integration test database guard', () => {
   it('accepts a separate local database whose name ends in _test', () => {
@@ -25,7 +31,11 @@ describe('integration test database guard', () => {
 
   it('refuses the development database, even if it is spelled differently', () => {
     const devAsTest = 'postgresql://other:x@127.0.0.1/my_test';
-    refuses(devAsTest, ['postgresql://user:pw@localhost:5432/my_test'], /same database as DATABASE_URL/);
+    refuses(
+      devAsTest,
+      ['postgresql://user:pw@localhost:5432/my_test'],
+      /same database as DATABASE_URL/
+    );
   });
 
   it('refuses a database name that does not end in _test', () => {

@@ -2,7 +2,10 @@ import { TRACKED_STATUSES, distanceMeters, shouldPostLocation } from './location
 
 const origin = { latitude: -1.9495, longitude: 30.171 };
 // About 111,320 m per degree of latitude, so these offsets are close to the stated distances.
-const north = (meters) => ({ latitude: origin.latitude + meters / 111320, longitude: origin.longitude });
+const north = (meters) => ({
+  latitude: origin.latitude + meters / 111320,
+  longitude: origin.longitude,
+});
 const last = { ...origin, postedAt: 1_000_000 };
 
 describe('distanceMeters', () => {

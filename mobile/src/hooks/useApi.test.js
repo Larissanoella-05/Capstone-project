@@ -87,7 +87,9 @@ describe('useApi', () => {
 
   it('clears the old record while a new path loads', async () => {
     api.mockImplementation(async (path) => ({ path }));
-    const { result, rerender } = await renderHook(({ path }) => useApi(path), { initialProps: { path: '/faults/5' } });
+    const { result, rerender } = await renderHook(({ path }) => useApi(path), {
+      initialProps: { path: '/faults/5' },
+    });
     await advance(0);
     expect(result.current.data).toEqual({ path: '/faults/5' });
 

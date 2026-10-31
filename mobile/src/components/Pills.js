@@ -34,10 +34,21 @@ export function StatusPill({ status }) {
 }
 
 export function PriorityPill({ priority, withLabel = false }) {
-  return <Pill label={`${withLabel ? 'Priority: ' : ''}${PRIORITY_LABEL[priority] ?? priority}`} palette={PRIORITY_STYLE[priority]} />;
+  return (
+    <Pill
+      label={`${withLabel ? 'Priority: ' : ''}${PRIORITY_LABEL[priority] ?? priority}`}
+      palette={PRIORITY_STYLE[priority]}
+    />
+  );
 }
 
 const styles = StyleSheet.create({
   pill: { alignSelf: 'flex-start', borderWidth: 1, paddingHorizontal: 8, paddingVertical: 3 },
-  text: { fontFamily: fonts.monoMedium, fontSize: 11, lineHeight: 16, letterSpacing: 0.9, textTransform: 'uppercase' },
+  text: {
+    fontFamily: fonts.monoMedium,
+    fontSize: 11,
+    lineHeight: 16,
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
+  },
 });

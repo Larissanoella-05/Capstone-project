@@ -34,7 +34,10 @@ export async function api(path, { method = 'GET', body, signal } = {}) {
     });
   } catch (error) {
     if (error.name === 'AbortError') throw error;
-    throw new ApiError(0, 'Cannot reach the server. Check your connection and that the API is running.');
+    throw new ApiError(
+      0,
+      'Cannot reach the server. Check your connection and that the API is running.'
+    );
   }
 
   let payload = null;

@@ -26,17 +26,37 @@ import FaultDetails from './pages/coordinator/FaultDetails.jsx';
 import Assign from './pages/coordinator/Assign.jsx';
 import Monitoring from './pages/coordinator/Monitoring.jsx';
 
-
 const CUSTOMER_TABS = [
   { to: '/customer', label: 'Home', isActive: (path) => path === '/customer' },
-  { to: '/customer/report', label: 'Report', isActive: (path) => path.startsWith('/customer/report') || path.startsWith('/customer/submitted') },
-  { to: '/customer/reports', label: 'Reports', isActive: (path) => path.startsWith('/customer/reports') || path.startsWith('/customer/faults') },
-  { to: '/customer/notifications', label: 'Alerts', isActive: (path) => path.startsWith('/customer/notifications') },
+  {
+    to: '/customer/report',
+    label: 'Report',
+    isActive: (path) =>
+      path.startsWith('/customer/report') || path.startsWith('/customer/submitted'),
+  },
+  {
+    to: '/customer/reports',
+    label: 'Reports',
+    isActive: (path) => path.startsWith('/customer/reports') || path.startsWith('/customer/faults'),
+  },
+  {
+    to: '/customer/notifications',
+    label: 'Alerts',
+    isActive: (path) => path.startsWith('/customer/notifications'),
+  },
 ];
 const TECHNICIAN_TABS = [
   { to: '/technician', label: 'Home', isActive: (path) => path === '/technician' },
-  { to: '/technician/jobs', label: 'Jobs', isActive: (path) => path.startsWith('/technician/jobs') },
-  { to: '/technician/notifications', label: 'Alerts', isActive: (path) => path.startsWith('/technician/notifications') },
+  {
+    to: '/technician/jobs',
+    label: 'Jobs',
+    isActive: (path) => path.startsWith('/technician/jobs'),
+  },
+  {
+    to: '/technician/notifications',
+    label: 'Alerts',
+    isActive: (path) => path.startsWith('/technician/notifications'),
+  },
 ];
 
 /** Sends signed-out visitors to /login and keeps each role inside its own area. */
@@ -83,7 +103,12 @@ export default function App() {
         <Route path="faults/:id" element={<Tracking />} />
         <Route
           path="notifications"
-          element={<Notifications faultPath={(id) => `/customer/faults/${id}`} intro="Updates about your fault reports as they move through each stage." />}
+          element={
+            <Notifications
+              faultPath={(id) => `/customer/faults/${id}`}
+              intro="Updates about your fault reports as they move through each stage."
+            />
+          }
         />
       </Route>
 
@@ -102,7 +127,12 @@ export default function App() {
         <Route path="jobs/:id/resolve" element={<ResolveJob />} />
         <Route
           path="notifications"
-          element={<Notifications faultPath={(id) => `/technician/jobs/${id}`} intro="New jobs assigned to you by the service coordinator." />}
+          element={
+            <Notifications
+              faultPath={(id) => `/technician/jobs/${id}`}
+              intro="New jobs assigned to you by the service coordinator."
+            />
+          }
         />
       </Route>
 

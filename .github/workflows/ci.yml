@@ -1,12 +1,41 @@
-name: Tests
+name: CI
 
 on:
-  push:
   pull_request:
+  push:
+    branches: [main]
+
+# A new push to the same branch/PR cancels the run that is still in progress.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  HUSKY: '0' # the git hooks are for local commits only
 
 jobs:
-  backend:
+  quality:
+    name: Lint and format
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+
+  backend:
+    name: Backend (types, unit, integration)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     services:
       postgres:
         image: postgres:16
@@ -34,6 +63,12 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
       - run: npx prisma generate
+      - name: Validate the Prisma schema
+        run: npx prisma validate
+        env:
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+      - name: Type-check
+        run: npm run typecheck
       - name: Migrate the CI test database
         run: npx prisma migrate deploy
         env:
@@ -47,7 +82,9 @@ jobs:
         run: npm run test:integration
 
   frontend:
+    name: Frontend (tests, build)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: frontend
@@ -65,7 +102,9 @@ jobs:
         run: npm run build
 
   mobile:
+    name: Mobile (tests, doctor, bundle)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: mobile
@@ -83,3 +122,19 @@ jobs:
         run: npx expo-doctor
       - name: Bundle the Android app
         run: npx expo export --platform android
+
+  # The one check to require in branch protection. It fails if any job above failed or was
+  # cancelled, so adding or renaming jobs never needs a branch-protection change.
+  ci-ok:
+    name: ci-ok
+    if: always()
+    needs: [quality, backend, frontend, mobile]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if any required job did not succeed
+        run: |
+          echo "quality=${{ needs.quality.result }} backend=${{ needs.backend.result }} frontend=${{ needs.frontend.result }} mobile=${{ needs.mobile.result }}"
+          test "${{ needs.quality.result }}" = "success"
+          test "${{ needs.backend.result }}" = "success"
+          test "${{ needs.frontend.result }}" = "success"
+          test "${{ needs.mobile.result }}" = "success"

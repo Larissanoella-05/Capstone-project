@@ -21,7 +21,10 @@ export default function Jobs() {
 
   return (
     <Screen>
-      <PageHeading eyebrow={state.data ? `${faults.length} jobs in total` : 'Jobs'} title="My jobs" />
+      <PageHeading
+        eyebrow={state.data ? `${faults.length} jobs in total` : 'Jobs'}
+        title="My jobs"
+      />
 
       <Async state={state} label="Loading your jobs">
         {() => (
@@ -36,21 +39,33 @@ export default function Jobs() {
                   accessibilityRole="radio"
                   accessibilityState={{ selected: tab === key }}
                   onPress={() => setTab(key)}
-                  style={[styles.filter, index > 0 && styles.divider, { backgroundColor: tab === key ? colors.ink : colors.white }]}
+                  style={[
+                    styles.filter,
+                    index > 0 && styles.divider,
+                    { backgroundColor: tab === key ? colors.ink : colors.white },
+                  ]}
                 >
-                  <Eyebrow style={{ color: tab === key ? colors.white : colors.ink }}>{label}</Eyebrow>
+                  <Eyebrow style={{ color: tab === key ? colors.white : colors.ink }}>
+                    {label}
+                  </Eyebrow>
                 </Pressable>
               ))}
             </View>
 
             {visible.length === 0 ? (
               <EmptyState title={tab === 'OPEN' ? 'No assigned jobs' : 'No completed jobs yet'}>
-                {tab === 'OPEN' ? 'New jobs assigned by the service coordinator appear here automatically.' : 'Jobs you resolve are kept here.'}
+                {tab === 'OPEN'
+                  ? 'New jobs assigned by the service coordinator appear here automatically.'
+                  : 'Jobs you resolve are kept here.'}
               </EmptyState>
             ) : (
               <View style={{ gap: 12 }}>
                 {visible.map((fault) => (
-                  <Pressable key={fault.id} accessibilityRole="link" onPress={() => router.push(`/technician/jobs/${fault.id}`)}>
+                  <Pressable
+                    key={fault.id}
+                    accessibilityRole="link"
+                    onPress={() => router.push(`/technician/jobs/${fault.id}`)}
+                  >
                     <Panel>
                       <View style={styles.top}>
                         <View style={{ flex: 1 }}>
@@ -63,7 +78,9 @@ export default function Jobs() {
                       <View style={styles.bottom}>
                         <PriorityPill priority={fault.priority} withLabel />
                         <Text style={styles.mono}>
-                          {tab === 'OPEN' ? `Reported ${fmtDateTime(fault.reportedAt)}` : `Resolved ${fmtDateTime(fault.resolvedAt ?? fault.cancelledAt)}`}
+                          {tab === 'OPEN'
+                            ? `Reported ${fmtDateTime(fault.reportedAt)}`
+                            : `Resolved ${fmtDateTime(fault.resolvedAt ?? fault.cancelledAt)}`}
                         </Text>
                       </View>
                     </Panel>
@@ -73,7 +90,9 @@ export default function Jobs() {
             )}
 
             {tab === 'OPEN' && visible.length > 0 ? (
-              <Text style={[styles.text, { color: colors.muted }]}>New jobs assigned by the service coordinator appear here automatically.</Text>
+              <Text style={[styles.text, { color: colors.muted }]}>
+                New jobs assigned by the service coordinator appear here automatically.
+              </Text>
             ) : null}
           </>
         )}
@@ -87,8 +106,23 @@ const styles = StyleSheet.create({
   filter: { flex: 1, height: 44, alignItems: 'center', justifyContent: 'center' },
   divider: { borderLeftWidth: 1, borderLeftColor: colors.ink },
   top: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, padding: 16 },
-  bottom: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderTopWidth: 1, borderTopColor: colors.ink, paddingHorizontal: 16, paddingVertical: 10 },
+  bottom: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.ink,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
   mono: { fontFamily: fonts.mono, fontSize: 12, color: colors.ink },
-  title: { marginTop: 4, fontFamily: fonts.black, fontSize: 18, textTransform: 'uppercase', color: colors.ink },
+  title: {
+    marginTop: 4,
+    fontFamily: fonts.black,
+    fontSize: 18,
+    textTransform: 'uppercase',
+    color: colors.ink,
+  },
   text: { marginTop: 4, fontFamily: fonts.regular, fontSize: 14, color: colors.ink },
 });

@@ -15,7 +15,10 @@ const STATUS_STYLE = {
  * which is what it means to the person who has to assign it.
  */
 export function StatusPill({ status, audience }) {
-  const label = status === 'REPORTED' && audience === 'coordinator' ? 'Unassigned' : STATUS_LABEL[status] ?? status;
+  const label =
+    status === 'REPORTED' && audience === 'coordinator'
+      ? 'Unassigned'
+      : (STATUS_LABEL[status] ?? status);
   return <span className={`pill ${STATUS_STYLE[status] ?? ''}`}>{label}</span>;
 }
 
