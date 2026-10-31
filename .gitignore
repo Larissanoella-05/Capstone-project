@@ -22,4 +22,4 @@ mobile/google-services.json
 
 # claude
 docs/agents
-.claude
+.claude/settings.local.json

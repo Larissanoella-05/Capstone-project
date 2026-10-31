@@ -1,0 +1,7 @@
+node_modules
+dist
+.expo
+**/package-lock.json
+backend/prisma/migrations
+mobile/assets
+frontend/public
