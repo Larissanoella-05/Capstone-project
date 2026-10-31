@@ -115,7 +115,8 @@ cd ../backend && npm test                  # includes authSchemas.test.js and pu
 | `cd mobile && npx expo export --platform android` | completes (one Hermes bundle, about 3 MB) |
 | `cd frontend && npm test` and `npm run build` | 11 / 11 passing; build succeeds |
 | `cd backend && npm test` | 55 / 55 passing |
-| `cd backend && npm run test:integration` | **not yet run for the mobile and push tests**: they need a local `umuriro_test` database (README §6). Record the result here when run |
+| `cd backend && DATABASE_URL="$TEST_DATABASE_URL" npx prisma migrate deploy` | applies `20261028120000_add_device_tokens`; `prisma migrate diff` against `schema.prisma` reports no difference (30 Oct 2026) |
+| `cd backend && npm run test:integration` | 38 / 38 passing, 10 suites, about 26 s (30 Oct 2026), including mobile sessions, technician location posts and device tokens/push |
 | GitHub Actions `mobile` job | not yet run (needs a push). Record the result here |
 
 **Bug found by a code review and fixed (with a test where the behaviour is testable):** reused tab screens kept a finished report's form and a disabled Submit button; opening a second job briefly showed the first; the map zoomed in too far when the technician was on site; the hardware Back button went to Home; a late location fix could be posted after a job ended; and the "Sharing your location" notice appeared even when permission was refused.

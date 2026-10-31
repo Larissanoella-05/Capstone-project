@@ -72,7 +72,7 @@ export default function App() {
         path="/customer"
         element={
           <RequireRole role="CUSTOMER">
-            <MobileShell base="/customer" tabs={CUSTOMER_TABS} />
+            <MobileShell base="/customer" tabs={CUSTOMER_TABS} roleLabel="Customer" />
           </RequireRole>
         }
       >
@@ -92,7 +92,7 @@ export default function App() {
         path="/technician"
         element={
           <RequireRole role="TECHNICIAN">
-            <MobileShell base="/technician" tabs={TECHNICIAN_TABS} />
+            <MobileShell base="/technician" tabs={TECHNICIAN_TABS} roleLabel="Technician" />
           </RequireRole>
         }
       >

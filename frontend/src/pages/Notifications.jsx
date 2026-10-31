@@ -63,7 +63,7 @@ export default function Notifications({ faultPath, intro }) {
               <button type="button" className="btn btn-outline self-start" disabled={busy || unread === 0} onClick={markAllRead}>
                 Mark all as read
               </button>
-              <ul className="m-0 flex list-none flex-col gap-3 p-0">
+              <ul className="m-0 grid list-none gap-3 p-0 md:grid-cols-2 2xl:grid-cols-3">
                 {data.notifications.map((notification) => (
                   <li key={notification.id}>
                     <button

@@ -26,7 +26,7 @@ export default function CustomerDashboard() {
 
   return (
     <>
-      <div className="flex flex-col gap-3 border-b border-ink pb-4">
+      <div className="flex flex-col gap-3 border-b border-ink pb-4 md:pb-5">
         <div className="eyebrow text-muted">
           {greeting()}, {firstNames(user.name)}
         </div>
@@ -92,26 +92,28 @@ function CurrentFault({ fault }) {
         <div className="display mt-2 text-[34px]">{CUSTOMER_HEADLINE[fault.status]}</div>
         <div className="mt-3 font-mono text-xs">Last updated {timeAgo(fault.updatedAt)}</div>
       </div>
-      <div className="flex flex-col px-5 pb-5 pt-2">
-        <KeyRow label="Report ID" mono>#{fault.reference}</KeyRow>
-        <KeyRow label="Fault category">{CATEGORY_LABEL[fault.category]}</KeyRow>
-        <KeyRow label="Technician">{fault.technician?.name ?? 'Not assigned yet'}</KeyRow>
-        <KeyRow label="Location">{locationLine(fault.serviceLocation)}</KeyRow>
-        <div className="mt-4">
-          <StageBar status={fault.status} />
+      <div className="lg:grid lg:grid-cols-2">
+        <div className="flex flex-col px-5 pb-5 pt-2">
+          <KeyRow label="Report ID" mono>#{fault.reference}</KeyRow>
+          <KeyRow label="Fault category">{CATEGORY_LABEL[fault.category]}</KeyRow>
+          <KeyRow label="Technician">{fault.technician?.name ?? 'Not assigned yet'}</KeyRow>
+          <KeyRow label="Location">{locationLine(fault.serviceLocation)}</KeyRow>
+          <div className="mt-4">
+            <StageBar status={fault.status} />
+          </div>
+          <Link to={`/customer/faults/${fault.id}`} className="btn btn-ink mt-4">
+            Track response
+          </Link>
         </div>
-        <Link to={`/customer/faults/${fault.id}`} className="btn btn-ink mt-4">
-          Track response
-        </Link>
-      </div>
-      <div className="border-t border-ink">
-        <MapView
-          markers={markers}
-          lines={lines}
-          interactive={false}
-          className="h-48"
-          ariaLabel="Map preview of your service location and the technician"
-        />
+        <div className="border-t border-ink lg:border-l lg:border-t-0">
+          <MapView
+            markers={markers}
+            lines={lines}
+            interactive={false}
+            className="h-48 lg:h-full lg:min-h-72"
+            ariaLabel="Map preview of your service location and the technician"
+          />
+        </div>
       </div>
     </section>
   );

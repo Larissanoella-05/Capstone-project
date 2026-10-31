@@ -96,6 +96,7 @@ export default function ReportFault() {
         <p className="mb-0 mt-3 text-sm text-muted">Tell us what is wrong. It takes less than a minute.</p>
       </PageHeading>
 
+      <div className="grid gap-5 lg:grid-cols-2 lg:items-start lg:gap-8">
       <fieldset id="category-group" className="m-0 flex min-w-0 flex-col border-0 p-0">
         <legend className="eyebrow mb-2 p-0">01 · Fault category</legend>
         <div className={`flex flex-col border ${errors.category ? 'border-danger' : 'border-ink'}`}>
@@ -127,6 +128,7 @@ export default function ReportFault() {
         {errors.category && <span className="mt-2 text-sm font-semibold text-danger">{errors.category}</span>}
       </fieldset>
 
+      <div className="flex min-w-0 flex-col gap-5">
       <div className="flex flex-col gap-2">
         <label htmlFor="description" className="eyebrow flex justify-between">
           <span>02 · Description</span>
@@ -198,10 +200,12 @@ export default function ReportFault() {
           </p>
         )}
       </div>
+      </div>
+      </div>
 
       <FormError>{formError}</FormError>
 
-      <button type="submit" className="btn btn-volt btn-lg w-full" disabled={submitting || !location}>
+      <button type="submit" className="btn btn-volt btn-lg w-full lg:w-auto lg:self-end lg:px-12" disabled={submitting || !location}>
         {submitting ? 'Submitting…' : 'Submit Fault'}
       </button>
     </form>

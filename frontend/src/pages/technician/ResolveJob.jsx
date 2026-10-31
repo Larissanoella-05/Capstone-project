@@ -68,6 +68,8 @@ export default function ResolveJob() {
               <h1 className="display mt-2 text-3xl">Record resolution</h1>
             </div>
 
+            <div className="grid gap-5 lg:grid-cols-2 lg:items-start lg:gap-8">
+            <div className="flex min-w-0 flex-col gap-5">
             <section className="panel px-4 py-1">
               <KeyRow label="Fault ID" mono>{fault.reference}</KeyRow>
               <KeyRow label="Category">{CATEGORY_LABEL[fault.category]}</KeyRow>
@@ -84,7 +86,9 @@ export default function ResolveJob() {
                 ))}
               </select>
             </div>
+            </div>
 
+            <div className="flex min-w-0 flex-col gap-5">
             <div className="flex flex-col gap-2">
               <label htmlFor="resolution-note" className="eyebrow">Resolution description</label>
               <textarea
@@ -141,10 +145,12 @@ export default function ResolveJob() {
               </div>
               <span className="text-sm text-muted">How many times you had to call or message the customer to find the location.</span>
             </div>
+            </div>
+            </div>
 
             <FormError>{formError}</FormError>
 
-            <button type="submit" className="btn btn-volt btn-lg w-full" disabled={submitting}>
+            <button type="submit" className="btn btn-volt btn-lg w-full lg:w-auto lg:self-end lg:px-12" disabled={submitting}>
               {submitting ? 'Saving…' : 'Mark as Resolved'}
             </button>
             <p className="m-0 text-sm text-muted">

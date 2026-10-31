@@ -35,7 +35,7 @@ export default function TechnicianDashboard() {
 
       <Async state={state} label="Loading your jobs">
         {() => (
-          <>
+          <div className="grid gap-5 lg:grid-cols-2 lg:items-start lg:gap-6">
             {active ? (
               <section className="panel" aria-label="Active job">
                 <div className="flex items-center justify-between gap-3 border-b border-ink bg-volt px-4 py-3">
@@ -70,6 +70,7 @@ export default function TechnicianDashboard() {
               </EmptyState>
             )}
 
+            <div className="flex min-w-0 flex-col gap-5">
             <div className="grid grid-cols-3 gap-px border border-ink bg-ink">
               {[
                 ["Today's assignments", assignedToday.length],
@@ -91,7 +92,8 @@ export default function TechnicianDashboard() {
                 ))}
               </section>
             )}
-          </>
+            </div>
+          </div>
         )}
       </Async>
     </>

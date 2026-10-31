@@ -22,7 +22,7 @@ export default function Jobs() {
       <Async state={state} label="Loading your jobs">
         {() => (
           <>
-            <div className="grid grid-cols-2 border border-ink" role="group" aria-label="Filter jobs">
+            <div className="grid grid-cols-2 border border-ink md:max-w-md" role="group" aria-label="Filter jobs">
               {[
                 ['OPEN', `Assigned ${open.length}`],
                 ['DONE', `Completed ${completed.length}`],
@@ -48,7 +48,7 @@ export default function Jobs() {
                   : 'Jobs you resolve are kept here.'}
               </EmptyState>
             ) : (
-              <ul className="m-0 flex list-none flex-col gap-3 p-0">
+              <ul className="m-0 grid list-none gap-3 p-0 md:grid-cols-2 2xl:grid-cols-3">
                 {visible.map((fault) => (
                   <li key={fault.id}>
                     <Link to={`/technician/jobs/${fault.id}`} className="panel block no-underline hover:bg-paper">

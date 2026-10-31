@@ -119,11 +119,13 @@ export default function JobDetails() {
               </div>
             </div>
 
+            <div className="grid gap-5 lg:grid-cols-2 lg:items-start lg:gap-6">
+            <div className="flex min-w-0 flex-col gap-5">
             <section className="panel">
               <MapView
                 markers={markers}
                 lines={lines}
-                className="h-60"
+                className="h-60 md:h-80"
                 ariaLabel={`Map showing the service location for fault ${fault.reference} and your position`}
               />
               <div className="border-t border-ink p-4">
@@ -217,6 +219,9 @@ export default function JobDetails() {
               </section>
             )}
 
+            </div>
+
+            <div className="flex min-w-0 flex-col gap-5">
             {fault.status === 'RESOLVED' && (
               <section className="panel">
                 <div className="panel-head bg-ok text-white">Resolution recorded</div>
@@ -256,6 +261,8 @@ export default function JobDetails() {
             <Link to="/technician/jobs" className="btn btn-outline">
               Back to my jobs
             </Link>
+            </div>
+            </div>
           </>
         );
       }}
