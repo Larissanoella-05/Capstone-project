@@ -12,8 +12,9 @@ import {
 import { CoordinatorHeading } from '../../components/CoordinatorShell.jsx';
 import { PriorityPill, StatusPill } from '../../components/Pills.jsx';
 import { Async, EmptyState } from '../../components/States.jsx';
+import { pagedPath, pageSummary } from '../../lib/paging.js';
 
-const DEFAULTS = { search: '', status: 'OPEN', priority: 'ALL', date: 'ANY' };
+const DEFAULTS = { search: '', status: 'OPEN', priority: 'ALL', date: 'ANY', page: 1 };
 
 export default function Faults() {
   const [filters, setFilters] = useState(DEFAULTS);
@@ -22,29 +23,35 @@ export default function Faults() {
   // Wait until typing pauses before asking the API.
   useEffect(() => {
     const timer = setTimeout(
-      () => setFilters((current) => ({ ...current, search: search.trim() })),
+      () => setFilters((current) => ({ ...current, search: search.trim(), page: 1 })),
       300
     );
     return () => clearTimeout(timer);
   }, [search]);
 
-  const params = new URLSearchParams({ status: filters.status });
-  if (filters.priority !== 'ALL') params.set('priority', filters.priority);
-  if (filters.date !== 'ANY') params.set('date', filters.date);
-  if (filters.search) params.set('search', filters.search);
-
-  const state = useApi(`/faults?${params}`, { interval: 5000 });
-  const totals = useApi('/faults?status=ALL', { interval: 15000 });
+  const state = useApi(pagedPath(filters), { interval: 5000 });
+  // Only the count is needed here, so ask for a single row instead of every report.
+  const totals = useApi('/faults?status=ALL&pageSize=1', { interval: 15000 });
   const set = (key) => (event) =>
-    setFilters((current) => ({ ...current, [key]: event.target.value }));
-  const filtered = JSON.stringify(filters) !== JSON.stringify(DEFAULTS);
+    setFilters((current) => ({ ...current, [key]: event.target.value, page: 1 }));
+  const goToPage = (page) => setFilters((current) => ({ ...current, page }));
+  const { page: _page, ...activeFilters } = filters;
+  const { page: _defaultPage, ...defaultFilters } = DEFAULTS;
+  const filtered = JSON.stringify(activeFilters) !== JSON.stringify(defaultFilters);
+
+  // If reports disappear while the coordinator is on a late page, step back to the last page that exists.
+  const lastPage = state.data?.totalPages;
+  useEffect(() => {
+    if (lastPage && filters.page > lastPage)
+      setFilters((current) => ({ ...current, page: lastPage }));
+  }, [lastPage, filters.page]);
 
   return (
     <>
       <CoordinatorHeading
         eyebrow={
           state.data && totals.data
-            ? `${state.data.faults.length} of ${totals.data.faults.length} reports`
+            ? `${state.data.total} of ${totals.data.total} reports`
             : 'All reports'
         }
         title="Fault management"
@@ -121,7 +128,7 @@ export default function Faults() {
       </div>
 
       <Async state={state} label="Loading faults">
-        {({ faults }) =>
+        {({ faults, total, page, pageSize }) =>
           faults.length === 0 ? (
             <EmptyState title="No faults match">
               {filtered
@@ -196,10 +203,46 @@ export default function Faults() {
                   ))}
                 </tbody>
               </table>
+              <Pager
+                summary={pageSummary({ page, pageSize, total })}
+                onPrevious={() => goToPage(page - 1)}
+                onNext={() => goToPage(page + 1)}
+              />
             </div>
           )
         }
       </Async>
     </>
+  );
+}
+
+function Pager({ summary, onPrevious, onNext }) {
+  return (
+    <nav
+      aria-label="Fault list pages"
+      className="flex items-center justify-between gap-3 border-t border-ink px-3 py-3"
+    >
+      <p className="font-mono text-xs">
+        {summary.from}–{summary.to} of {summary.total}
+      </p>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          className="btn btn-outline min-h-9 px-3 text-xs"
+          disabled={!summary.hasPrevious}
+          onClick={onPrevious}
+        >
+          Previous
+        </button>
+        <button
+          type="button"
+          className="btn btn-outline min-h-9 px-3 text-xs"
+          disabled={!summary.hasNext}
+          onClick={onNext}
+        >
+          Next
+        </button>
+      </div>
+    </nav>
   );
 }
