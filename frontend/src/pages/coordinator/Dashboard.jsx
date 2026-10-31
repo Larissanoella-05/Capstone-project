@@ -10,7 +10,9 @@ import { EmptyState, ErrorState, Loading } from '../../components/States.jsx';
 
 function Tile({ label, value, note, unit, highlight = false }) {
   return (
-    <div className={`flex min-h-[120px] flex-col justify-between p-4 ${highlight ? 'bg-volt' : 'bg-white'}`}>
+    <div
+      className={`flex min-h-[120px] flex-col justify-between p-4 ${highlight ? 'bg-volt' : 'bg-white'}`}
+    >
       <div className={`eyebrow ${highlight ? '' : 'text-muted'}`}>{label}</div>
       <div>
         <div className="text-4xl font-black leading-none">
@@ -30,7 +32,7 @@ export default function CoordinatorDashboard() {
   const technicians = useApi('/technicians', { interval: 5000 });
   const [selectedId, setSelectedId] = useState(null);
 
-  const open = faults.data?.faults ?? [];
+  const open = useMemo(() => faults.data?.faults ?? [], [faults.data]);
   const stats = overview.data?.overview;
 
   const markers = useMemo(() => {
@@ -41,7 +43,9 @@ export default function CoordinatorDashboard() {
         id: `tech-${technician.id}`,
         lat: technician.location.latitude,
         lng: technician.location.longitude,
-        kind: technician.activeJobs.some((job) => ['ARRIVED', 'WORKING'].includes(job.status)) ? 'onsite' : 'technician',
+        kind: technician.activeJobs.some((job) => ['ARRIVED', 'WORKING'].includes(job.status))
+          ? 'onsite'
+          : 'technician',
         label: technician.name,
       }));
     return [...faultMarkers, ...technicianMarkers];
@@ -54,19 +58,47 @@ export default function CoordinatorDashboard() {
       <CoordinatorHeading eyebrow={`Ndera Sector · ${fmtDate()}`} title="Response overview" />
 
       {firstError ? (
-        <ErrorState error={firstError} onRetry={() => { overview.reload(); faults.reload(); }} />
+        <ErrorState
+          error={firstError}
+          onRetry={() => {
+            overview.reload();
+            faults.reload();
+          }}
+        />
       ) : !stats || !faults.data ? (
         <Loading label="Loading the response overview" />
       ) : (
         <>
           <div className="grid grid-cols-2 gap-px border border-ink bg-ink sm:grid-cols-3 xl:grid-cols-7">
             <Tile label="Open faults" value={stats.openFaults} note="Total active" />
-            <Tile label="Unassigned faults" value={stats.reported} note="Reported, need a technician" highlight={stats.reported > 0} />
+            <Tile
+              label="Unassigned faults"
+              value={stats.reported}
+              note="Reported, need a technician"
+              highlight={stats.reported > 0}
+            />
             <Tile label="Assigned" value={stats.assigned} note="Technician not yet moving" />
-            <Tile label="Technicians on the way" value={stats.onTheWay} note={`${stats.onSite} on site`} />
-            <Tile label="Resolved today" value={stats.resolvedToday} note={`${stats.resolved} in total`} />
-            <Tile label="Technicians available" value={stats.techniciansAvailable} note={`of ${stats.techniciansOnDuty} on duty`} />
-            <Tile label="Average response time" value={stats.averageResponseMinutes ?? '—'} unit={stats.averageResponseMinutes !== null ? 'min' : undefined} note="Report to arrival" />
+            <Tile
+              label="Technicians on the way"
+              value={stats.onTheWay}
+              note={`${stats.onSite} on site`}
+            />
+            <Tile
+              label="Resolved today"
+              value={stats.resolvedToday}
+              note={`${stats.resolved} in total`}
+            />
+            <Tile
+              label="Technicians available"
+              value={stats.techniciansAvailable}
+              note={`of ${stats.techniciansOnDuty} on duty`}
+            />
+            <Tile
+              label="Average response time"
+              value={stats.averageResponseMinutes ?? '—'}
+              unit={stats.averageResponseMinutes !== null ? 'min' : undefined}
+              note="Report to arrival"
+            />
           </div>
 
           <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
@@ -91,16 +123,26 @@ export default function CoordinatorDashboard() {
               </div>
               {open.length === 0 ? (
                 <div className="p-4">
-                  <EmptyState title="No open faults">Every reported fault has been resolved.</EmptyState>
+                  <EmptyState title="No open faults">
+                    Every reported fault has been resolved.
+                  </EmptyState>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-left text-sm">
                     <thead>
                       <tr className="eyebrow bg-paper">
-                        {['Fault', 'Location', 'Priority', 'Status', 'Technician'].map((heading) => (
-                          <th key={heading} scope="col" className="border-b border-ink px-3 py-2.5 font-medium">{heading}</th>
-                        ))}
+                        {['Fault', 'Location', 'Priority', 'Status', 'Technician'].map(
+                          (heading) => (
+                            <th
+                              key={heading}
+                              scope="col"
+                              className="border-b border-ink px-3 py-2.5 font-medium"
+                            >
+                              {heading}
+                            </th>
+                          )
+                        )}
                       </tr>
                     </thead>
                     <tbody>
@@ -111,17 +153,27 @@ export default function CoordinatorDashboard() {
                           aria-selected={selectedId === fault.id}
                           onClick={() => setSelectedId(fault.id)}
                           onDoubleClick={() => navigate(`/coordinator/faults/${fault.id}`)}
-                          onKeyDown={(event) => event.key === 'Enter' && navigate(`/coordinator/faults/${fault.id}`)}
+                          onKeyDown={(event) =>
+                            event.key === 'Enter' && navigate(`/coordinator/faults/${fault.id}`)
+                          }
                           className={`cursor-pointer border-b border-line last:border-b-0 ${selectedId === fault.id ? 'bg-volt-soft' : 'hover:bg-paper'}`}
                         >
                           <td className="px-3 py-3 font-mono text-xs font-medium">
-                            <Link to={`/coordinator/faults/${fault.id}`} className="underline underline-offset-2" onClick={(event) => event.stopPropagation()}>
+                            <Link
+                              to={`/coordinator/faults/${fault.id}`}
+                              className="underline underline-offset-2"
+                              onClick={(event) => event.stopPropagation()}
+                            >
                               {fault.reference}
                             </Link>
                           </td>
                           <td className="px-3 py-3 font-semibold">{fault.serviceLocation.cell}</td>
-                          <td className="px-3 py-3"><PriorityPill priority={fault.priority} /></td>
-                          <td className="px-3 py-3"><StatusPill status={fault.status} audience="coordinator" /></td>
+                          <td className="px-3 py-3">
+                            <PriorityPill priority={fault.priority} />
+                          </td>
+                          <td className="px-3 py-3">
+                            <StatusPill status={fault.status} audience="coordinator" />
+                          </td>
                           <td className="px-3 py-3">{fault.technician?.name ?? '—'}</td>
                         </tr>
                       ))}

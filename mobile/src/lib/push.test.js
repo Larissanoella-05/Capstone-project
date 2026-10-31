@@ -40,7 +40,6 @@ describe('routeForNotification', () => {
 describe('registerForPush', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    Device.isDevice = true;
     Notifications.getPermissionsAsync.mockResolvedValue({ status: 'granted' });
     Notifications.getExpoPushTokenAsync.mockResolvedValue({ data: 'ExponentPushToken[abc]' });
     jest.spyOn(console, 'warn').mockImplementation(() => {});
@@ -73,8 +72,12 @@ describe('registerForPush', () => {
   });
 
   it('returns null on an emulator', async () => {
-    Device.isDevice = false;
-    expect(await registerForPush()).toBeNull();
-    expect(Notifications.getExpoPushTokenAsync).not.toHaveBeenCalled();
+    const emulator = jest.replaceProperty(Device, 'isDevice', false);
+    try {
+      expect(await registerForPush()).toBeNull();
+      expect(Notifications.getExpoPushTokenAsync).not.toHaveBeenCalled();
+    } finally {
+      emulator.restore();
+    }
   });
 });
