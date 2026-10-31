@@ -5,7 +5,7 @@ import { distanceMetres } from '../utils/geo.js';
 import { ACTIVE_JOB_STATUSES, DEFAULT_PRIORITY, STATUS_TIMESTAMP } from '../utils/constants.js';
 import { faultStatusMachine } from '../domain/FaultStatusMachine.js';
 import { serializeFault } from '../domain/FaultSerializer.js';
-import { buildFaultFilter } from './faultQuery.js';
+import { buildFaultFilter, pageMeta, pagingFor } from './faultQuery.js';
 import { customerMessageFor, notify } from './notificationService.js';
 import { sendPushForNotifications } from './pushService.js';
 import { sendSmsForNotifications } from './smsService.js';
@@ -39,16 +39,32 @@ const faultInclude = /** @satisfies {import('@prisma/client').Prisma.FaultReport
   },
 });
 
+/**
+ * The faults the user may see, newest first. Without `page` or `pageSize` in the query this is the whole
+ * list; with either it is one page, and the totals say how many pages there are.
+ */
 export async function listFaults(user, query = {}) {
   const where = buildFaultFilter(user, query);
+  const paging = pagingFor(query);
 
-  const faults = await prisma.faultReport.findMany({
+  const find = {
     where,
     include: faultInclude,
     omit: { photo: true }, // photos are only sent on the detail endpoint
-    orderBy: { reportedAt: 'desc' },
-  });
-  return faults.map(serializeFault);
+    // The id breaks ties, so reports made in the same instant never swap places between pages.
+    orderBy: [{ reportedAt: /** @type {const} */ ('desc') }, { id: /** @type {const} */ ('desc') }],
+  };
+
+  if (!paging.paged) {
+    const faults = await prisma.faultReport.findMany(find);
+    return { faults: faults.map(serializeFault), ...pageMeta(faults.length, paging) };
+  }
+
+  const [faults, total] = await prisma.$transaction([
+    prisma.faultReport.findMany({ ...find, skip: paging.skip, take: paging.take }),
+    prisma.faultReport.count({ where }),
+  ]);
+  return { faults: faults.map(serializeFault), ...pageMeta(total, paging) };
 }
 
 /** Loads one fault and checks the signed-in user may see it. */

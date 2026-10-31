@@ -757,6 +757,100 @@ describe('API integration', { concurrency: false }, () => {
     });
   });
 
+  describe('paging the fault list', () => {
+    const idsOf = (res) => res.body.faults.map((fault) => fault.id);
+    let everything;
+
+    before(async () => {
+      everything = await call('GET', '/faults?status=ALL', { token: tokens.grace });
+      assert.equal(everything.status, 200);
+      assert.ok(everything.body.faults.length >= 6, 'the earlier tests should have left 6+ faults');
+    });
+
+    it('without page or pageSize returns the whole list, as before, plus the total', () => {
+      assert.equal(everything.body.total, everything.body.faults.length);
+      assert.equal('page' in everything.body, false);
+    });
+
+    it('returns the requested slice and the paging details', async () => {
+      const res = await call('GET', '/faults?status=ALL&page=1&pageSize=3', {
+        token: tokens.grace,
+      });
+      assert.equal(res.status, 200, JSON.stringify(res.body));
+      assert.equal(res.body.faults.length, 3);
+      assert.equal(res.body.page, 1);
+      assert.equal(res.body.pageSize, 3);
+      assert.equal(res.body.total, everything.body.total);
+      assert.equal(res.body.totalPages, Math.ceil(everything.body.total / 3));
+    });
+
+    it('pages join up with the full list: no overlap, no gap, same order', async () => {
+      const first = await call('GET', '/faults?status=ALL&page=1&pageSize=3', {
+        token: tokens.grace,
+      });
+      const second = await call('GET', '/faults?status=ALL&page=2&pageSize=3', {
+        token: tokens.grace,
+      });
+      assert.deepEqual([...idsOf(first), ...idsOf(second)], idsOf(everything).slice(0, 6));
+    });
+
+    it('the last page holds the remainder', async () => {
+      const total = everything.body.total;
+      const pageSize = 4;
+      const last = Math.ceil(total / pageSize);
+      const res = await call('GET', `/faults?status=ALL&page=${last}&pageSize=${pageSize}`, {
+        token: tokens.grace,
+      });
+      assert.equal(res.body.faults.length, total - (last - 1) * pageSize);
+    });
+
+    it('a page past the end is empty but still reports the real total', async () => {
+      const res = await call('GET', '/faults?status=ALL&page=9999&pageSize=20', {
+        token: tokens.grace,
+      });
+      assert.equal(res.status, 200);
+      assert.deepEqual(res.body.faults, []);
+      assert.equal(res.body.total, everything.body.total);
+    });
+
+    it('filters are applied before paging', async () => {
+      const open = await call('GET', '/faults?status=OPEN', { token: tokens.grace });
+      const res = await call('GET', '/faults?status=OPEN&page=1&pageSize=1', {
+        token: tokens.grace,
+      });
+      assert.equal(res.body.total, open.body.faults.length);
+      assert.ok(
+        res.body.faults.every((fault) => !['RESOLVED', 'CANCELLED'].includes(fault.status))
+      );
+    });
+
+    it('a customer paging sees only their own faults', async () => {
+      const mine = await call('GET', '/faults?status=ALL', { token: tokens.aline });
+      const res = await call('GET', '/faults?status=ALL&page=1&pageSize=2', {
+        token: tokens.aline,
+      });
+      assert.equal(res.body.total, mine.body.faults.length);
+      assert.ok(res.body.faults.length <= 2);
+      assert.ok(res.body.faults.every((fault) => fault.customer.name === 'Aline Mukamana'));
+    });
+
+    it('rejects bad paging values and unknown filters with 400', async () => {
+      for (const query of [
+        'page=0',
+        'page=abc',
+        'pageSize=0',
+        'pageSize=101',
+        'status=banana',
+        'priority=URGENT',
+        'date=YESTERDAY',
+      ]) {
+        const res = await call('GET', `/faults?${query}`, { token: tokens.grace });
+        assert.equal(res.status, 400, `${query} -> ${res.status}`);
+        assert.ok(res.body.error.message);
+      }
+    });
+  });
+
   describe('coordinator cancellation and analytics', () => {
     it('cancelling notifies the customer and blocks further technician updates', async () => {
       const fault = await reportFault('OTHER', 'Will be cancelled');

@@ -47,3 +47,32 @@ export function buildFaultFilter(user, query = {}) {
   }
   return where;
 }
+
+const DEFAULT_PAGE_SIZE = 20;
+
+/**
+ * Reads the optional paging values (already validated) from the query.
+ * @param {{ page?: number, pageSize?: number, [filter: string]: unknown }} query
+ * @returns {{ paged: false } | { paged: true, page: number, pageSize: number, skip: number, take: number }}
+ */
+export function pagingFor({ page, pageSize } = {}) {
+  if (page === undefined && pageSize === undefined) return { paged: false };
+  const size = pageSize ?? DEFAULT_PAGE_SIZE;
+  const current = page ?? 1;
+  return { paged: true, page: current, pageSize: size, skip: (current - 1) * size, take: size };
+}
+
+/**
+ * The totals sent with a list. A list that was not paged only gets its total.
+ * @param {number} total number of faults matching the filters
+ * @param {ReturnType<typeof pagingFor>} paging
+ */
+export function pageMeta(total, paging) {
+  if (!paging.paged) return { total };
+  return {
+    total,
+    page: paging.page,
+    pageSize: paging.pageSize,
+    totalPages: Math.max(1, Math.ceil(total / paging.pageSize)),
+  };
+}

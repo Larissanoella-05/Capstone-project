@@ -90,6 +90,7 @@ async function main() {
   const endpoints = [
     '/health',
     '/faults?status=ALL',
+    '/faults?status=ALL&page=1&pageSize=20',
     '/stats/overview',
     '/stats/analytics',
     '/notifications',

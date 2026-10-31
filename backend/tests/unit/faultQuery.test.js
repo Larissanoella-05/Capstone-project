@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildFaultFilter, scopeFor } from '../../src/services/faultQuery.js';
+import { buildFaultFilter, pageMeta, pagingFor, scopeFor } from '../../src/services/faultQuery.js';
 import { OPEN_STATUSES } from '../../src/utils/constants.js';
 
 const customer = { role: 'CUSTOMER', customer: { id: 3 } };
@@ -74,5 +74,64 @@ describe('buildFaultFilter', () => {
   it('keeps the role scope when other filters are added', () => {
     const where = buildFaultFilter(technician, { status: 'OPEN', priority: 'LOW' });
     assert.equal(where.technicianId, 8);
+  });
+});
+
+describe('pagingFor', () => {
+  it('is not paged when neither page nor pageSize is given', () => {
+    assert.deepEqual(pagingFor({}), { paged: false });
+    assert.deepEqual(pagingFor({ status: 'OPEN' }), { paged: false });
+  });
+
+  it('starts at page 1 with 20 per page when only one of the two is given', () => {
+    assert.deepEqual(pagingFor({ pageSize: 5 }), {
+      paged: true,
+      page: 1,
+      pageSize: 5,
+      skip: 0,
+      take: 5,
+    });
+    assert.deepEqual(pagingFor({ page: 3 }), {
+      paged: true,
+      page: 3,
+      pageSize: 20,
+      skip: 40,
+      take: 20,
+    });
+  });
+
+  it('skips the pages before the one asked for', () => {
+    const { skip, take } = /** @type {{ skip: number, take: number }} */ (
+      pagingFor({ page: 4, pageSize: 10 })
+    );
+    assert.equal(skip, 30);
+    assert.equal(take, 10);
+  });
+});
+
+describe('pageMeta', () => {
+  const paging = { paged: true, page: 1, pageSize: 20, skip: 0, take: 20 };
+
+  it('rounds the page count up', () => {
+    assert.equal(pageMeta(41, paging).totalPages, 3);
+    assert.equal(pageMeta(40, paging).totalPages, 2);
+    assert.equal(pageMeta(1, paging).totalPages, 1);
+  });
+
+  it('reports one page, not zero, when there are no results', () => {
+    assert.equal(pageMeta(0, paging).totalPages, 1);
+  });
+
+  it('echoes the total, page and page size', () => {
+    assert.deepEqual(pageMeta(7, { ...paging, page: 9, pageSize: 5 }), {
+      total: 7,
+      page: 9,
+      pageSize: 5,
+      totalPages: 2,
+    });
+  });
+
+  it('gives only the total when the list was not paged', () => {
+    assert.deepEqual(pageMeta(7, { paged: false }), { total: 7 });
   });
 });

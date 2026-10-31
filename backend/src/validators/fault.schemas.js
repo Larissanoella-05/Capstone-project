@@ -59,6 +59,33 @@ export const statusSchema = z.object({
   clarificationContacts: z.coerce.number().int().min(0).max(50).optional(),
 });
 
+const LIST_STATUSES = /** @type {const} */ (['OPEN', 'ALL', 'REPORTED', 'ASSIGNED', ...STATUSES]);
+
+/** A whole number from 1 to `max`, sent as text in the query string. */
+const countParam = (label, max) =>
+  z.coerce
+    .number({ invalid_type_error: `${label} must be a whole number.` })
+    .int(`${label} must be a whole number.`)
+    .min(1, `${label} must be 1 or more.`)
+    .max(max, `${label} must be ${max} or less.`)
+    .optional();
+
+/** Query string of GET /faults. Paging is opt-in: without page or pageSize the whole list is returned. */
+export const listQuerySchema = z.object({
+  status: z
+    .enum(LIST_STATUSES, { errorMap: () => ({ message: 'Choose a valid status.' }) })
+    .optional(),
+  priority: z
+    .enum([...PRIORITIES, 'ALL'], { errorMap: () => ({ message: 'Choose a valid priority.' }) })
+    .optional(),
+  date: z
+    .enum(['ANY', 'TODAY', 'WEEK'], { errorMap: () => ({ message: 'Choose a valid date range.' }) })
+    .optional(),
+  search: optionalText(100),
+  page: countParam('Page', 1_000_000),
+  pageSize: countParam('Page size', 100),
+});
+
 export const assignSchema = z.object({
   technicianId: z.coerce
     .number({ invalid_type_error: 'Choose a technician.' })
