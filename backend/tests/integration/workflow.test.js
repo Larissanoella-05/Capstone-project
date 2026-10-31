@@ -21,6 +21,11 @@ let prisma;
 const tokens = {};
 const technicianIds = {}; // technician id → login key
 
+/**
+ * @param {string} method
+ * @param {string} path
+ * @param {{ token?: string, body?: unknown }} [options]
+ */
 async function call(method, path, { token, body } = {}) {
   const headers = {};
   if (token) headers.Authorization = `Bearer ${token}`;

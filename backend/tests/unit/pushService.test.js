@@ -9,6 +9,7 @@ import {
 } from '../../src/services/pushService.js';
 
 // The real Expo service is never contacted: a fake client records what would be sent.
+/** @param {{ tickets?: unknown[], receipts?: unknown, sendError?: Error }} [options] */
 function fakeExpo({ tickets, receipts, sendError } = {}) {
   const sent = [];
   return {

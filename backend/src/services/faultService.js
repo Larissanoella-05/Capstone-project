@@ -27,7 +27,7 @@ async function guardedUpdate(tx, id, expected, data) {
 }
 
 /** Everything the three interfaces need to draw a fault. */
-const faultInclude = {
+const faultInclude = /** @satisfies {import('@prisma/client').Prisma.FaultReportInclude} */ ({
   customer: { include: { user: { select: { id: true, name: true, phone: true } } } },
   serviceLocation: true,
   technician: {
@@ -40,7 +40,7 @@ const faultInclude = {
     orderBy: { createdAt: 'asc' },
     include: { changedBy: { select: { name: true, role: true } } },
   },
-};
+});
 
 /** Turns a database row into the JSON shape shared by all three roles. */
 export function serializeFault(fault) {
@@ -119,6 +119,7 @@ function scopeFor(user) {
 }
 
 export async function listFaults(user, query = {}) {
+  /** @type {import('@prisma/client').Prisma.FaultReportWhereInput} */
   const where = { ...scopeFor(user) };
   const { status, priority, search, date } = query;
 
@@ -137,10 +138,10 @@ export async function listFaults(user, query = {}) {
 
   const term = typeof search === 'string' ? search.trim() : '';
   if (term) {
-    const contains = { contains: term, mode: 'insensitive' };
+    const contains = { contains: term, mode: /** @type {const} */ ('insensitive') };
     const categoryMatches = Object.entries(CATEGORY_LABEL)
       .filter(([, label]) => label.toLowerCase().includes(term.toLowerCase()))
-      .map(([category]) => category);
+      .map(([category]) => /** @type {import('@prisma/client').FaultCategory} */ (category));
     where.OR = [
       { reference: contains },
       { description: contains },

@@ -13,7 +13,7 @@
 export class TechnicianRanker {
   static AVAILABILITY_ORDER = Object.freeze({ AVAILABLE: 0, ON_JOB: 1, OFF_DUTY: 2 });
 
-  /** @param {{ availability: string, distanceKm: number|null, activeJobs: unknown[], name: string }[]} technicians */
+  /** @param {{ id: number, availability: string, distanceKm: number|null, activeJobs: unknown[], name: string }[]} technicians */
   rank(technicians, { hasTarget = true } = {}) {
     const ordered = [...technicians].sort(
       hasTarget ? TechnicianRanker.compare : TechnicianRanker.compareByName

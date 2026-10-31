@@ -4,7 +4,7 @@ import { distanceKm } from '../utils/geo.js';
 import { ACTIVE_JOB_STATUSES } from '../utils/constants.js';
 import { technicianRanker } from '../domain/TechnicianRanker.js';
 
-const technicianInclude = {
+const technicianInclude = /** @satisfies {import('@prisma/client').Prisma.TechnicianInclude} */ ({
   user: { select: { id: true, name: true, phone: true, email: true } },
   locations: { orderBy: { recordedAt: 'desc' }, take: 1 },
   faults: {
@@ -17,7 +17,7 @@ const technicianInclude = {
     },
     orderBy: { assignedAt: 'asc' },
   },
-};
+});
 
 function serializeTechnician(technician, target) {
   const location = technician.locations[0] ?? null;
@@ -47,7 +47,10 @@ function serializeTechnician(technician, target) {
   };
 }
 
-/** All technicians. With a faultId they are sorted by distance to that fault. */
+/**
+ * All technicians. With a faultId they are sorted by distance to that fault.
+ * @param {{ faultId?: number }} [options]
+ */
 export async function listTechnicians({ faultId } = {}) {
   let target = null;
   if (faultId) {

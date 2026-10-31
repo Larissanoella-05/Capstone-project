@@ -6,7 +6,11 @@ export function notify(tx, { userId, faultId, type, title, message }) {
   return tx.notification.create({ data: { userId, faultId, type, title, message } });
 }
 
-/** The message a customer receives when their fault enters a status. */
+/**
+ * The message a customer receives when their fault enters a status.
+ * @param {string} status
+ * @param {{ reference: string, technicianName?: string }} details
+ */
 export function customerMessageFor(status, { reference, technicianName }) {
   const first = technicianName ? technicianName.split(' ').slice(0, 2).join(' ') : 'A technician';
   switch (status) {

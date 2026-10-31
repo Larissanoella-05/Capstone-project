@@ -113,6 +113,7 @@ describe('FaultStatusMachine', () => {
   });
 
   it('cannot have its rules changed after construction', () => {
+    // @ts-expect-error the flow is a readonly list on purpose
     assert.throws(() => machine.flow.push('EXTRA'), TypeError);
   });
 });

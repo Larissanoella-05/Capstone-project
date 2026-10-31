@@ -131,6 +131,15 @@ const technicians = [
 
 // Resolved history: spread over the last week so the analytics page has real intervals to measure.
 // steps = minutes from report to [assigned, on the way, arrived, working, resolved]
+/**
+ * @type {{
+ *   customer: string, technician: string,
+ *   category: import('@prisma/client').FaultCategory,
+ *   priority: import('@prisma/client').Priority,
+ *   at: Date, steps: number[], contacts: number,
+ *   outcome: import('@prisma/client').Outcome, description: string, note: string
+ * }[]}
+ */
 const resolvedFaults = [
   {
     customer: 'aline',
@@ -243,6 +252,15 @@ const resolvedFaults = [
 ];
 
 // Open faults waiting on the coordinator when the demo starts.
+/**
+ * @type {{
+ *   customer: string, technician?: string,
+ *   status: import('@prisma/client').FaultStatus,
+ *   category: import('@prisma/client').FaultCategory,
+ *   priority: import('@prisma/client').Priority,
+ *   at: Date, assignedAfter?: number, description: string
+ * }[]}
+ */
 const openFaults = [
   {
     customer: 'bosco',
@@ -332,8 +350,17 @@ async function main() {
     include: { coordinator: true },
   });
 
+  /** @type {import('@prisma/client').FaultStatus[]} */
   const STAGES = ['ASSIGNED', 'ON_THE_WAY', 'ARRIVED', 'WORKING', 'RESOLVED'];
 
+  /**
+   * @param {{
+   *   customer: string, technician?: string,
+   *   status: import('@prisma/client').FaultStatus,
+   *   category: import('@prisma/client').FaultCategory,
+   *   priority: import('@prisma/client').Priority, at: Date, description: string, stamps?: object, extra?: object
+   * }} fault
+   */
   async function createFault({
     customer,
     technician,

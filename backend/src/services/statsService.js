@@ -1,7 +1,8 @@
 import { prisma } from '../lib/prisma.js';
 import { ACTIVE_JOB_STATUSES, OPEN_STATUSES, STATUS_FLOW } from '../utils/constants.js';
 
-const minutesBetween = (from, to) => (from && to ? (new Date(to) - new Date(from)) / 60000 : null);
+const minutesBetween = (from, to) =>
+  from && to ? (new Date(to).getTime() - new Date(from).getTime()) / 60000 : null;
 
 function average(values) {
   const valid = values.filter((value) => value !== null && value >= 0);

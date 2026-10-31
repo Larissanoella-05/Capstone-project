@@ -4,7 +4,9 @@ import { prisma } from '../lib/prisma.js';
 import { asyncHandler, forbidden, unauthorized } from '../utils/httpError.js';
 
 export function signToken(user, { expiresIn = env.jwtExpiresIn } = {}) {
-  return jwt.sign({ sub: user.id, role: user.role }, env.jwtSecret, { expiresIn });
+  return jwt.sign({ sub: user.id, role: user.role }, env.jwtSecret, {
+    expiresIn: /** @type {import('jsonwebtoken').SignOptions['expiresIn']} */ (expiresIn),
+  });
 }
 
 /**
