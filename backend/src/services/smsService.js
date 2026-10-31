@@ -1,7 +1,7 @@
 import { env } from '../config/env.js';
 
 // An SMS is a courtesy on top of the in-app notification row: nothing in here ever throws to the caller.
-// The proposal asks for an SMS when a report is received and when a technician is assigned (FR11, FR12).
+// The proposal asks for an SMS when a report is received and when a technician is assigned (FR9).
 
 /** The notification types that are also sent by SMS. */
 export const SMS_NOTIFICATION_TYPES = new Set(['FAULT_SUBMITTED', 'TECHNICIAN_ASSIGNED']);

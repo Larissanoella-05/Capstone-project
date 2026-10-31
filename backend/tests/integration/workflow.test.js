@@ -360,7 +360,7 @@ describe('API integration', { concurrency: false }, () => {
     });
   });
 
-  describe('arrival distance (FR9)', () => {
+  describe('arrival distance (FR11)', () => {
     const NORTH_OF_SITE = 0.001; // degrees of latitude: about 111 m
 
     const technicianIdOf = (key) =>
@@ -426,7 +426,7 @@ describe('API integration', { concurrency: false }, () => {
     });
   });
 
-  describe('SMS notices (FR11, FR12)', () => {
+  describe('SMS notices (FR9)', () => {
     const sms = [];
     let smsService;
 
