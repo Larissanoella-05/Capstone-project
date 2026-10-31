@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { prisma } from '../lib/prisma.js';
 import { badRequest, conflict, forbidden, notFound } from '../utils/httpError.js';
-import { distanceKm } from '../utils/geo.js';
+import { distanceKm, distanceMetres } from '../utils/geo.js';
 import {
   ACTIVE_JOB_STATUSES,
   CATEGORY_LABEL,
@@ -60,6 +60,7 @@ export function serializeFault(fault) {
     assignedAt: fault.assignedAt,
     onTheWayAt: fault.onTheWayAt,
     arrivedAt: fault.arrivedAt,
+    arrivalDistanceM: fault.arrivalDistanceM ?? null,
     workingAt: fault.workingAt,
     resolvedAt: fault.resolvedAt,
     cancelledAt: fault.cancelledAt,
@@ -307,6 +308,10 @@ export async function changeStatus(user, id, body) {
 
   const now = new Date();
   const data = { status: next, [STATUS_TIMESTAMP[next]]: now };
+  if (next === 'ARRIVED') {
+    // Measured from where the technician last reported being, before the "on site" row below is written.
+    data.arrivalDistanceM = distanceMetres(fault.technician.locations[0], fault.serviceLocation);
+  }
   if (next === 'RESOLVED') {
     data.outcome = body.outcome ?? 'SUPPLY_RESTORED';
     data.resolutionNote = body.resolutionNote;

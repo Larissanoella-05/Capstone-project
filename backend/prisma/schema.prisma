@@ -162,6 +162,8 @@ model FaultReport {
   assignedAt  DateTime?
   onTheWayAt  DateTime?
   arrivedAt   DateTime?
+  /// Metres between the technician's last recorded position and the registered service point when the status became ARRIVED; null if no position was known
+  arrivalDistanceM Int?
   workingAt   DateTime?
   resolvedAt  DateTime?
   cancelledAt DateTime?

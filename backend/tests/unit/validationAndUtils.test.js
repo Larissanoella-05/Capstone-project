@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { distanceKm } from '../../src/utils/geo.js';
+import { distanceKm, distanceMetres } from '../../src/utils/geo.js';
 import { HttpError, badRequest, conflict, forbidden } from '../../src/utils/httpError.js';
 import { validate } from '../../src/middleware/validate.js';
 import { errorHandler } from '../../src/middleware/error.js';
@@ -50,6 +50,35 @@ describe('distanceKm (haversine)', () => {
 
   it('returns null when a point is missing', () => {
     assert.equal(distanceKm(null, { latitude: 0, longitude: 0 }), null);
+  });
+});
+
+describe('distanceMetres', () => {
+  const point = { latitude: -1.9503, longitude: 30.1731 };
+
+  it('is zero for the same point', () => {
+    assert.equal(distanceMetres(point, point), 0);
+  });
+
+  it('measures a short walk in whole metres (0.001 degrees of latitude is about 111 m)', () => {
+    const metres = distanceMetres(point, { latitude: -1.9513, longitude: 30.1731 });
+    assert.ok(Number.isInteger(metres));
+    assert.ok(metres >= 110 && metres <= 112, `got ${metres}`);
+  });
+
+  it('is symmetric', () => {
+    const other = { latitude: -1.9446, longitude: 30.1572 };
+    assert.equal(distanceMetres(point, other), distanceMetres(other, point));
+  });
+
+  it('agrees with distanceKm to within its rounding', () => {
+    const other = { latitude: -1.9441, longitude: 30.0619 };
+    assert.ok(Math.abs(distanceMetres(point, other) / 1000 - distanceKm(point, other)) <= 0.05);
+  });
+
+  it('returns null when a position is missing', () => {
+    assert.equal(distanceMetres(null, point), null);
+    assert.equal(distanceMetres(point, undefined), null);
   });
 });
 

@@ -360,6 +360,72 @@ describe('API integration', { concurrency: false }, () => {
     });
   });
 
+  describe('arrival distance (FR9)', () => {
+    const NORTH_OF_SITE = 0.001; // degrees of latitude: about 111 m
+
+    const technicianIdOf = (key) =>
+      Number(Object.keys(technicianIds).find((id) => technicianIds[id] === key));
+
+    /** Reports and assigns a fault, optionally with the technician's position posted first, then walks it to ARRIVED. */
+    async function arriveAt({ positionOffset }) {
+      const fault = await reportFault('POWER_OUTAGE', 'Arrival distance test');
+      const key = await assignBest(fault.id);
+      const site = fault.serviceLocation;
+
+      if (positionOffset === null) {
+        await prisma.technicianLocation.deleteMany({
+          where: { technicianId: technicianIdOf(key) },
+        });
+      } else {
+        const posted = await call('POST', '/technicians/me/location', {
+          token: tokens[key],
+          body: {
+            latitude: site.latitude + positionOffset,
+            longitude: site.longitude,
+            faultId: fault.id,
+          },
+        });
+        assert.equal(posted.status, 201, JSON.stringify(posted.body));
+      }
+
+      assert.equal((await setStatus(fault.id, tokens[key], { status: 'ON_THE_WAY' })).status, 200);
+      const arrived = await setStatus(fault.id, tokens[key], { status: 'ARRIVED' });
+      assert.equal(arrived.status, 200, JSON.stringify(arrived.body));
+      return arrived.body.fault;
+    }
+
+    it('stores the distance between the last recorded position and the registered service point', async () => {
+      const fault = await arriveAt({ positionOffset: NORTH_OF_SITE });
+      assert.ok(Number.isInteger(fault.arrivalDistanceM));
+      assert.ok(
+        fault.arrivalDistanceM >= 110 && fault.arrivalDistanceM <= 112,
+        `got ${fault.arrivalDistanceM}`
+      );
+    });
+
+    it('is zero when the technician reports the service point itself', async () => {
+      assert.equal((await arriveAt({ positionOffset: 0 })).arrivalDistanceM, 0);
+    });
+
+    it('stays null when no position was ever recorded, and the status change still succeeds', async () => {
+      assert.equal((await arriveAt({ positionOffset: null })).arrivalDistanceM, null);
+    });
+
+    it('the customer sees the stored distance on their own report', async () => {
+      const fault = await arriveAt({ positionOffset: NORTH_OF_SITE });
+      const res = await call('GET', `/faults/${fault.id}`, { token: tokens.aline });
+      assert.equal(res.body.fault.arrivalDistanceM, fault.arrivalDistanceM);
+    });
+
+    it('analytics report the average and median of the measured arrivals', async () => {
+      const res = await call('GET', '/stats/analytics', { token: tokens.grace });
+      const { arrivalDistance } = res.body.analytics;
+      assert.ok(arrivalDistance.measuredJobs >= 2);
+      assert.ok(arrivalDistance.averageMetres >= 0);
+      assert.ok(arrivalDistance.medianMetres >= 0);
+    });
+  });
+
   describe('device tokens and push', () => {
     const TOKEN_ALINE = 'ExponentPushToken[integration-test-aline-0001]';
     const TOKEN_JEAN = 'ExponentPushToken[integration-test-jean-00001]';
