@@ -1,21 +1,23 @@
 import { prisma } from '../lib/prisma.js';
 import { ACTIVE_JOB_STATUSES, OPEN_STATUSES, STATUS_FLOW } from '../utils/constants.js';
 
-const minutesBetween = (from, to) =>
-  from && to ? (new Date(to).getTime() - new Date(from).getTime()) / 60000 : null;
+// The averages are worked out by PostgreSQL, so the API reads a few numbers instead of every fault.
+// Intervals are minutes between two stage times. A pair is left out if either time is missing or the
+// second is earlier than the first (a clock error), exactly as the figures have always been counted.
 
-function average(values) {
-  const valid = values.filter((value) => value !== null && value >= 0);
-  if (!valid.length) return null;
-  return Math.round((valid.reduce((sum, value) => sum + value, 0) / valid.length) * 10) / 10;
-}
+/** @typedef {{ responseMinutes: number | null }} OverviewRow */
+/**
+ * @typedef {{
+ *   totalReports: number, completedJobs: number,
+ *   responseMinutes: number | null, assignmentMinutes: number | null, arrivalMinutes: number | null,
+ *   locationIdentificationMinutes: number | null, travelMinutes: number | null, onSiteMinutes: number | null,
+ *   measuredJobs: number, averageMetres: number | null, medianMetres: number | null,
+ *   contacts: number, jobsWithNoContact: number,
+ * }} AnalyticsRow
+ */
 
-function median(values) {
-  if (!values.length) return null;
-  const sorted = [...values].sort((a, b) => a - b);
-  const middle = Math.floor(sorted.length / 2);
-  return sorted.length % 2 ? sorted[middle] : Math.round((sorted[middle - 1] + sorted[middle]) / 2);
-}
+/** Rounds to one decimal place; null stays null (nothing to average). */
+const oneDecimal = (value) => (value === null ? null : Math.round(value * 10) / 10);
 
 function startOfDay(date = new Date()) {
   const start = new Date(date);
@@ -25,7 +27,7 @@ function startOfDay(date = new Date()) {
 
 /** Numbers for the coordinator dashboard tiles. */
 export async function getOverview() {
-  const [byStatus, technicians, resolvedToday, timed] = await Promise.all([
+  const [byStatus, technicians, resolvedToday, [timed]] = await Promise.all([
     prisma.faultReport.groupBy({ by: ['status'], _count: { _all: true } }),
     prisma.technician.findMany({
       select: {
@@ -34,10 +36,14 @@ export async function getOverview() {
       },
     }),
     prisma.faultReport.count({ where: { status: 'RESOLVED', resolvedAt: { gte: startOfDay() } } }),
-    prisma.faultReport.findMany({
-      where: { arrivedAt: { not: null } },
-      select: { reportedAt: true, arrivedAt: true },
-    }),
+    // Every fault that has an arrival time counts here, cancelled or not.
+    /** @type {Promise<OverviewRow[]>} */ (
+      prisma.$queryRaw`
+      SELECT (AVG(EXTRACT(EPOCH FROM ("arrivedAt" - "reportedAt")) / 60)
+                FILTER (WHERE "arrivedAt" >= "reportedAt"))::float8 AS "responseMinutes"
+      FROM "FaultReport"
+      WHERE "arrivedAt" IS NOT NULL`
+    ),
   ]);
 
   const count = (status) => byStatus.find((row) => row.status === status)?._count._all ?? 0;
@@ -53,34 +59,50 @@ export async function getOverview() {
     resolvedToday,
     techniciansOnDuty: onDuty.length,
     techniciansAvailable: onDuty.filter((technician) => technician._count.faults === 0).length,
-    averageResponseMinutes: average(
-      timed.map((fault) => minutesBetween(fault.reportedAt, fault.arrivedAt))
-    ),
+    averageResponseMinutes: oneDecimal(timed.responseMinutes),
   };
 }
 
-/** Response-performance report, calculated from the time stored at each status change. */
+/** Response-performance report, calculated from the time stored at each status change. Cancelled faults are left out. */
 export async function getAnalytics() {
-  const faults = await prisma.faultReport.findMany({
-    where: { status: { not: 'CANCELLED' } },
-    select: {
-      status: true,
-      reportedAt: true,
-      assignedAt: true,
-      onTheWayAt: true,
-      arrivedAt: true,
-      arrivalDistanceM: true,
-      resolvedAt: true,
-      clarificationContacts: true,
-    },
-  });
+  const weekStart = startOfDay(new Date(Date.now() - 6 * 24 * 60 * 60 * 1000));
 
-  const resolved = faults.filter((fault) => fault.status === 'RESOLVED');
-  const totalContacts = resolved.reduce((sum, fault) => sum + fault.clarificationContacts, 0);
-
-  const arrivalDistances = faults
-    .map((fault) => fault.arrivalDistanceM)
-    .filter((metres) => metres !== null);
+  const [[figures], statusCounts, recentlyResolved] = await Promise.all([
+    /** @type {Promise<AnalyticsRow[]>} */ (
+      prisma.$queryRaw`
+      SELECT
+        COUNT(*)::int AS "totalReports",
+        (COUNT(*) FILTER (WHERE "status" = 'RESOLVED'))::int AS "completedJobs",
+        (AVG(EXTRACT(EPOCH FROM ("arrivedAt" - "reportedAt")) / 60)
+          FILTER (WHERE "arrivedAt" >= "reportedAt"))::float8 AS "responseMinutes",
+        (AVG(EXTRACT(EPOCH FROM ("assignedAt" - "reportedAt")) / 60)
+          FILTER (WHERE "assignedAt" >= "reportedAt"))::float8 AS "assignmentMinutes",
+        (AVG(EXTRACT(EPOCH FROM ("arrivedAt" - "assignedAt")) / 60)
+          FILTER (WHERE "arrivedAt" >= "assignedAt"))::float8 AS "arrivalMinutes",
+        (AVG(EXTRACT(EPOCH FROM ("onTheWayAt" - "assignedAt")) / 60)
+          FILTER (WHERE "onTheWayAt" >= "assignedAt"))::float8 AS "locationIdentificationMinutes",
+        (AVG(EXTRACT(EPOCH FROM ("arrivedAt" - "onTheWayAt")) / 60)
+          FILTER (WHERE "arrivedAt" >= "onTheWayAt"))::float8 AS "travelMinutes",
+        (AVG(EXTRACT(EPOCH FROM ("resolvedAt" - "arrivedAt")) / 60)
+          FILTER (WHERE "resolvedAt" >= "arrivedAt"))::float8 AS "onSiteMinutes",
+        COUNT("arrivalDistanceM")::int AS "measuredJobs",
+        AVG("arrivalDistanceM")::float8 AS "averageMetres",
+        (percentile_cont(0.5) WITHIN GROUP (ORDER BY "arrivalDistanceM"))::float8 AS "medianMetres",
+        COALESCE(SUM("clarificationContacts") FILTER (WHERE "status" = 'RESOLVED'), 0)::int AS "contacts",
+        (COUNT(*) FILTER (WHERE "status" = 'RESOLVED' AND "clarificationContacts" = 0))::int AS "jobsWithNoContact"
+      FROM "FaultReport"
+      WHERE "status" <> 'CANCELLED'`
+    ),
+    prisma.faultReport.groupBy({
+      by: ['status'],
+      where: { status: { not: 'CANCELLED' } },
+      _count: { _all: true },
+    }),
+    prisma.faultReport.findMany({
+      where: { status: 'RESOLVED', resolvedAt: { gte: weekStart } },
+      select: { resolvedAt: true },
+    }),
+  ]);
 
   const days = [];
   for (let offset = 6; offset >= 0; offset -= 1) {
@@ -89,45 +111,39 @@ export async function getAnalytics() {
     days.push({
       date: start,
       label: offset === 0 ? 'Today' : start.toLocaleDateString('en-GB', { weekday: 'short' }),
-      completed: resolved.filter((fault) => fault.resolvedAt >= start && fault.resolvedAt < end)
-        .length,
+      completed: recentlyResolved.filter(
+        (fault) => fault.resolvedAt >= start && fault.resolvedAt < end
+      ).length,
     });
   }
 
+  const completed = figures.completedJobs;
   return {
-    totalReports: faults.length,
-    completedJobs: resolved.length,
+    totalReports: figures.totalReports,
+    completedJobs: completed,
     averages: {
-      responseMinutes: average(faults.map((f) => minutesBetween(f.reportedAt, f.arrivedAt))),
-      assignmentMinutes: average(faults.map((f) => minutesBetween(f.reportedAt, f.assignedAt))),
-      arrivalMinutes: average(faults.map((f) => minutesBetween(f.assignedAt, f.arrivedAt))),
-      locationIdentificationMinutes: average(
-        faults.map((f) => minutesBetween(f.assignedAt, f.onTheWayAt))
-      ),
-      travelMinutes: average(faults.map((f) => minutesBetween(f.onTheWayAt, f.arrivedAt))),
-      onSiteMinutes: average(faults.map((f) => minutesBetween(f.arrivedAt, f.resolvedAt))),
+      responseMinutes: oneDecimal(figures.responseMinutes),
+      assignmentMinutes: oneDecimal(figures.assignmentMinutes),
+      arrivalMinutes: oneDecimal(figures.arrivalMinutes),
+      locationIdentificationMinutes: oneDecimal(figures.locationIdentificationMinutes),
+      travelMinutes: oneDecimal(figures.travelMinutes),
+      onSiteMinutes: oneDecimal(figures.onSiteMinutes),
     },
     arrivalDistance: {
-      measuredJobs: arrivalDistances.length,
-      averageMetres: arrivalDistances.length
-        ? Math.round(arrivalDistances.reduce((sum, m) => sum + m, 0) / arrivalDistances.length)
-        : null,
-      medianMetres: median(arrivalDistances),
+      measuredJobs: figures.measuredJobs,
+      averageMetres: figures.averageMetres === null ? null : Math.round(figures.averageMetres),
+      medianMetres: figures.medianMetres === null ? null : Math.round(figures.medianMetres),
     },
     clarification: {
-      total: totalContacts,
-      perJob: resolved.length ? Math.round((totalContacts / resolved.length) * 10) / 10 : null,
-      jobsWithNoContactPercent: resolved.length
-        ? Math.round(
-            (resolved.filter((fault) => fault.clarificationContacts === 0).length /
-              resolved.length) *
-              100
-          )
+      total: figures.contacts,
+      perJob: completed ? Math.round((figures.contacts / completed) * 10) / 10 : null,
+      jobsWithNoContactPercent: completed
+        ? Math.round((figures.jobsWithNoContact / completed) * 100)
         : null,
     },
     statusDistribution: STATUS_FLOW.map((status) => ({
       status,
-      count: faults.filter((fault) => fault.status === status).length,
+      count: statusCounts.find((row) => row.status === status)?._count._all ?? 0,
     })),
     completedLast7Days: days,
   };
