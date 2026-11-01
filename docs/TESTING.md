@@ -82,7 +82,14 @@ The repeated-tap test first sends a few reads to warm up the database connection
 
 A page is about 110 times smaller and answers about 50 times faster at the median. The unpaged request was already acceptable with about 20 faults and was not at 2,028, which is the case for paging. Only the coordinator's Fault management page is paged; the customer, technician and mobile screens still fetch their own, short lists.
 
-**Found by the same run:** with 2,028 faults `GET /stats/analytics` rose to p50 319 ms and about 31 req/s (from 26 ms and 361 req/s on about 50 faults), and `/stats/overview` to 106 ms. Both read every fault into the API and average in JavaScript. Doing the averaging in SQL is the next change to make; it has not been done.
+**Found by the same run, then fixed:** with 2,028 faults `GET /stats/analytics` and `/stats/overview` slowed down, because both read every fault into the API and averaged in JavaScript. The averaging now runs in PostgreSQL (one query with `AVG ... FILTER` and `percentile_cont`), so the API reads a handful of numbers. Same data, same laptop, same load; two single runs each:
+
+| Endpoint               | Averaged in JavaScript           | Averaged in SQL                  |
+| ---------------------- | -------------------------------- | -------------------------------- |
+| `GET /stats/analytics` | 31 req/s, p50 319 ms, p95 420 ms | 121 req/s, p50 67 ms, p95 146 ms |
+| `GET /stats/overview`  | 91 req/s, p50 106 ms, p95 142 ms | 255 req/s, p50 36 ms, p95 61 ms  |
+
+That is about four times the throughput for analytics and nearly three times for the overview. It is still slower than with about 50 faults (p50 26 ms), because the database still scans 2,000 rows; an index or a stored summary would be the next step if the pilot grew far beyond this. The figures vary by up to about 30% between runs on a laptop (the paged list moved from 72 ms to 97 ms p50 between two runs), so read them as orders of magnitude. The change is protected by tests that work out the answers by hand and compare the SQL with a plain JavaScript calculation on 300 generated faults.
 
 **Method note:** the first attempts compared against a stale API process that was still reading the small development database. Both list requests came back at 27 KB, which is how it was noticed. The API now prints `Using database <host>:<port>/<name>` at start-up so this is visible.
 
