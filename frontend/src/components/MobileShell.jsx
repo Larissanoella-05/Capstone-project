@@ -53,7 +53,7 @@ export default function MobileShell({ base, tabs, roleLabel }) {
                 } ${active ? 'bg-ink text-white' : 'hover:bg-paper'}`}
               >
                 <span
-                  className={`font-mono text-[11px] font-medium ${active ? 'text-line' : 'text-muted'}`}
+                  className={`font-mono text-xs font-medium ${active ? 'text-line' : 'text-muted'}`}
                 >
                   {String(index + 1).padStart(2, '0')}
                 </span>
@@ -61,7 +61,7 @@ export default function MobileShell({ base, tabs, roleLabel }) {
                 {tab.to === notificationsPath && unread > 0 && (
                   <span
                     aria-label={`${unread} unread`}
-                    className="flex h-5 min-w-5 items-center justify-center bg-volt px-1 font-mono text-[11px] font-medium text-ink outline outline-1 outline-ink"
+                    className="flex h-5 min-w-5 items-center justify-center bg-volt px-1 font-mono text-xs font-medium text-ink outline outline-1 outline-ink"
                   >
                     {unread}
                   </span>
@@ -79,7 +79,7 @@ export default function MobileShell({ base, tabs, roleLabel }) {
             type="button"
             aria-label="Sign out"
             title="Sign out"
-            className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center border border-ink bg-white hover:bg-paper"
+            className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center border border-ink bg-white hover:bg-paper"
             onClick={signOut}
           >
             <LogOut size={18} aria-hidden="true" />
@@ -104,7 +104,7 @@ export default function MobileShell({ base, tabs, roleLabel }) {
             >
               <Bell size={20} aria-hidden="true" />
               {unread > 0 && (
-                <span className="absolute right-2 top-2 flex h-5 min-w-5 items-center justify-center bg-volt px-1 font-mono text-[11px] font-medium outline outline-1 outline-ink">
+                <span className="absolute right-2 top-2 flex h-5 min-w-5 items-center justify-center bg-volt px-1 font-mono text-xs font-medium outline outline-1 outline-ink">
                   {unread}
                 </span>
               )}
@@ -128,7 +128,7 @@ export default function MobileShell({ base, tabs, roleLabel }) {
         {/* Tab bar: phone only */}
         <nav
           aria-label="Main"
-          className="sticky bottom-0 z-[1000] grid border-t border-ink bg-white font-mono text-[10px] font-medium uppercase tracking-[0.08em] md:hidden"
+          className="sticky bottom-0 z-[1000] grid border-t border-ink bg-white font-mono text-xs font-medium uppercase tracking-[0.08em] md:hidden"
           style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
         >
           {tabs.map((tab, index) => {
@@ -142,7 +142,15 @@ export default function MobileShell({ base, tabs, roleLabel }) {
                   active ? 'bg-ink text-white' : 'bg-white text-ink'
                 }`}
               >
-                {tab.label}
+                <span className="relative">
+                  {tab.label}
+                  {tab.to === notificationsPath && unread > 0 && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute -right-3 -top-1 h-2 w-2 bg-danger"
+                    />
+                  )}
+                </span>
               </Link>
             );
           })}

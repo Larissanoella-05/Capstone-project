@@ -1,6 +1,19 @@
 /** How many faults the coordinator list shows per page. The API allows up to 100. */
 export const PAGE_SIZE = 20;
 
+/** How many notifications show before "Load more". */
+export const NOTIFICATION_STEP = 10;
+
+/**
+ * The first `count` items of a list and how many are still hidden.
+ * @template T
+ * @param {T[]} items
+ * @param {number} count
+ */
+export function showFirst(items, count) {
+  return { visible: items.slice(0, count), hidden: Math.max(0, items.length - count) };
+}
+
 /**
  * The words and buttons under a paged list: "21–40 of 53", and whether Previous and Next work.
  * @param {{ page: number, pageSize: number, total: number }} paging

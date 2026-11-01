@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import { timeAgo } from '../lib/format.js';
+import { NOTIFICATION_STEP, showFirst } from '../lib/paging.js';
 import { useApi } from '../hooks/useApi.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { PageHeading } from '../components/Bits.jsx';
@@ -14,6 +15,7 @@ export default function Notifications({ faultPath, intro }) {
   const navigate = useNavigate();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
+  const [shown, setShown] = useState(NOTIFICATION_STEP);
 
   async function refreshAll() {
     await state.reload();
@@ -71,7 +73,7 @@ export default function Notifications({ faultPath, intro }) {
                 Mark all as read
               </button>
               <ul className="m-0 grid list-none gap-3 p-0 md:grid-cols-2 2xl:grid-cols-3">
-                {data.notifications.map((notification) => (
+                {showFirst(data.notifications, shown).visible.map((notification) => (
                   <li key={notification.id}>
                     <button
                       type="button"
@@ -94,6 +96,15 @@ export default function Notifications({ faultPath, intro }) {
                   </li>
                 ))}
               </ul>
+              {showFirst(data.notifications, shown).hidden > 0 && (
+                <button
+                  type="button"
+                  className="btn btn-outline self-start"
+                  onClick={() => setShown((count) => count + NOTIFICATION_STEP)}
+                >
+                  Load more ({showFirst(data.notifications, shown).hidden} older)
+                </button>
+              )}
             </>
           )
         }
