@@ -140,6 +140,28 @@ describe('AuthContext', () => {
     expect(await tokenStore.get()).toBeNull();
   });
 
+  it('does not make the user wait more than about 3 seconds for a server that never answers', async () => {
+    api.mockResolvedValue({ token: 'x', user: user('CUSTOMER') });
+    const { result } = await renderAuth();
+    await act(async () => {
+      await result.current.login('t@demo.rw', 'demo1234');
+    });
+    setRegisteredToken('ExponentPushToken[abc]');
+    api.mockImplementation(() => new Promise(() => {})); // the server is asleep
+
+    const started = Date.now();
+    await act(async () => {
+      await result.current.logout();
+    });
+    const waited = Date.now() - started;
+
+    expect(waited).toBeGreaterThanOrEqual(2900); // it does give the server a moment first
+    expect(waited).toBeLessThan(5000); // but not the 70 seconds a sleeping server can take
+    expect(result.current.user).toBeNull();
+    expect(await tokenStore.get()).toBeNull();
+    expect(getRegisteredToken()).toBeNull();
+  }, 10000);
+
   it('does not call the devices endpoint when no push token was registered', async () => {
     api.mockResolvedValue({ token: 'x', user: user('CUSTOMER') });
     const { result } = await renderAuth();
