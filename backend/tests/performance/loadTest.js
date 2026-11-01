@@ -6,7 +6,7 @@
  *   API_URL=https://your-api.example.com npm run test:perf
  *   REQUESTS=400 CONCURRENCY=20 npm run test:perf
  *
- * Prints, per endpoint: requests, errors, throughput and latency percentiles (ms).
+ * Prints, per endpoint: requests, errors, response size (KB), throughput and latency percentiles (ms).
  */
 import { performance } from 'node:perf_hooks';
 import { pathToFileURL } from 'node:url';
@@ -30,10 +30,10 @@ async function timedGet(path, token) {
     const response = await fetch(`${API}${path}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
-    await response.arrayBuffer();
-    return { ms: performance.now() - start, ok: response.ok };
+    const body = await response.arrayBuffer();
+    return { ms: performance.now() - start, ok: response.ok, bytes: body.byteLength };
   } catch {
-    return { ms: performance.now() - start, ok: false };
+    return { ms: performance.now() - start, ok: false, bytes: 0 };
   }
 }
 
@@ -42,12 +42,15 @@ async function run(path, token) {
   const timings = [];
   let errors = 0;
   let sent = 0;
+  let bytes = 0;
   const started = performance.now();
 
   async function worker() {
     while (sent < REQUESTS) {
       sent += 1;
-      const { ms, ok } = await timedGet(path, token);
+      const result = await timedGet(path, token);
+      const { ms, ok } = result;
+      bytes = result.bytes; // the same request returns about the same size each time
       timings.push(ms);
       if (!ok) errors += 1;
     }
@@ -58,9 +61,10 @@ async function run(path, token) {
   timings.sort((a, b) => a - b);
   const round = (value) => (value === null ? '—' : Math.round(value));
   return {
-    endpoint: `GET ${path.split('?')[0]}`,
+    endpoint: `GET ${path}`,
     requests: timings.length,
     errors,
+    KB: Math.round(bytes / 1024),
     'req/s': Math.round(timings.length / seconds),
     p50: round(percentile(timings, 50)),
     p95: round(percentile(timings, 95)),

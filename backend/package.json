@@ -11,6 +11,7 @@
     "test:integration": "node --test --test-concurrency=1 tests/integration/*.test.js",
     "test:all": "npm test && npm run test:integration",
     "test:perf": "node tests/performance/loadTest.js",
+    "test:perf:seed": "node tests/performance/seedLoadData.js",
     "typecheck": "tsc -p jsconfig.json"
   },
   "prisma": {

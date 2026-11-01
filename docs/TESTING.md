@@ -69,7 +69,22 @@ The repeated-tap test first sends a few reads to warm up the database connection
 | GET /faults/:id           | 484   | 20     | 25     | 28     |
 | GET /technicians?faultId= | 479   | 21     | 24     | 26     |
 
-`GET /faults` is the slowest because it returns each fault with its full history. If the pilot grows, add pagination there first. (The p99 for `/health` is the first requests opening connections.) _Re-run against the deployed Render API for the report; the free tier will be slower and the first request includes the wake-up delay._
+`GET /faults` was the slowest because it returned every fault with its full history. That is why the coordinator list is now paged (opt-in `?page=&pageSize=`, 20 per page, 100 at most). _The p99 for `/health` is the first requests opening connections._ Re-run against the deployed Render API for the report; the free tier will be slower and the first request includes the wake-up delay.
+
+### 3a. Paging with 2,028 faults (1 Nov 2026)
+
+`npm run test:perf:seed` adds 2,000 synthetic faults (about 9,500 status-history rows) to the **test** database only, behind the same safety checks as the integration tests. The load test then compared the whole list with one page. Same laptop, local API and PostgreSQL, 200 requests per endpoint, 10 at a time, 0 errors. Single run; latencies move by tens of percent between runs on a laptop, so read the sizes first and the times second.
+
+| Request                                     | Response size | req/s | p50 ms | p95 ms | p99 ms |
+| ------------------------------------------- | ------------- | ----- | ------ | ------ | ------ |
+| `GET /faults?status=ALL` (everything)       | 3,105 KB      | 3     | 3,743  | 5,146  | 5,614  |
+| `GET /faults?status=ALL&page=1&pageSize=20` | 28 KB         | 130   | 72     | 113    | 161    |
+
+A page is about 110 times smaller and answers about 50 times faster at the median. The unpaged request was already acceptable with about 20 faults and was not at 2,028, which is the case for paging. Only the coordinator's Fault management page is paged; the customer, technician and mobile screens still fetch their own, short lists.
+
+**Found by the same run:** with 2,028 faults `GET /stats/analytics` rose to p50 319 ms and about 31 req/s (from 26 ms and 361 req/s on about 50 faults), and `/stats/overview` to 106 ms. Both read every fault into the API and average in JavaScript. Doing the averaging in SQL is the next change to make; it has not been done.
+
+**Method note:** the first attempts compared against a stale API process that was still reading the small development database. Both list requests came back at 27 KB, which is how it was noticed. The API now prints `Using database <host>:<port>/<name>` at start-up so this is visible.
 
 ## 3b. Android app testing
 
