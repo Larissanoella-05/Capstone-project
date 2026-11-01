@@ -30,3 +30,4 @@
 - **Technician positions are simulated** in the pilot (decided for the evaluation); the device-location endpoint is ready for real GPS later.
 - **Photos are stored in the database** as data URLs to keep the prototype simple; production should move them to object storage.
 - **Polling instead of WebSockets** for live updates: simpler to host on free tiers; fast enough for 4–6 s refresh.
+- **No customer registration or account management** (future work). Accounts and their service locations are loaded by the seed script, so a customer cannot sign up, and there is no password reset. In production the onboarding would be a bulk import from the utility's customer records (name, phone, meter number, cell, landmark, GPS point), because a report needs a verified service location and open sign-up would let anyone claim any address. Coordinator and technician accounts would be created by an administrator area, which is also not built (FR13).
