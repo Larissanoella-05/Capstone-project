@@ -1,15 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { prisma } from '../lib/prisma.js';
 import { badRequest, conflict, forbidden, notFound } from '../utils/httpError.js';
-import { distanceKm, distanceMetres } from '../utils/geo.js';
-import {
-  ACTIVE_JOB_STATUSES,
-  CATEGORY_LABEL,
-  DEFAULT_PRIORITY,
-  OPEN_STATUSES,
-  STATUS_TIMESTAMP,
-} from '../utils/constants.js';
+import { distanceMetres } from '../utils/geo.js';
+import { ACTIVE_JOB_STATUSES, DEFAULT_PRIORITY, STATUS_TIMESTAMP } from '../utils/constants.js';
 import { faultStatusMachine } from '../domain/FaultStatusMachine.js';
+import { serializeFault } from '../domain/FaultSerializer.js';
+import { buildFaultFilter, pageMeta, pagingFor } from './faultQuery.js';
 import { customerMessageFor, notify } from './notificationService.js';
 import { sendPushForNotifications } from './pushService.js';
 import { sendSmsForNotifications } from './smsService.js';
@@ -43,125 +39,32 @@ const faultInclude = /** @satisfies {import('@prisma/client').Prisma.FaultReport
   },
 });
 
-/** Turns a database row into the JSON shape shared by all three roles. */
-export function serializeFault(fault) {
-  const loc = fault.serviceLocation;
-  const techLocation = fault.technician?.locations?.[0] ?? null;
-
-  return {
-    id: fault.id,
-    reference: fault.reference,
-    category: fault.category,
-    description: fault.description,
-    contactPhone: fault.contactPhone,
-    photo: fault.photo ?? null,
-    priority: fault.priority,
-    status: fault.status,
-    reportedAt: fault.reportedAt,
-    assignedAt: fault.assignedAt,
-    onTheWayAt: fault.onTheWayAt,
-    arrivedAt: fault.arrivedAt,
-    arrivalDistanceM: fault.arrivalDistanceM ?? null,
-    workingAt: fault.workingAt,
-    resolvedAt: fault.resolvedAt,
-    cancelledAt: fault.cancelledAt,
-    updatedAt: fault.updatedAt,
-    outcome: fault.outcome,
-    resolutionNote: fault.resolutionNote,
-    workCompleted: fault.workCompleted,
-    clarificationContacts: fault.clarificationContacts,
-    customer: fault.customer
-      ? { id: fault.customer.id, name: fault.customer.user.name, phone: fault.customer.user.phone }
-      : null,
-    serviceLocation: loc
-      ? {
-          id: loc.id,
-          meterNumber: loc.meterNumber,
-          village: loc.village,
-          cell: loc.cell,
-          sector: loc.sector,
-          district: loc.district,
-          landmark: loc.landmark,
-          latitude: loc.latitude,
-          longitude: loc.longitude,
-        }
-      : null,
-    technician: fault.technician
-      ? {
-          id: fault.technician.id,
-          name: fault.technician.user.name,
-          phone: fault.technician.user.phone,
-          staffNumber: fault.technician.staffNumber,
-          location: techLocation
-            ? {
-                latitude: techLocation.latitude,
-                longitude: techLocation.longitude,
-                label: techLocation.label,
-                recordedAt: techLocation.recordedAt,
-              }
-            : null,
-          distanceKm: techLocation && loc ? distanceKm(techLocation, loc) : null,
-        }
-      : null,
-    history: (fault.history ?? []).map((entry) => ({
-      id: entry.id,
-      status: entry.status,
-      note: entry.note,
-      createdAt: entry.createdAt,
-      changedBy: entry.changedBy?.name ?? null,
-    })),
-  };
-}
-
-/** Limits a query to the faults the signed-in user is allowed to see. */
-function scopeFor(user) {
-  if (user.role === 'CUSTOMER') return { customerId: user.customer.id };
-  if (user.role === 'TECHNICIAN') return { technicianId: user.technician.id };
-  return {}; // coordinators see everything
-}
-
+/**
+ * The faults the user may see, newest first. Without `page` or `pageSize` in the query this is the whole
+ * list; with either it is one page, and the totals say how many pages there are.
+ */
 export async function listFaults(user, query = {}) {
-  /** @type {import('@prisma/client').Prisma.FaultReportWhereInput} */
-  const where = { ...scopeFor(user) };
-  const { status, priority, search, date } = query;
+  const where = buildFaultFilter(user, query);
+  const paging = pagingFor(query);
 
-  if (status === 'OPEN') where.status = { in: OPEN_STATUSES };
-  else if (status && status !== 'ALL') where.status = status;
-
-  if (priority && priority !== 'ALL') where.priority = priority;
-
-  if (date === 'TODAY') {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    where.reportedAt = { gte: start };
-  } else if (date === 'WEEK') {
-    where.reportedAt = { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) };
-  }
-
-  const term = typeof search === 'string' ? search.trim() : '';
-  if (term) {
-    const contains = { contains: term, mode: /** @type {const} */ ('insensitive') };
-    const categoryMatches = Object.entries(CATEGORY_LABEL)
-      .filter(([, label]) => label.toLowerCase().includes(term.toLowerCase()))
-      .map(([category]) => /** @type {import('@prisma/client').FaultCategory} */ (category));
-    where.OR = [
-      { reference: contains },
-      { description: contains },
-      { serviceLocation: { cell: contains } },
-      { serviceLocation: { village: contains } },
-      { customer: { user: { name: contains } } },
-      { technician: { user: { name: contains } } },
-      ...(categoryMatches.length ? [{ category: { in: categoryMatches } }] : []),
-    ];
-  }
-
-  const faults = await prisma.faultReport.findMany({
+  const find = {
     where,
     include: faultInclude,
     omit: { photo: true }, // photos are only sent on the detail endpoint
-    orderBy: { reportedAt: 'desc' },
-  });
-  return faults.map(serializeFault);
+    // The id breaks ties, so reports made in the same instant never swap places between pages.
+    orderBy: [{ reportedAt: /** @type {const} */ ('desc') }, { id: /** @type {const} */ ('desc') }],
+  };
+
+  if (!paging.paged) {
+    const faults = await prisma.faultReport.findMany(find);
+    return { faults: faults.map(serializeFault), ...pageMeta(faults.length, paging) };
+  }
+
+  const [faults, total] = await prisma.$transaction([
+    prisma.faultReport.findMany({ ...find, skip: paging.skip, take: paging.take }),
+    prisma.faultReport.count({ where }),
+  ]);
+  return { faults: faults.map(serializeFault), ...pageMeta(total, paging) };
 }
 
 /** Loads one fault and checks the signed-in user may see it. */
@@ -377,4 +280,4 @@ export async function updateFault(user, id, body) {
   return getFault(user, id);
 }
 
-export { ACTIVE_JOB_STATUSES };
+export { ACTIVE_JOB_STATUSES, serializeFault };

@@ -6,6 +6,7 @@ import * as faults from '../services/faultService.js';
 import {
   assignSchema,
   createSchema,
+  listQuerySchema,
   statusSchema,
   updateSchema,
 } from '../validators/fault.schemas.js';
@@ -20,11 +21,13 @@ function idParam(req) {
   return id;
 }
 
-// GET /api/faults?status=OPEN|ALL|<status>&priority=&search=&date=TODAY|WEEK
+// GET /api/faults?status=OPEN|ALL|<status>&priority=&search=&date=TODAY|WEEK&page=&pageSize=
+// Without page or pageSize the whole list is returned; with either it is paged (20 per page by default, 100 at most).
 router.get(
   '/',
+  validate(listQuerySchema, 'query'),
   asyncHandler(async (req, res) => {
-    res.json({ faults: await faults.listFaults(req.user, req.query) });
+    res.json(await faults.listFaults(req.user, req.query));
   })
 );
 

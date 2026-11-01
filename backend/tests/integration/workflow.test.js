@@ -11,6 +11,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { assertSafeTestDatabase } from './testDatabaseGuard.js';
+import { buildLoadFaults } from '../performance/loadData.js';
 
 const TEST_DB = process.env.TEST_DATABASE_URL;
 const backendDir = fileURLToPath(new URL('../../', import.meta.url));
@@ -70,6 +71,76 @@ async function assignBest(faultId) {
 
 const setStatus = (faultId, token, body) =>
   call('PATCH', `/faults/${faultId}/status`, { token, body });
+
+/**
+ * The analytics worked out the long way, in JavaScript, from every row. This is how the API did it before
+ * the averaging moved into SQL; it stays here as the reference the database's answers must match.
+ */
+function referenceAnalytics(rows) {
+  const minutes = (from, to) => (from && to ? (to.getTime() - from.getTime()) / 60000 : null);
+  const average = (values) => {
+    const valid = values.filter((value) => value !== null && value >= 0);
+    if (!valid.length) return null;
+    return Math.round((valid.reduce((sum, value) => sum + value, 0) / valid.length) * 10) / 10;
+  };
+  const median = (values) => {
+    if (!values.length) return null;
+    const sorted = [...values].sort((a, b) => a - b);
+    const middle = Math.floor(sorted.length / 2);
+    return sorted.length % 2
+      ? sorted[middle]
+      : Math.round((sorted[middle - 1] + sorted[middle]) / 2);
+  };
+
+  const faults = rows.filter((row) => row.status !== 'CANCELLED');
+  const resolved = faults.filter((row) => row.status === 'RESOLVED');
+  const totalContacts = resolved.reduce((sum, row) => sum + row.clarificationContacts, 0);
+  const distances = faults.map((row) => row.arrivalDistanceM).filter((metres) => metres !== null);
+
+  return {
+    totalReports: faults.length,
+    completedJobs: resolved.length,
+    averages: {
+      responseMinutes: average(faults.map((f) => minutes(f.reportedAt, f.arrivedAt))),
+      assignmentMinutes: average(faults.map((f) => minutes(f.reportedAt, f.assignedAt))),
+      arrivalMinutes: average(faults.map((f) => minutes(f.assignedAt, f.arrivedAt))),
+      locationIdentificationMinutes: average(
+        faults.map((f) => minutes(f.assignedAt, f.onTheWayAt))
+      ),
+      travelMinutes: average(faults.map((f) => minutes(f.onTheWayAt, f.arrivedAt))),
+      onSiteMinutes: average(faults.map((f) => minutes(f.arrivedAt, f.resolvedAt))),
+    },
+    arrivalDistance: {
+      measuredJobs: distances.length,
+      averageMetres: distances.length
+        ? Math.round(distances.reduce((sum, m) => sum + m, 0) / distances.length)
+        : null,
+      medianMetres: median(distances),
+    },
+    clarification: {
+      total: totalContacts,
+      perJob: resolved.length ? Math.round((totalContacts / resolved.length) * 10) / 10 : null,
+      jobsWithNoContactPercent: resolved.length
+        ? Math.round(
+            (resolved.filter((row) => row.clarificationContacts === 0).length / resolved.length) *
+              100
+          )
+        : null,
+    },
+    statusDistribution: [
+      'REPORTED',
+      'ASSIGNED',
+      'ON_THE_WAY',
+      'ARRIVED',
+      'WORKING',
+      'RESOLVED',
+    ].map((status) => ({ status, count: faults.filter((row) => row.status === status).length })),
+    // The dashboard tile averages over every fault that has an arrival time, cancelled or not.
+    overviewResponseMinutes: average(
+      rows.filter((row) => row.arrivedAt).map((row) => minutes(row.reportedAt, row.arrivedAt))
+    ),
+  };
+}
 
 describe('API integration', { concurrency: false }, () => {
   before(async () => {
@@ -757,6 +828,100 @@ describe('API integration', { concurrency: false }, () => {
     });
   });
 
+  describe('paging the fault list', () => {
+    const idsOf = (res) => res.body.faults.map((fault) => fault.id);
+    let everything;
+
+    before(async () => {
+      everything = await call('GET', '/faults?status=ALL', { token: tokens.grace });
+      assert.equal(everything.status, 200);
+      assert.ok(everything.body.faults.length >= 6, 'the earlier tests should have left 6+ faults');
+    });
+
+    it('without page or pageSize returns the whole list, as before, plus the total', () => {
+      assert.equal(everything.body.total, everything.body.faults.length);
+      assert.equal('page' in everything.body, false);
+    });
+
+    it('returns the requested slice and the paging details', async () => {
+      const res = await call('GET', '/faults?status=ALL&page=1&pageSize=3', {
+        token: tokens.grace,
+      });
+      assert.equal(res.status, 200, JSON.stringify(res.body));
+      assert.equal(res.body.faults.length, 3);
+      assert.equal(res.body.page, 1);
+      assert.equal(res.body.pageSize, 3);
+      assert.equal(res.body.total, everything.body.total);
+      assert.equal(res.body.totalPages, Math.ceil(everything.body.total / 3));
+    });
+
+    it('pages join up with the full list: no overlap, no gap, same order', async () => {
+      const first = await call('GET', '/faults?status=ALL&page=1&pageSize=3', {
+        token: tokens.grace,
+      });
+      const second = await call('GET', '/faults?status=ALL&page=2&pageSize=3', {
+        token: tokens.grace,
+      });
+      assert.deepEqual([...idsOf(first), ...idsOf(second)], idsOf(everything).slice(0, 6));
+    });
+
+    it('the last page holds the remainder', async () => {
+      const total = everything.body.total;
+      const pageSize = 4;
+      const last = Math.ceil(total / pageSize);
+      const res = await call('GET', `/faults?status=ALL&page=${last}&pageSize=${pageSize}`, {
+        token: tokens.grace,
+      });
+      assert.equal(res.body.faults.length, total - (last - 1) * pageSize);
+    });
+
+    it('a page past the end is empty but still reports the real total', async () => {
+      const res = await call('GET', '/faults?status=ALL&page=9999&pageSize=20', {
+        token: tokens.grace,
+      });
+      assert.equal(res.status, 200);
+      assert.deepEqual(res.body.faults, []);
+      assert.equal(res.body.total, everything.body.total);
+    });
+
+    it('filters are applied before paging', async () => {
+      const open = await call('GET', '/faults?status=OPEN', { token: tokens.grace });
+      const res = await call('GET', '/faults?status=OPEN&page=1&pageSize=1', {
+        token: tokens.grace,
+      });
+      assert.equal(res.body.total, open.body.faults.length);
+      assert.ok(
+        res.body.faults.every((fault) => !['RESOLVED', 'CANCELLED'].includes(fault.status))
+      );
+    });
+
+    it('a customer paging sees only their own faults', async () => {
+      const mine = await call('GET', '/faults?status=ALL', { token: tokens.aline });
+      const res = await call('GET', '/faults?status=ALL&page=1&pageSize=2', {
+        token: tokens.aline,
+      });
+      assert.equal(res.body.total, mine.body.faults.length);
+      assert.ok(res.body.faults.length <= 2);
+      assert.ok(res.body.faults.every((fault) => fault.customer.name === 'Aline Mukamana'));
+    });
+
+    it('rejects bad paging values and unknown filters with 400', async () => {
+      for (const query of [
+        'page=0',
+        'page=abc',
+        'pageSize=0',
+        'pageSize=101',
+        'status=banana',
+        'priority=URGENT',
+        'date=YESTERDAY',
+      ]) {
+        const res = await call('GET', `/faults?${query}`, { token: tokens.grace });
+        assert.equal(res.status, 400, `${query} -> ${res.status}`);
+        assert.ok(res.body.error.message);
+      }
+    });
+  });
+
   describe('coordinator cancellation and analytics', () => {
     it('cancelling notifies the customer and blocks further technician updates', async () => {
       const fault = await reportFault('OTHER', 'Will be cancelled');
@@ -783,6 +948,182 @@ describe('API integration', { concurrency: false }, () => {
       const { averages, completedLast7Days } = res.body.analytics;
       for (const value of Object.values(averages)) assert.ok(value === null || value >= 0);
       assert.equal(completedLast7Days.length, 7);
+    });
+  });
+
+  // Keep this group last: it empties the fault table so the answers can be worked out by hand.
+  describe('analytics are calculated in the database', () => {
+    const MINUTE = 60 * 1000;
+    const base = Date.now() - 3 * 24 * 60 * MINUTE;
+    const at = (minutes) => new Date(base + minutes * MINUTE);
+    let customer;
+
+    /** A fault reported at minute 0, with each given stage reached at the given minute. */
+    const fault = (n, status, stages = {}, extra = {}) => ({
+      reference: `AN-${n}`,
+      category: /** @type {const} */ ('POWER_OUTAGE'),
+      status,
+      customerId: customer.id,
+      serviceLocationId: customer.serviceLocations[0].id,
+      reportedAt: at(0),
+      ...Object.fromEntries(
+        Object.entries(stages).map(([column, minutes]) => [column, at(minutes)])
+      ),
+      ...extra,
+    });
+    const resolution = {
+      outcome: /** @type {const} */ ('SUPPLY_RESTORED'),
+      resolutionNote: 'Fixed.',
+    };
+
+    const analytics = async () =>
+      (await call('GET', '/stats/analytics', { token: tokens.grace })).body.analytics;
+    const overview = async () =>
+      (await call('GET', '/stats/overview', { token: tokens.grace })).body.overview;
+
+    before(async () => {
+      customer = await prisma.customer.findFirst({ include: { serviceLocations: true } });
+      await prisma.faultReport.deleteMany({});
+      await prisma.faultReport.createMany({
+        data: [
+          fault(
+            1,
+            'RESOLVED',
+            { assignedAt: 10, onTheWayAt: 15, arrivedAt: 35, workingAt: 40, resolvedAt: 100 },
+            { ...resolution, arrivalDistanceM: 20, clarificationContacts: 0 }
+          ),
+          fault(
+            2,
+            'RESOLVED',
+            { assignedAt: 20, onTheWayAt: 30, arrivedAt: 50, workingAt: 55, resolvedAt: 85 },
+            { ...resolution, arrivalDistanceM: 40, clarificationContacts: 2 }
+          ),
+          fault(
+            3,
+            'RESOLVED',
+            { assignedAt: 30, onTheWayAt: 45, arrivedAt: 75, resolvedAt: 135 },
+            { ...resolution, arrivalDistanceM: 100, clarificationContacts: 1 }
+          ),
+          fault(
+            4,
+            'ARRIVED',
+            { assignedAt: 60, onTheWayAt: 62, arrivedAt: 90 },
+            { arrivalDistanceM: 60 }
+          ),
+          fault(5, 'REPORTED'),
+          // Cancelled faults are left out of every figure.
+          fault(
+            6,
+            'CANCELLED',
+            { assignedAt: 5, cancelledAt: 6 },
+            { arrivalDistanceM: 999, clarificationContacts: 5 }
+          ),
+          // A clock error: "assigned" before "reported". The interval is ignored, not averaged in as negative.
+          fault(7, 'ASSIGNED', { assignedAt: -5 }),
+        ],
+      });
+    });
+
+    it('averages each interval over the faults that reached both stages', async () => {
+      const { averages } = await analytics();
+      assert.deepEqual(averages, {
+        responseMinutes: 62.5, // 35, 50, 75, 90
+        assignmentMinutes: 30, // 10, 20, 30, 60 (the clock error and the cancelled fault are left out)
+        arrivalMinutes: 32.5, // 25, 30, 45, 30
+        locationIdentificationMinutes: 8, // 5, 10, 15, 2
+        travelMinutes: 24.5, // 20, 20, 30, 28
+        onSiteMinutes: 53.3, // 65, 35, 60 -> 53.33
+      });
+    });
+
+    it('reports the average and median arrival distance, skipping faults with none', async () => {
+      const { arrivalDistance } = await analytics();
+      // 20, 40, 60, 100: an even count, so the median is the mean of the middle two
+      assert.deepEqual(arrivalDistance, { measuredJobs: 4, averageMetres: 55, medianMetres: 50 });
+    });
+
+    it('counts reports, completed jobs and clarification contacts without cancelled faults', async () => {
+      const { totalReports, completedJobs, clarification } = await analytics();
+      assert.equal(totalReports, 6);
+      assert.equal(completedJobs, 3);
+      assert.deepEqual(clarification, { total: 3, perJob: 1, jobsWithNoContactPercent: 33 });
+    });
+
+    it('counts faults at each stage and the resolved ones over the last 7 days', async () => {
+      const { statusDistribution, completedLast7Days } = await analytics();
+      assert.deepEqual(Object.fromEntries(statusDistribution.map((r) => [r.status, r.count])), {
+        REPORTED: 1,
+        ASSIGNED: 1,
+        ON_THE_WAY: 0,
+        ARRIVED: 1,
+        WORKING: 0,
+        RESOLVED: 3,
+      });
+      assert.equal(completedLast7Days.length, 7);
+      assert.equal(
+        completedLast7Days.reduce((sum, day) => sum + day.completed, 0),
+        3
+      );
+    });
+
+    it('the dashboard average response time uses the same arrival intervals', async () => {
+      assert.equal((await overview()).averageResponseMinutes, 62.5);
+    });
+
+    it('returns empty answers, not errors, when there are no faults', async () => {
+      await prisma.faultReport.deleteMany({});
+      const result = await analytics();
+      assert.equal(result.totalReports, 0);
+      assert.deepEqual(Object.values(result.averages), [null, null, null, null, null, null]);
+      assert.deepEqual(result.arrivalDistance, {
+        measuredJobs: 0,
+        averageMetres: null,
+        medianMetres: null,
+      });
+      assert.deepEqual(result.clarification, {
+        total: 0,
+        perJob: null,
+        jobsWithNoContactPercent: null,
+      });
+      assert.equal((await overview()).averageResponseMinutes, null);
+    });
+
+    it('matches a plain JavaScript calculation on 300 generated faults plus the odd cases', async () => {
+      await prisma.faultReport.createMany({
+        data: [
+          fault(
+            1,
+            'RESOLVED',
+            { assignedAt: 10, onTheWayAt: 15, arrivedAt: 35, resolvedAt: 100 },
+            { ...resolution, arrivalDistanceM: 20 }
+          ),
+          fault(7, 'ASSIGNED', { assignedAt: -5 }),
+          fault(
+            6,
+            'CANCELLED',
+            { assignedAt: 5, arrivedAt: 20, cancelledAt: 30 },
+            { arrivalDistanceM: 999 }
+          ),
+          ...buildLoadFaults({
+            count: 300,
+            customers: [{ id: customer.id, serviceLocationId: customer.serviceLocations[0].id }],
+            technicianIds: [(await prisma.technician.findFirstOrThrow()).id],
+            coordinatorId: (await prisma.serviceCoordinator.findFirstOrThrow()).id,
+            now: new Date(),
+          }),
+        ],
+      });
+
+      const expected = referenceAnalytics(await prisma.faultReport.findMany());
+      const actual = await analytics();
+
+      assert.equal(actual.totalReports, expected.totalReports);
+      assert.equal(actual.completedJobs, expected.completedJobs);
+      assert.deepEqual(actual.averages, expected.averages);
+      assert.deepEqual(actual.arrivalDistance, expected.arrivalDistance);
+      assert.deepEqual(actual.clarification, expected.clarification);
+      assert.deepEqual(actual.statusDistribution, expected.statusDistribution);
+      assert.equal((await overview()).averageResponseMinutes, expected.overviewResponseMinutes);
     });
   });
 });
