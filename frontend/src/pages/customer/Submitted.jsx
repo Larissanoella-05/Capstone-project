@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi.js';
-import { CATEGORY_LABEL, STAGES, STATUS_LABEL, fmtTime, locationLine } from '../../lib/format.js';
+import { CATEGORY_LABEL, STATUS_LABEL, fmtTime, locationLine } from '../../lib/format.js';
 import { KeyRow } from '../../components/Bits.jsx';
 import { Async } from '../../components/States.jsx';
 
@@ -17,8 +17,8 @@ export default function Submitted() {
             <div className="flex h-12 w-12 items-center justify-center bg-ok">
               <Check size={26} strokeWidth={3} color="#FFFFFF" aria-hidden="true" />
             </div>
-            <div className="eyebrow mt-4 text-muted">Confirmation</div>
-            <h1 className="display mt-2 text-3xl">Fault report submitted</h1>
+            <div className="eyebrow mt-4 text-muted">Report sent</div>
+            <h1 className="display mt-2 text-3xl">Report {fault.reference} sent</h1>
           </div>
 
           <div className="grid gap-5 lg:grid-cols-2 lg:items-start lg:gap-6">
@@ -43,16 +43,20 @@ export default function Submitted() {
 
             <section className="panel">
               <div className="panel-head">What happens next</div>
-              <ol className="m-0 grid list-none grid-cols-2 gap-px bg-line p-0 sm:grid-cols-3">
-                {STAGES.map((stage, index) => (
+              <ol className="m-0 list-none p-0 text-sm">
+                {[
+                  'A coordinator assigns a technician to your report.',
+                  'You get an alert when the technician is on the way.',
+                  'Follow the technician on the map until the fault is fixed.',
+                ].map((step, index) => (
                   <li
-                    key={stage}
-                    className={`p-3 ${stage === fault.status ? 'bg-volt' : 'bg-white'}`}
+                    key={step}
+                    className={`flex gap-3 p-3 ${index > 0 ? 'border-t border-line' : ''}`}
                   >
-                    <div className="font-mono text-[11px] text-muted">
+                    <span className="font-mono text-xs leading-5 text-muted">
                       {String(index + 1).padStart(2, '0')}
-                    </div>
-                    <div className="mt-1 text-sm font-bold">{STATUS_LABEL[stage]}</div>
+                    </span>
+                    <span className="font-semibold">{step}</span>
                   </li>
                 ))}
               </ol>

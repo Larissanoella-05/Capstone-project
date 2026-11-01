@@ -15,6 +15,7 @@ import {
 import { Cell, Timeline } from '../../components/Bits.jsx';
 import MapView, { faultMapParts } from '../../components/MapView.jsx';
 import { Async } from '../../components/States.jsx';
+import { checkedLabel, nextStepFor } from '../../lib/progress.js';
 
 export default function Tracking() {
   const { id } = useParams();
@@ -34,6 +35,10 @@ export default function Tracking() {
                 Fault #{fault.reference} · {CATEGORY_LABEL[fault.category]}
               </div>
               <h1 className="display mt-2 text-3xl">{CUSTOMER_HEADLINE[fault.status]}</h1>
+              <p className="mb-0 mt-3 text-sm">{nextStepFor(fault.status)}</p>
+              <p className="mb-0 mt-1 font-mono text-xs text-muted">
+                {checkedLabel(state.fetchedAt)}
+              </p>
             </div>
 
             <div className="grid gap-5 lg:grid-cols-5 lg:items-start lg:gap-6">

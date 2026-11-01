@@ -5,10 +5,19 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { useApi } from '../../hooks/useApi.js';
 import { api } from '../../lib/api.js';
 import { CATEGORIES, locationLine } from '../../lib/format.js';
+import { errorSummary } from '../../lib/formErrors.js';
 import { PageHeading } from '../../components/Bits.jsx';
-import { FormError } from '../../components/States.jsx';
+import { ErrorSummary, FormError } from '../../components/States.jsx';
 
 const MAX_PHOTO_BYTES = 1024 * 1024; // 1 MB
+
+// The fields in page order, for the "There is a problem" summary.
+const FIELDS = [
+  { key: 'category', id: 'category-group' },
+  { key: 'description', id: 'description' },
+  { key: 'photo', id: 'photo-input' },
+  { key: 'contactPhone', id: 'contact-phone' },
+];
 
 function readAsDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -40,13 +49,13 @@ export default function ReportFault() {
     event.target.value = '';
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      setErrors((current) => ({ ...current, photo: 'Choose an image file.' }));
+      setErrors((current) => ({ ...current, photo: 'Choose an image file for the photo.' }));
       return;
     }
     if (file.size > MAX_PHOTO_BYTES) {
       setErrors((current) => ({
         ...current,
-        photo: 'The photo is too large. Choose one under 1 MB.',
+        photo: 'Choose a photo smaller than 1 MB.',
       }));
       return;
     }
@@ -61,20 +70,15 @@ export default function ReportFault() {
   async function onSubmit(event) {
     event.preventDefault();
     const nextErrors = {};
-    if (!category) nextErrors.category = 'Choose a fault category.';
+    if (!category) nextErrors.category = 'Choose the type of fault.';
     if (description.length > 1000)
-      nextErrors.description = 'Keep the description under 1000 characters.';
+      nextErrors.description = 'Shorten the description to 1000 characters or fewer.';
     if (contactPhone && !/^[+\d][\d\s-]{7,}$/.test(contactPhone.trim())) {
       nextErrors.contactPhone = 'Enter a phone number such as +250 788 300 114.';
     }
     setErrors(nextErrors);
     setFormError('');
-    if (Object.keys(nextErrors).length) {
-      document
-        .getElementById(nextErrors.category ? 'category-group' : 'contact-phone')
-        ?.scrollIntoView({ block: 'center' });
-      return;
-    }
+    if (Object.keys(nextErrors).length) return;
 
     setSubmitting(true);
     try {
@@ -91,7 +95,7 @@ export default function ReportFault() {
       reloadNotifications?.();
       navigate(`/customer/submitted/${fault.id}`, { replace: true });
     } catch (error) {
-      setFormError(error.message);
+      setFormError(`Your report was not sent. What you typed is still here. ${error.message}`);
       setSubmitting(false);
     }
   }
@@ -100,9 +104,11 @@ export default function ReportFault() {
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
       <PageHeading eyebrow="New report" title="Report a fault">
         <p className="mb-0 mt-3 text-sm text-muted">
-          Tell us what is wrong. It takes less than a minute.
+          Four short steps. The description and the photo are optional.
         </p>
       </PageHeading>
+
+      <ErrorSummary items={errorSummary(errors, FIELDS)} />
 
       <div className="grid gap-5 lg:grid-cols-2 lg:items-start lg:gap-8">
         <fieldset id="category-group" className="m-0 flex min-w-0 flex-col border-0 p-0">
@@ -144,7 +150,7 @@ export default function ReportFault() {
           <div className="flex flex-col gap-2">
             <label htmlFor="description" className="eyebrow flex justify-between">
               <span>02 · Description</span>
-              <span className="text-muted">Optional</span>
+              <span className="text-muted">(optional)</span>
             </label>
             <textarea
               id="description"
@@ -163,7 +169,7 @@ export default function ReportFault() {
           <div className="flex flex-col gap-2">
             <div className="eyebrow flex justify-between">
               <span>03 · Photo</span>
-              <span className="text-muted">Optional</span>
+              <span className="text-muted">(optional)</span>
             </div>
             {photo ? (
               <div className="flex items-center gap-3 border border-ink p-2">
@@ -186,7 +192,13 @@ export default function ReportFault() {
               <label className="btn btn-outline w-full cursor-pointer border-dashed">
                 <Camera size={16} aria-hidden="true" />
                 Add a photo
-                <input type="file" accept="image/*" className="sr-only" onChange={onPhotoChange} />
+                <input
+                  id="photo-input"
+                  type="file"
+                  accept="image/*"
+                  className="sr-only"
+                  onChange={onPhotoChange}
+                />
               </label>
             )}
             {errors.photo && (
@@ -243,7 +255,7 @@ export default function ReportFault() {
         className="btn btn-volt btn-lg w-full lg:w-auto lg:self-end lg:px-12"
         disabled={submitting || !location}
       >
-        {submitting ? 'Submitting…' : 'Submit Fault'}
+        {submitting ? 'Sending…' : 'Send report'}
       </button>
     </form>
   );

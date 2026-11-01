@@ -5,10 +5,15 @@ import { api } from '../lib/api.js';
  * Loads data from the API and, when `interval` is set, keeps it fresh by polling.
  * Polling is how the three roles see each other's changes without a page reload.
  *
- * Returns { data, error, loading, reload }.
+ * Returns { data, error, loading, fetchedAt, reload }. `fetchedAt` is when the last answer arrived.
  */
 export function useApi(path, { interval = 0 } = {}) {
-  const [state, setState] = useState({ data: null, error: null, loading: Boolean(path) });
+  const [state, setState] = useState({
+    data: null,
+    error: null,
+    loading: Boolean(path),
+    fetchedAt: null,
+  });
   const activePath = useRef(path);
 
   const load = useCallback(
@@ -17,7 +22,8 @@ export function useApi(path, { interval = 0 } = {}) {
       if (!silent) setState((current) => ({ ...current, loading: true }));
       try {
         const data = await api(path);
-        if (activePath.current === path) setState({ data, error: null, loading: false });
+        if (activePath.current === path)
+          setState({ data, error: null, loading: false, fetchedAt: Date.now() });
       } catch (error) {
         if (activePath.current !== path) return;
         // On a background refresh keep showing the last good data instead of an error screen.
@@ -25,6 +31,7 @@ export function useApi(path, { interval = 0 } = {}) {
           data: silent ? current.data : null,
           error: silent && current.data ? null : error,
           loading: false,
+          fetchedAt: current.fetchedAt,
         }));
       }
     },
@@ -34,7 +41,7 @@ export function useApi(path, { interval = 0 } = {}) {
   useEffect(() => {
     activePath.current = path;
     if (!path) {
-      setState({ data: null, error: null, loading: false });
+      setState({ data: null, error: null, loading: false, fetchedAt: null });
       return undefined;
     }
     load(false);
