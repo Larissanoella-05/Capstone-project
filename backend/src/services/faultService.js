@@ -131,7 +131,7 @@ export async function createFault(user, body) {
       userId: user.id,
       faultId: created.id,
       type: 'FAULT_SUBMITTED',
-      title: 'Fault Received',
+      title: 'Fault received',
       message: `We have received your electricity fault report #${reference}. A service coordinator will assign a technician.`,
     });
     return { id: created.id, notices: [notice] };
@@ -181,14 +181,14 @@ export async function assignTechnician(user, id, technicianId) {
       userId: fault.customer.userId,
       faultId: id,
       type: 'TECHNICIAN_ASSIGNED',
-      title: 'Technician Assigned',
+      title: 'Technician assigned',
       message: `${technician.user.name} has been assigned to your electricity fault #${fault.reference}.`,
     });
     const toTechnician = await notify(tx, {
       userId: technician.userId,
       faultId: id,
       type: 'JOB_ASSIGNED',
-      title: 'New Job Assigned',
+      title: 'New job assigned',
       message: `Fault #${fault.reference} at ${fault.serviceLocation.cell} Cell has been assigned to you.`,
     });
     return [toCustomer, toTechnician];
