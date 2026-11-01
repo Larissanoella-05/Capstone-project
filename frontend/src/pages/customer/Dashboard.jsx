@@ -46,9 +46,8 @@ export default function CustomerDashboard() {
               <CurrentFault fault={current} />
             ) : (
               <EmptyState title="No open fault">
-                You have no fault in progress. If your power, voltage, connection or meter has a
-                problem, report it and a technician will be sent to your registered service
-                location.
+                Nothing in progress. If your power is out or something is wrong at the meter, report
+                it and we will send a technician.
               </EmptyState>
             )}
 
@@ -58,9 +57,7 @@ export default function CustomerDashboard() {
                 <Link to="/customer/reports">View all</Link>
               </div>
               {recent.length === 0 ? (
-                <p className="m-0 p-4 text-sm text-muted">
-                  Your earlier reports will be listed here.
-                </p>
+                <p className="m-0 p-4 text-sm text-muted">No reports yet.</p>
               ) : (
                 recent.map((fault, index) => (
                   <Link
