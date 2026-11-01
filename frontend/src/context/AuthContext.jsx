@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { api, tokenStore } from '../lib/api.js';
+import { restoreSession } from '../lib/session.js';
 
 const AuthContext = createContext(null);
 
@@ -17,9 +18,8 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     if (!tokenStore.get()) return undefined;
     let cancelled = false;
-    api('/auth/me')
-      .then((data) => !cancelled && setUser(data.user))
-      .catch(() => tokenStore.clear())
+    restoreSession({ api, tokenStore })
+      .then((restored) => !cancelled && restored && setUser(restored))
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;

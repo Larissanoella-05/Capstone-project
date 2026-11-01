@@ -32,7 +32,7 @@ export default function Jobs() {
             <View accessibilityRole="radiogroup" style={styles.filters}>
               {[
                 ['OPEN', `Assigned ${open.length}`],
-                ['DONE', `Completed ${completed.length}`],
+                ['DONE', `Closed ${completed.length}`],
               ].map(([key, label], index) => (
                 <Pressable
                   key={key}

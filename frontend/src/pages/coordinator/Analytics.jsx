@@ -61,7 +61,7 @@ export default function Analytics() {
 
       <Async state={state} label="Calculating the report">
         {({ analytics }) => {
-          const { averages, clarification } = analytics;
+          const { averages, clarification, arrivalDistance } = analytics;
           const distribution = analytics.statusDistribution.map((row) => ({
             name: STATUS_LABEL[row.status],
             count: row.count,
@@ -123,6 +123,21 @@ export default function Analytics() {
                   value={averages.onSiteMinutes}
                   unit="min"
                   note="Arrival to resolution"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-px border border-ink bg-ink">
+                <Tile
+                  label="Median arrival distance"
+                  value={arrivalDistance.medianMetres}
+                  unit="m"
+                  note={`Typical distance from the registered point · ${arrivalDistance.measuredJobs} arrivals measured`}
+                />
+                <Tile
+                  label="Average arrival distance"
+                  value={arrivalDistance.averageMetres}
+                  unit="m"
+                  note="Mean of the measured arrivals"
                 />
               </div>
 

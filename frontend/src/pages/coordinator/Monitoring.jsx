@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { X } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi.js';
@@ -12,13 +12,19 @@ import { ErrorState, Loading } from '../../components/States.jsx';
 export default function Monitoring() {
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedId = Number(searchParams.get('fault')) || null;
-  const select = (id) => setSearchParams(id ? { fault: String(id) } : {}, { replace: true });
+  const select = useCallback(
+    (id) => setSearchParams(id ? { fault: String(id) } : {}, { replace: true }),
+    [setSearchParams]
+  );
 
   const faultsState = useApi('/faults?status=OPEN', { interval: 4000 });
   const techState = useApi('/technicians', { interval: 4000 });
 
-  const faults = faultsState.data?.faults ?? [];
-  const technicians = (techState.data?.technicians ?? []).filter((technician) => technician.onDuty);
+  const faults = useMemo(() => faultsState.data?.faults ?? [], [faultsState.data]);
+  const technicians = useMemo(
+    () => (techState.data?.technicians ?? []).filter((technician) => technician.onDuty),
+    [techState.data]
+  );
   const selected = faults.find((fault) => fault.id === selectedId) ?? null;
 
   const { markers, lines } = useMemo(() => {
@@ -42,8 +48,7 @@ export default function Monitoring() {
         [fault.serviceLocation.latitude, fault.serviceLocation.longitude],
       ]);
     return { markers: [...faultMarkers, ...technicianMarkers], lines: links };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [faultsState.data, techState.data]);
+  }, [faults, technicians, select]);
 
   const error = faultsState.error || techState.error;
 

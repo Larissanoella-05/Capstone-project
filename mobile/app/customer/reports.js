@@ -12,7 +12,7 @@ import { colors, fonts } from '../../src/theme.js';
 const FILTERS = [
   { key: 'ALL', label: 'All', test: () => true },
   { key: 'OPEN', label: 'Open', test: isOpen },
-  { key: 'CLOSED', label: 'Resolved', test: (fault) => !isOpen(fault) },
+  { key: 'CLOSED', label: 'Closed', test: (fault) => !isOpen(fault) },
 ];
 
 export default function Reports() {
