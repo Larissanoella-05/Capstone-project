@@ -118,7 +118,7 @@ export default function CoordinatorDashboard() {
 
             <section className="panel self-start">
               <div className="panel-head">
-                <h2 className="m-0 text-[11px] font-normal">Open faults · {open.length}</h2>
+                <h2 className="m-0 text-xs font-normal">Open faults · {open.length}</h2>
                 <Link to="/coordinator/faults">Manage all</Link>
               </div>
               {open.length === 0 ? (
@@ -161,7 +161,7 @@ export default function CoordinatorDashboard() {
                           <td className="px-3 py-3 font-mono text-xs font-medium">
                             <Link
                               to={`/coordinator/faults/${fault.id}`}
-                              className="underline underline-offset-2"
+                              className="inline-flex min-h-11 items-center underline underline-offset-2"
                               onClick={(event) => event.stopPropagation()}
                             >
                               {fault.reference}

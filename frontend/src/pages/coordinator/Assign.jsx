@@ -164,7 +164,7 @@ export default function Assign() {
                         ? `${fmtKm(technician.distanceKm)} away`
                         : '—'}
                       {recommended?.id === technician.id && (
-                        <span className="ml-1 bg-volt px-1 font-mono text-[10px] font-medium uppercase">
+                        <span className="ml-1 bg-volt px-1 font-mono text-xs font-medium uppercase">
                           Recommended
                         </span>
                       )}

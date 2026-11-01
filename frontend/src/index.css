@@ -14,6 +14,11 @@
   --color-ok: #2b6a3f;
   --color-warn: #a8480f;
 
+  /* Hard, blur-free shadows in three sizes. Always down and to the right. */
+  --shadow-sm: 2px 2px 0 var(--color-ink);
+  --shadow-md: 4px 4px 0 var(--color-ink);
+  --shadow-lg: 8px 8px 0 var(--color-ink);
+
   --font-sans: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
 }
@@ -47,7 +52,7 @@
   /* Small monospace label used above headings and inside panels */
   .eyebrow {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     line-height: 16px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -78,10 +83,24 @@
     cursor: pointer;
     background: #ffffff;
     color: var(--color-ink);
+    box-shadow: var(--shadow-sm);
+    transition:
+      transform 80ms ease-out,
+      box-shadow 80ms ease-out;
+  }
+  /* Pressing sinks the button into its shadow */
+  .btn:active:not(:disabled) {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+  }
+  /* The ring sits outside the shadow so the shadow never hides it */
+  .btn:focus-visible {
+    outline-offset: 5px;
   }
   .btn:disabled {
     cursor: not-allowed;
     opacity: 0.55;
+    box-shadow: none;
   }
   .btn-ink {
     background: var(--color-ink);
@@ -103,6 +122,10 @@
     min-height: 56px;
     padding: 0 24px;
     font-size: 16px;
+    box-shadow: var(--shadow-md);
+  }
+  .btn-lg:active:not(:disabled) {
+    transform: translate(4px, 4px);
   }
   .panel {
     border: 1px solid var(--color-ink);
@@ -118,9 +141,15 @@
     justify-content: space-between;
     gap: 12px;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+  }
+  /* Links in a panel header (View all, Manage all) get a full-height tap area */
+  .panel-head a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
   }
   .field {
     display: block;
@@ -147,7 +176,7 @@
     padding: 3px 8px;
     border: 1px solid var(--color-ink);
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
     line-height: 16px;
     letter-spacing: 0.08em;
@@ -174,6 +203,10 @@
   box-shadow: none !important;
 }
 .leaflet-bar a {
+  width: 44px !important;
+  height: 44px !important;
+  line-height: 44px !important;
+  font-size: 22px !important;
   color: var(--color-ink);
 }
 .leaflet-tooltip {
@@ -182,7 +215,7 @@
   box-shadow: none;
   padding: 2px 6px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--color-ink);

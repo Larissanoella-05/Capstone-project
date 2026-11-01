@@ -44,7 +44,7 @@ export default function CoordinatorShell() {
               {({ isActive }) => (
                 <>
                   <span
-                    className={`font-mono text-[11px] font-medium ${isActive ? 'text-line' : 'text-muted'}`}
+                    className={`font-mono text-xs font-medium ${isActive ? 'text-line' : 'text-muted'}`}
                   >
                     {String(index + 1).padStart(2, '0')}
                   </span>
@@ -63,7 +63,7 @@ export default function CoordinatorShell() {
             type="button"
             aria-label="Sign out"
             title="Sign out"
-            className="flex h-10 w-10 cursor-pointer items-center justify-center border border-ink bg-white hover:bg-paper"
+            className="flex h-11 w-11 cursor-pointer items-center justify-center border border-ink bg-white hover:bg-paper"
             onClick={() => {
               logout();
               navigate('/login');

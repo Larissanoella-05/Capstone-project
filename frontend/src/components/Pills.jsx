@@ -6,7 +6,8 @@ const STATUS_STYLE = {
   ON_THE_WAY: 'bg-volt text-ink border-ink',
   ARRIVED: 'bg-white text-ink border-ink',
   WORKING: 'bg-warn text-white border-warn',
-  RESOLVED: 'bg-ok text-white border-ok',
+  // Done is quieter than needs-action: outlined, not filled.
+  RESOLVED: 'bg-white text-ok border-ok',
   CANCELLED: 'bg-white text-muted border-line',
 };
 

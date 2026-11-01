@@ -192,14 +192,14 @@ export default function Faults() {
                           {fault.status === 'REPORTED' && (
                             <Link
                               to={`/coordinator/faults/${fault.id}/assign`}
-                              className="btn btn-volt min-h-9 px-3 text-xs"
+                              className="btn btn-volt min-h-11 px-3 text-xs"
                             >
                               Assign
                             </Link>
                           )}
                           <Link
                             to={`/coordinator/faults/${fault.id}`}
-                            className="btn btn-outline min-h-9 px-3 text-xs"
+                            className="btn btn-outline min-h-11 px-3 text-xs"
                           >
                             View
                           </Link>
@@ -234,7 +234,7 @@ function Pager({ summary, onPrevious, onNext }) {
       <div className="flex gap-2">
         <button
           type="button"
-          className="btn btn-outline min-h-9 px-3 text-xs"
+          className="btn btn-outline min-h-11 px-3 text-xs"
           disabled={!summary.hasPrevious}
           onClick={onPrevious}
         >
@@ -242,7 +242,7 @@ function Pager({ summary, onPrevious, onNext }) {
         </button>
         <button
           type="button"
-          className="btn btn-outline min-h-9 px-3 text-xs"
+          className="btn btn-outline min-h-11 px-3 text-xs"
           disabled={!summary.hasNext}
           onClick={onNext}
         >

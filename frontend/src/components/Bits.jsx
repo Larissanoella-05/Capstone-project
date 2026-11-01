@@ -45,7 +45,7 @@ export function StageBar({ status }) {
   const current = STAGES.indexOf(status);
   return (
     <div>
-      <div className="grid grid-cols-6 border border-ink font-mono text-[11px]" aria-hidden="true">
+      <div className="grid grid-cols-6 border border-ink font-mono text-xs" aria-hidden="true">
         {STAGES.map((stage, index) => {
           const done = index < current || status === 'RESOLVED';
           const active = index === current && status !== 'RESOLVED';
@@ -105,9 +105,7 @@ export function Timeline({ fault, audience = 'customer' }) {
             <span className={`flex-1 text-sm ${done || active ? 'font-bold' : 'text-muted'}`}>
               {labels[stage]}
               {active && (
-                <span className="eyebrow mt-0.5 block text-[10px] font-normal text-muted">
-                  Current stage
-                </span>
+                <span className="eyebrow mt-0.5 block font-normal text-muted">Current stage</span>
               )}
             </span>
             <span className="font-mono text-xs">{fmtTime(time)}</span>
