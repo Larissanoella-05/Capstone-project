@@ -4,7 +4,9 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { HOME_BY_ROLE, useAuth } from '../context/AuthContext.jsx';
 import { LogoMark } from '../components/Brand.jsx';
 import { FormError } from '../components/States.jsx';
+import { isDemoLogin } from '../lib/demo.js';
 
+const DEMO = isDemoLogin(import.meta.env.VITE_DEMO_LOGIN);
 const DEMO_PASSWORD = 'demo1234';
 const ROLES = [
   {
@@ -39,8 +41,8 @@ export default function Login() {
   const location = useLocation();
 
   const [role, setRole] = useState(ROLES[0]);
-  const [email, setEmail] = useState(ROLES[0].email);
-  const [password, setPassword] = useState(DEMO_PASSWORD);
+  const [email, setEmail] = useState(DEMO ? ROLES[0].email : '');
+  const [password, setPassword] = useState(DEMO ? DEMO_PASSWORD : '');
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -97,8 +99,8 @@ export default function Login() {
             <span className="text-volt">Respond.</span>
           </h1>
           <p className="m-0 max-w-[450px] text-base leading-normal text-line">
-            A fault report linked to the registered service location, passed to a technician on a
-            map, and followed by the customer until it is resolved.
+            Power out in Ndera? Tell us where. A technician is sent to your registered location and
+            you can follow them on the map.
           </p>
         </div>
 
@@ -123,38 +125,42 @@ export default function Login() {
             <h2 className="display mt-2 text-[40px]">Login</h2>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <div className="eyebrow" id="role-label">
-              Demo role
+          {DEMO && (
+            <div className="flex flex-col gap-2">
+              <div className="eyebrow" id="role-label">
+                Demo role
+              </div>
+              <div
+                role="group"
+                aria-labelledby="role-label"
+                className="grid grid-cols-3 border border-ink"
+              >
+                {ROLES.map((item, index) => {
+                  const Icon = item.icon;
+                  const active = item.key === role.key;
+                  return (
+                    <button
+                      key={item.key}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => chooseRole(item)}
+                      className={`flex min-h-24 cursor-pointer flex-col gap-3 p-3 text-left ${index > 0 ? 'border-l border-ink' : ''} ${
+                        active ? 'bg-volt' : 'bg-white hover:bg-paper'
+                      }`}
+                    >
+                      <Icon size={20} aria-hidden="true" />
+                      <span className="text-sm font-black uppercase leading-tight">
+                        {item.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="m-0 text-sm text-muted">
+                {role.blurb} Signing in as {role.person}.
+              </p>
             </div>
-            <div
-              role="group"
-              aria-labelledby="role-label"
-              className="grid grid-cols-3 border border-ink"
-            >
-              {ROLES.map((item, index) => {
-                const Icon = item.icon;
-                const active = item.key === role.key;
-                return (
-                  <button
-                    key={item.key}
-                    type="button"
-                    aria-pressed={active}
-                    onClick={() => chooseRole(item)}
-                    className={`flex min-h-24 cursor-pointer flex-col gap-3 p-3 text-left ${index > 0 ? 'border-l border-ink' : ''} ${
-                      active ? 'bg-volt' : 'bg-white hover:bg-paper'
-                    }`}
-                  >
-                    <Icon size={20} aria-hidden="true" />
-                    <span className="text-sm font-black uppercase leading-tight">{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-            <p className="m-0 text-sm text-muted">
-              {role.blurb} Signing in as {role.person}.
-            </p>
-          </div>
+          )}
 
           <div className="flex flex-col gap-2">
             <label htmlFor="email" className="eyebrow">
@@ -188,19 +194,21 @@ export default function Login() {
               className="field"
               value={password}
               aria-invalid={Boolean(errors.password)}
-              aria-describedby={errors.password ? 'password-error' : 'password-help'}
+              aria-describedby={
+                errors.password ? 'password-error' : DEMO ? 'password-help' : undefined
+              }
               onChange={(event) => setPassword(event.target.value)}
             />
             {errors.password ? (
               <span id="password-error" className="text-sm font-semibold text-danger">
                 {errors.password}
               </span>
-            ) : (
+            ) : DEMO ? (
               <span id="password-help" className="text-sm text-muted">
                 Prototype: every demo account uses the password{' '}
                 <span className="font-mono">demo1234</span>.
               </span>
-            )}
+            ) : null}
           </div>
 
           <FormError>{formError}</FormError>
@@ -208,11 +216,6 @@ export default function Login() {
           <button type="submit" className="btn btn-volt btn-lg w-full" disabled={submitting}>
             {submitting ? 'Signing in…' : 'Sign In'}
           </button>
-
-          <p className="m-0 border-t border-line pt-4 text-sm text-muted">
-            Tip: open the app in three browser tabs and sign in with a different role in each to
-            watch the workflow update live.
-          </p>
         </form>
       </div>
     </div>

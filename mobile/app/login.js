@@ -16,8 +16,10 @@ import { Eyebrow } from '../src/components/Bits.js';
 import { LogoMark } from '../src/components/Brand.js';
 import { FormError } from '../src/components/States.js';
 import { useAuth } from '../src/context/AuthContext.js';
+import { isDemoLogin } from '../src/lib/demo.js';
 import { colors, fonts } from '../src/theme.js';
 
+const DEMO = isDemoLogin(process.env.EXPO_PUBLIC_DEMO_LOGIN);
 const DEMO_PASSWORD = 'demo1234';
 const ROLES = [
   {
@@ -47,8 +49,8 @@ export default function Login() {
   const router = useRouter();
 
   const [role, setRole] = useState(ROLES[0]);
-  const [email, setEmail] = useState(ROLES[0].email);
-  const [password, setPassword] = useState(DEMO_PASSWORD);
+  const [email, setEmail] = useState(DEMO ? ROLES[0].email : '');
+  const [password, setPassword] = useState(DEMO ? DEMO_PASSWORD : '');
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -126,33 +128,35 @@ export default function Login() {
             </Text>
           </View>
 
-          <View style={{ gap: 8 }}>
-            <Eyebrow>Demo role</Eyebrow>
-            <View accessibilityRole="radiogroup" style={styles.roles}>
-              {ROLES.map((item, index) => {
-                const active = item.key === role.key;
-                return (
-                  <Pressable
-                    key={item.key}
-                    accessibilityRole="radio"
-                    accessibilityState={{ selected: active }}
-                    onPress={() => chooseRole(item)}
-                    style={[
-                      styles.role,
-                      index > 0 && styles.roleDivider,
-                      { backgroundColor: active ? colors.volt : colors.white },
-                    ]}
-                  >
-                    <Feather name={item.icon} size={20} color={colors.ink} />
-                    <Text style={styles.roleLabel}>{item.label}</Text>
-                  </Pressable>
-                );
-              })}
+          {DEMO ? (
+            <View style={{ gap: 8 }}>
+              <Eyebrow>Demo role</Eyebrow>
+              <View accessibilityRole="radiogroup" style={styles.roles}>
+                {ROLES.map((item, index) => {
+                  const active = item.key === role.key;
+                  return (
+                    <Pressable
+                      key={item.key}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected: active }}
+                      onPress={() => chooseRole(item)}
+                      style={[
+                        styles.role,
+                        index > 0 && styles.roleDivider,
+                        { backgroundColor: active ? colors.volt : colors.white },
+                      ]}
+                    >
+                      <Feather name={item.icon} size={20} color={colors.ink} />
+                      <Text style={styles.roleLabel}>{item.label}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <Text style={styles.hint}>
+                {role.blurb} Signing in as {role.person}.
+              </Text>
             </View>
-            <Text style={styles.hint}>
-              {role.blurb} Signing in as {role.person}.
-            </Text>
-          </View>
+          ) : null}
 
           <View style={{ gap: 8 }}>
             <Eyebrow>Email</Eyebrow>
@@ -183,12 +187,12 @@ export default function Login() {
             />
             {errors.password ? (
               <Text style={styles.fieldError}>{errors.password}</Text>
-            ) : (
+            ) : DEMO ? (
               <Text style={styles.hint}>
                 Prototype: every demo account uses the password{' '}
                 <Text style={{ fontFamily: fonts.mono }}>demo1234</Text>.
               </Text>
-            )}
+            ) : null}
           </View>
 
           <FormError>{formError}</FormError>

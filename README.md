@@ -141,9 +141,10 @@ Then edit `backend/.env`:
 
 `frontend/.env`:
 
-| Variable       | Purpose                                                  | Example                 |
-| -------------- | -------------------------------------------------------- | ----------------------- |
-| `VITE_API_URL` | API address, without `/api` and without a trailing slash | `http://localhost:4000` |
+| Variable          | Purpose                                                                                                                                                                                                                             | Example                 |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| `VITE_API_URL`    | API address, without `/api` and without a trailing slash                                                                                                                                                                            | `http://localhost:4000` |
+| `VITE_DEMO_LOGIN` | `true` shows the demo role picker and prefilled password on the sign-in page. Leave unset for a real release. Tip: with it on, open three browser tabs and sign in with a different role in each to watch the workflow update live. | `true`                  |
 
 The `.env` files contain secrets and are ignored by Git. Only the `.env.example` templates are committed.
 
@@ -268,7 +269,7 @@ Edit `mobile/.env` (these values are bundled into the app, so never put a secret
 | `EXPO_PUBLIC_API_URL`       | API address, without `/api` | Live API: `https://capstone-project-as2y.onrender.com`             |
 | `EXPO_PUBLIC_MAP_STYLE_URL` | Map style                   | `https://tiles.openfreemap.org/styles/liberty` (no key or account) |
 
-Metro reads `.env` when it bundles the JavaScript, so restart it with `--clear` after changing it. The `eas.json` build profiles set `EXPO_PUBLIC_API_URL` for installed builds.
+Metro reads `.env` when it bundles the JavaScript, so restart it with `--clear` after changing it. The `eas.json` build profiles set `EXPO_PUBLIC_API_URL` and `EXPO_PUBLIC_DEMO_LOGIN` (the demo role picker on the login screen) for installed builds.
 
 **Using your own local API instead:** run the backend (`npm run dev` in `backend/`), set `EXPO_PUBLIC_API_URL=http://<your computer's LAN address>:4000` (never `localhost`: on a phone that is the phone itself), keep the phone and computer on the same Wi-Fi, and allow port 4000 through the firewall. The Android app is not subject to CORS. If sign-in says it cannot reach the server, check the address in a phone browser first; if that works but the app still cannot connect, Android may be blocking plain `http://` for that build, so use the HTTPS Render address instead.
 
@@ -395,6 +396,7 @@ The application is deployed and publicly reachable:
 | Render   | `CORS_ORIGIN`           | `https://capstone-project-six-inky.vercel.app`                       |
 | Render   | `NODE_ENV`              | `production`                                                         |
 | Vercel   | `VITE_API_URL`          | `https://capstone-project-as2y.onrender.com`                         |
+| Vercel   | `VITE_DEMO_LOGIN`       | `true` (demo role picker; remove for a real release)                 |
 
 Render sets `PORT` itself. Secrets are stored only on Render and never with a `VITE_` prefix, because Vite copies `VITE_` variables into the code sent to the browser.
 
