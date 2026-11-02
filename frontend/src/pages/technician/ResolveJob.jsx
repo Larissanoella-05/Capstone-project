@@ -164,7 +164,7 @@ export default function ResolveJob() {
                   <div className="flex border border-ink">
                     <button
                       type="button"
-                      className="h-12 w-14 cursor-pointer border-r border-ink bg-white text-xl font-black"
+                      className="h-12 w-14 cursor-pointer border-r border-ink bg-white text-xl heading-weight"
                       aria-label="One fewer"
                       onClick={() => setContacts((n) => Math.max(0, n - 1))}
                     >
@@ -184,7 +184,7 @@ export default function ResolveJob() {
                     />
                     <button
                       type="button"
-                      className="h-12 w-14 cursor-pointer border-l border-ink bg-white text-xl font-black"
+                      className="h-12 w-14 cursor-pointer border-l border-ink bg-white text-xl heading-weight"
                       aria-label="One more"
                       onClick={() => setContacts((n) => Math.min(50, n + 1))}
                     >

@@ -23,7 +23,7 @@ function Tile({ label, value, unit, note }) {
     <div className="flex min-h-[120px] flex-col justify-between bg-white p-4">
       <div className="eyebrow text-muted">{label}</div>
       <div>
-        <div className="text-4xl font-black leading-none">
+        <div className="text-4xl heading-weight leading-none">
           {show(value)}
           {unit && value !== null && <span className="ml-1 text-base font-bold">{unit}</span>}
         </div>
@@ -37,7 +37,7 @@ function ChartPanel({ title, note, summary, children }) {
   return (
     <section className="panel">
       <div className="border-b border-ink p-4">
-        <h2 className="m-0 text-lg font-black uppercase">{title}</h2>
+        <h2 className="m-0 text-lg heading-weight uppercase">{title}</h2>
         <p className="mb-0 mt-1 text-sm text-muted">{note}</p>
       </div>
       <div className="h-64 p-4" role="img" aria-label={summary}>
@@ -263,7 +263,7 @@ export default function Analytics() {
 
                 <section className="panel">
                   <div className="border-b border-ink p-4">
-                    <h2 className="m-0 text-lg font-black uppercase">
+                    <h2 className="m-0 text-lg heading-weight uppercase">
                       How the figures are measured
                     </h2>
                     <p className="mb-0 mt-1 text-sm text-muted">

@@ -30,11 +30,16 @@ export function Cell({ label, children, className = '' }) {
 }
 
 /** Page title block with the small label above it. */
-export function PageHeading({ eyebrow, title, children }) {
+export function PageHeading({ eyebrow, title, action, children }) {
   return (
     <div>
-      {eyebrow && <div className="eyebrow">{eyebrow}</div>}
-      <h1 className="display mt-2 text-[26px]">{title}</h1>
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          {eyebrow && <div className="eyebrow">{eyebrow}</div>}
+          <h1 className="display mt-1.5 text-[26px]">{title}</h1>
+        </div>
+        {action}
+      </div>
       {children}
     </div>
   );
@@ -71,10 +76,11 @@ export function Stepper({ status }) {
 /**
  * The response timeline. Times come from the timestamp stored for each stage,
  * so every role reads the same history. Done = ink circle with a check, current = yellow, to do = outlined.
+ * `plain` lists the five status names without times, for "what happens next".
  */
-export function VerticalTimeline({ fault, audience = 'customer' }) {
+export function VerticalTimeline({ fault, audience = 'customer', plain = false }) {
   const { current, resolved } = stepperState(fault.status);
-  const labels = audience === 'customer' ? CUSTOMER_TIMELINE_LABEL : STATUS_LABEL;
+  const labels = audience === 'customer' && !plain ? CUSTOMER_TIMELINE_LABEL : STATUS_LABEL;
   const cancelled = fault.status === 'CANCELLED';
 
   return (
@@ -114,10 +120,12 @@ export function VerticalTimeline({ fault, audience = 'customer' }) {
               >
                 {labels[step]}
               </span>
-              <span className="text-xs text-grey">
-                {fmtTime(time)}
-                {active && ' · current stage'}
-              </span>
+              {!plain && (
+                <span className="text-xs text-grey">
+                  {fmtTime(time)}
+                  {active && ' · current stage'}
+                </span>
+              )}
             </div>
           </li>
         );

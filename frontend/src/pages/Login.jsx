@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { HardHat, RadioTower, User } from 'lucide-react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { HOME_BY_ROLE, useAuth } from '../context/AuthContext.jsx';
-import { LogoMark } from '../components/Brand.jsx';
+import { LogoMark, PilotBanner } from '../components/Brand.jsx';
+import { Field } from '../components/Field.jsx';
 import { FormError } from '../components/States.jsx';
 import { isDemoLogin } from '../lib/demo.js';
 
@@ -12,28 +12,34 @@ const ROLES = [
   {
     key: 'CUSTOMER',
     label: 'Customer',
-    icon: User,
     email: 'aline@demo.rw',
     person: 'Aline Mukamana',
-    blurb: 'Report a fault and follow the response.',
   },
   {
     key: 'TECHNICIAN',
     label: 'Technician',
-    icon: HardHat,
     email: 'jeanclaude@demo.rw',
     person: 'Jean Claude Habimana',
-    blurb: 'See assigned jobs, navigate and update the status.',
   },
   {
     key: 'COORDINATOR',
-    label: 'Service Coordinator',
-    icon: RadioTower,
+    label: 'Coordinator',
     email: 'grace@demo.rw',
     person: 'Grace Ingabire',
-    blurb: 'Receive reports, assign technicians and monitor progress.',
   },
 ];
+
+/** The pilot area card. It sits under the form on a phone and under the headline on a wide screen. */
+function PilotArea({ className = '' }) {
+  return (
+    <div className={`panel flex-col gap-2 px-[18px] py-4 ${className}`}>
+      <div className="eyebrow">Pilot area</div>
+      <div className="heading-weight text-base uppercase">Ndera Sector</div>
+      <div className="text-xs text-grey">Gasabo, Kigali</div>
+      <div className="text-xs font-medium">Real fault? Call 2727</div>
+    </div>
+  );
+}
 
 export default function Login() {
   const { user, login } = useAuth();
@@ -82,61 +88,29 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-white lg:flex-row">
-      <div className="on-ink flex flex-col justify-between gap-12 bg-ink p-6 text-white sm:p-10 lg:flex-[1_1_55%]">
-        <div className="flex items-center gap-3">
-          <LogoMark inverse />
-          <div className="text-lg font-black uppercase">Umuriro</div>
-        </div>
-
-        <div className="flex flex-col gap-5">
-          <div className="eyebrow text-volt">Electricity fault response</div>
-          <h1 className="display text-[clamp(3rem,8vw,6.5rem)]">
-            Report.
-            <br />
-            Locate.
-            <br />
-            <span className="text-volt">Respond.</span>
-          </h1>
-          <p className="m-0 max-w-[450px] text-base leading-normal text-line">
-            Power out in Ndera? Tell us where. A technician is sent to your registered location and
-            you can follow them on the map.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-3 border border-steel">
-          {[
-            ['Pilot area', 'Ndera Sector'],
-            ['District', 'Gasabo, Kigali'],
-            ['Real faults', 'Call 2727'],
-          ].map(([label, value], index) => (
-            <div key={label} className={`p-3 ${index > 0 ? 'border-l border-steel' : ''}`}>
-              <div className="eyebrow text-ash">{label}</div>
-              <div className="mt-1 text-sm font-bold">{value}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex items-center justify-center px-6 py-10 lg:flex-[1_1_45%]">
-        <form onSubmit={onSubmit} noValidate className="flex w-full max-w-md flex-col gap-6">
-          <div>
-            <div className="eyebrow text-muted">Sign in</div>
-            <h2 className="display mt-2 text-[40px]">Login</h2>
+    <div className="flex min-h-dvh flex-col bg-paper">
+      <PilotBanner />
+      <div className="mx-auto grid w-full max-w-5xl flex-1 content-start gap-[18px] px-5 pb-7 pt-8 lg:grid-cols-2 lg:content-center lg:items-center lg:gap-16 lg:py-12">
+        <div className="flex flex-col gap-[18px]">
+          <div className="flex items-center gap-3">
+            <LogoMark />
+            <div className="heading-weight text-2xl uppercase tracking-[0.03em]">Umuriro</div>
           </div>
+          <div className="eyebrow">Electricity fault response</div>
+          <h1 className="display text-[28px] lg:text-5xl">
+            Report a fault and follow the response.
+          </h1>
+          <PilotArea className="hidden lg:flex" />
+        </div>
 
+        <form onSubmit={onSubmit} noValidate className="flex flex-col gap-[18px]">
           {DEMO && (
             <div className="flex flex-col gap-2">
               <div className="eyebrow" id="role-label">
-                Demo role
+                Sign in as
               </div>
-              <div
-                role="group"
-                aria-labelledby="role-label"
-                className="grid grid-cols-3 border border-ink"
-              >
-                {ROLES.map((item, index) => {
-                  const Icon = item.icon;
+              <div role="group" aria-labelledby="role-label" className="grid grid-cols-3 gap-2">
+                {ROLES.map((item) => {
                   const active = item.key === role.key;
                   return (
                     <button
@@ -144,53 +118,50 @@ export default function Login() {
                       type="button"
                       aria-pressed={active}
                       onClick={() => chooseRole(item)}
-                      className={`flex min-h-24 cursor-pointer flex-col gap-3 p-3 text-left ${index > 0 ? 'border-l border-ink' : ''} ${
-                        active ? 'bg-volt' : 'bg-white hover:bg-paper'
+                      className={`min-h-11 cursor-pointer rounded-control border px-1 py-3 text-[11px] uppercase tracking-[0.03em] text-ink ${
+                        active ? 'border-ink bg-yellow font-medium' : 'border-border bg-white'
                       }`}
                     >
-                      <Icon size={20} aria-hidden="true" />
-                      <span className="text-sm font-black uppercase leading-tight">
-                        {item.label}
-                      </span>
+                      {item.label}
                     </button>
                   );
                 })}
               </div>
-              <p className="m-0 text-sm text-muted">
-                {role.blurb} Signing in as {role.person}.
-              </p>
+              <p className="m-0 text-xs text-grey">Signing in as {role.person}</p>
             </div>
           )}
 
-          <div className="flex flex-col gap-2">
-            <label htmlFor="email" className="eyebrow">
-              Email
-            </label>
+          <Field id="email" label="Email" error={errors.email}>
             <input
               id="email"
               type="email"
               autoComplete="username"
+              placeholder="Enter your email"
               className="field"
               value={email}
               aria-invalid={Boolean(errors.email)}
               aria-describedby={errors.email ? 'email-error' : undefined}
               onChange={(event) => setEmail(event.target.value)}
             />
-            {errors.email && (
-              <span id="email-error" className="text-sm font-semibold text-danger">
-                {errors.email}
-              </span>
-            )}
-          </div>
+          </Field>
 
-          <div className="flex flex-col gap-2">
-            <label htmlFor="password" className="eyebrow">
-              Password
-            </label>
+          <Field
+            id="password"
+            label="Password"
+            error={errors.password}
+            help={
+              DEMO ? (
+                <>
+                  Prototype: every demo account uses the password <strong>demo1234</strong>.
+                </>
+              ) : undefined
+            }
+          >
             <input
               id="password"
               type="password"
               autoComplete="current-password"
+              placeholder="Enter your password"
               className="field"
               value={password}
               aria-invalid={Boolean(errors.password)}
@@ -199,24 +170,16 @@ export default function Login() {
               }
               onChange={(event) => setPassword(event.target.value)}
             />
-            {errors.password ? (
-              <span id="password-error" className="text-sm font-semibold text-danger">
-                {errors.password}
-              </span>
-            ) : DEMO ? (
-              <span id="password-help" className="text-sm text-muted">
-                Prototype: every demo account uses the password{' '}
-                <span className="font-mono">demo1234</span>.
-              </span>
-            ) : null}
-          </div>
+          </Field>
 
           <FormError>{formError}</FormError>
 
-          <button type="submit" className="btn btn-volt btn-lg w-full" disabled={submitting}>
-            {submitting ? 'Signing in…' : 'Sign In'}
+          <button type="submit" className="btn btn-ink w-full" disabled={submitting}>
+            {submitting ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
+
+        <PilotArea className="flex lg:hidden" />
       </div>
     </div>
   );

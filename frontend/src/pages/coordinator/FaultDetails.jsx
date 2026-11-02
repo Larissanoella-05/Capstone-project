@@ -179,7 +179,7 @@ export default function FaultDetails() {
                   <section className="panel">
                     <h2 className="panel-head m-0 bg-ok font-normal text-white">Resolution</h2>
                     <div className="flex flex-col gap-2 p-4 text-sm">
-                      <div className="text-base font-black uppercase">
+                      <div className="text-base heading-weight uppercase">
                         {OUTCOME_LABEL[fault.outcome]}
                       </div>
                       <p className="m-0">{fault.resolutionNote}</p>

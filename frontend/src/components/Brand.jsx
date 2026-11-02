@@ -38,18 +38,18 @@ export function PilotBanner() {
   }
 
   return (
-    <div className="flex items-center gap-2.5 bg-ink pl-5 text-[11px] font-medium text-white">
+    <div className="flex items-center gap-2 overflow-x-clip bg-ink pl-5 text-[11px] font-medium text-white">
       <span className="shrink-0 rounded-tag bg-yellow px-2 py-0.5 font-semibold uppercase text-ink">
         Pilot
       </span>
       <span className="min-w-0 flex-1 py-2 uppercase">
         Test reports only. Real fault: call 2727
       </span>
-      {/* The tap area is 44px; the negative margin keeps the strip as slim as the design */}
+      {/* 32px wide so the text fits one line on a phone; the pseudo-element keeps a 44px tap area */}
       <button
         type="button"
         aria-label="Hide the pilot notice"
-        className="-my-1.5 flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center bg-transparent text-white"
+        className="relative -my-1.5 flex h-11 w-8 shrink-0 cursor-pointer items-center justify-center bg-transparent text-white after:absolute after:-inset-x-1.5 after:inset-y-0 after:content-['']"
         onClick={dismiss}
       >
         <X size={16} aria-hidden="true" />

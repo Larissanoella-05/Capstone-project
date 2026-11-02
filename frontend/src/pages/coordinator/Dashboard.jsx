@@ -15,7 +15,7 @@ function Tile({ label, value, note, unit, highlight = false }) {
     >
       <div className={`eyebrow ${highlight ? '' : 'text-muted'}`}>{label}</div>
       <div>
-        <div className="text-4xl font-black leading-none">
+        <div className="text-4xl heading-weight leading-none">
           {value}
           {unit && <span className="ml-1 text-base font-bold">{unit}</span>}
         </div>

@@ -96,7 +96,7 @@ export default function TechnicianDashboard() {
                 ].map(([label, value]) => (
                   <div key={label} className="flex min-h-24 flex-col justify-between bg-white p-3">
                     <div className="eyebrow text-muted">{label}</div>
-                    <div className="text-3xl font-black leading-none">{value}</div>
+                    <div className="text-3xl heading-weight leading-none">{value}</div>
                   </div>
                 ))}
               </div>
@@ -125,7 +125,9 @@ function JobRow({ fault, bordered }) {
     >
       <div className="min-w-0">
         <div className="font-mono text-xs">#{fault.reference}</div>
-        <div className="mt-1 text-lg font-black uppercase">{CATEGORY_LABEL[fault.category]}</div>
+        <div className="mt-1 text-lg heading-weight uppercase">
+          {CATEGORY_LABEL[fault.category]}
+        </div>
         <div className="mt-1 text-sm">{locationLine(fault.serviceLocation)}</div>
       </div>
       <div className="flex shrink-0 flex-col items-end gap-2">

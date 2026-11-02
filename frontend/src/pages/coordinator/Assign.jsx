@@ -154,7 +154,7 @@ export default function Assign() {
                   onMouseLeave={() => setHovered(null)}
                 >
                   <div className="flex items-start justify-between gap-3 p-4">
-                    <h3 className="m-0 text-lg font-black uppercase">{technician.name}</h3>
+                    <h3 className="m-0 text-lg heading-weight uppercase">{technician.name}</h3>
                     <AvailabilityPill availability={technician.availability} />
                   </div>
                   <div className="grid grid-cols-3 border-t border-ink">

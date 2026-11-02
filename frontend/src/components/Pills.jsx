@@ -16,7 +16,7 @@ export function StatusTag({ tone = 'outline', children }) {
 }
 
 const STATUS_TONE = {
-  REPORTED: 'outline',
+  REPORTED: 'yellow',
   ASSIGNED: 'yellow',
   ON_THE_WAY: 'yellow',
   ARRIVED: 'ink',

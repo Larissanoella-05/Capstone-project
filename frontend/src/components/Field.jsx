@@ -1,13 +1,26 @@
-/** A form control with its small label above and its error message below. Pass the control as children. */
-export function Field({ id, label, hint, error, children }) {
+/**
+ * A form control with its small label above, then an error message, or else a help line, below.
+ * Pass the control as children. The message ids are `${id}-error` and `${id}-help`, for aria-describedby.
+ */
+export function Field({ id, label, hint, error, help, children }) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1.5">
       <label htmlFor={id} className="eyebrow flex justify-between">
         <span>{label}</span>
         {hint && <span>{hint}</span>}
       </label>
       {children}
-      {error && <span className="text-sm font-semibold text-red">{error}</span>}
+      {error ? (
+        <span id={`${id}-error`} className="text-sm font-semibold text-red">
+          {error}
+        </span>
+      ) : (
+        help && (
+          <span id={`${id}-help`} className="text-xs text-grey">
+            {help}
+          </span>
+        )
+      )}
     </div>
   );
 }
@@ -16,7 +29,7 @@ export function Field({ id, label, hint, error, children }) {
 export function CategoryOption({ name, value, label, hint, checked, onChange }) {
   return (
     <label
-      className={`flex min-h-[60px] cursor-pointer items-center gap-3.5 rounded-control border px-3.5 py-2.5 ${
+      className={`flex min-h-[60px] cursor-pointer items-center gap-3.5 rounded-control border px-4 py-3.5 ${
         checked ? 'border-ink bg-yellow' : 'border-border bg-white'
       }`}
     >
@@ -29,8 +42,8 @@ export function CategoryOption({ name, value, label, hint, checked, onChange }) 
         className="m-0 h-5 w-5 shrink-0"
       />
       <span>
-        <span className="heading-weight block text-base uppercase leading-tight">{label}</span>
-        <span className="block text-[13px]">{hint}</span>
+        <span className="heading-weight block text-sm uppercase leading-tight">{label}</span>
+        <span className={`block text-xs ${checked ? 'text-ink' : 'text-grey'}`}>{hint}</span>
       </span>
     </label>
   );

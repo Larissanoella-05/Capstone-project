@@ -65,7 +65,7 @@ export default function Jobs() {
                       <div className="flex items-start justify-between gap-3 p-4">
                         <div>
                           <div className="font-mono text-xs">#{fault.reference}</div>
-                          <div className="mt-1 text-lg font-black uppercase">
+                          <div className="mt-1 text-lg heading-weight uppercase">
                             {CATEGORY_LABEL[fault.category]}
                           </div>
                           <div className="mt-1 text-sm">{locationLine(fault.serviceLocation)}</div>
