@@ -16,7 +16,7 @@ import {
   locationLine,
   minutesBetween,
 } from '../../lib/format.js';
-import { KeyRow, MapLegend, Timeline } from '../../components/Bits.jsx';
+import { KeyRow, MapLegend, VerticalTimeline } from '../../components/Bits.jsx';
 import MapView, { faultMapParts } from '../../components/MapView.jsx';
 import { PriorityPill, StatusPill } from '../../components/Pills.jsx';
 import { Async, FormError } from '../../components/States.jsx';
@@ -172,7 +172,7 @@ export default function FaultDetails() {
 
                 <section className="panel">
                   <h2 className="panel-head m-0 font-normal">Response timeline</h2>
-                  <Timeline fault={fault} audience="coordinator" />
+                  <VerticalTimeline fault={fault} audience="coordinator" />
                 </section>
 
                 {fault.status === 'RESOLVED' && (

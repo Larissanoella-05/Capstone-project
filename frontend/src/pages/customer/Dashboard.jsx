@@ -11,7 +11,7 @@ import {
   locationLine,
   timeAgo,
 } from '../../lib/format.js';
-import { KeyRow, StageBar } from '../../components/Bits.jsx';
+import { KeyRow, Stepper } from '../../components/Bits.jsx';
 import MapView, { faultMapParts } from '../../components/MapView.jsx';
 import { StatusPill } from '../../components/Pills.jsx';
 import { Async, EmptyState } from '../../components/States.jsx';
@@ -103,7 +103,7 @@ function CurrentFault({ fault }) {
           <KeyRow label="Technician">{fault.technician?.name ?? 'Not assigned yet'}</KeyRow>
           <KeyRow label="Location">{locationLine(fault.serviceLocation)}</KeyRow>
           <div className="mt-4">
-            <StageBar status={fault.status} />
+            <Stepper status={fault.status} />
           </div>
           <Link to={`/customer/faults/${fault.id}`} className="btn btn-ink mt-4">
             Track response

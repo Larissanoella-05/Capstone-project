@@ -1,3 +1,4 @@
+import { Bell, House, ListTodo, TriangleAlert } from 'lucide-react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { HOME_BY_ROLE, useAuth } from './context/AuthContext.jsx';
 import MobileShell from './components/MobileShell.jsx';
@@ -27,34 +28,38 @@ import Assign from './pages/coordinator/Assign.jsx';
 import Monitoring from './pages/coordinator/Monitoring.jsx';
 
 const CUSTOMER_TABS = [
-  { to: '/customer', label: 'Home', isActive: (path) => path === '/customer' },
+  { to: '/customer', label: 'Home', icon: House, isActive: (path) => path === '/customer' },
   {
     to: '/customer/report',
     label: 'Report',
-    isActive: (path) =>
-      path.startsWith('/customer/report') || path.startsWith('/customer/submitted'),
+    icon: TriangleAlert,
+    isActive: (path) => path === '/customer/report' || path.startsWith('/customer/submitted'),
   },
   {
     to: '/customer/reports',
     label: 'Reports',
+    icon: ListTodo,
     isActive: (path) => path.startsWith('/customer/reports') || path.startsWith('/customer/faults'),
   },
   {
     to: '/customer/notifications',
     label: 'Alerts',
+    icon: Bell,
     isActive: (path) => path.startsWith('/customer/notifications'),
   },
 ];
 const TECHNICIAN_TABS = [
-  { to: '/technician', label: 'Home', isActive: (path) => path === '/technician' },
+  { to: '/technician', label: 'Home', icon: House, isActive: (path) => path === '/technician' },
   {
     to: '/technician/jobs',
     label: 'Jobs',
+    icon: ListTodo,
     isActive: (path) => path.startsWith('/technician/jobs'),
   },
   {
     to: '/technician/notifications',
     label: 'Alerts',
+    icon: Bell,
     isActive: (path) => path.startsWith('/technician/notifications'),
   },
 ];

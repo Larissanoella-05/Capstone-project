@@ -92,6 +92,10 @@
     letter-spacing: -0.01em;
     text-transform: uppercase;
   }
+  /* Weight for card titles, stat values and other heading-style text */
+  .heading-weight {
+    font-weight: var(--font-heading-weight);
+  }
   .btn {
     display: inline-flex;
     align-items: center;

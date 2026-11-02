@@ -12,7 +12,7 @@ import {
   locationLine,
   timeAgo,
 } from '../../lib/format.js';
-import { Cell, Timeline } from '../../components/Bits.jsx';
+import { Cell, VerticalTimeline } from '../../components/Bits.jsx';
 import MapView, { faultMapParts } from '../../components/MapView.jsx';
 import { Async } from '../../components/States.jsx';
 import { checkedLabel, nextStepFor } from '../../lib/progress.js';
@@ -85,7 +85,7 @@ export default function Tracking() {
               <div className="flex min-w-0 flex-col gap-5 lg:col-span-2">
                 <section className="panel">
                   <div className="panel-head">Response timeline</div>
-                  <Timeline fault={fault} audience="customer" />
+                  <VerticalTimeline fault={fault} audience="customer" />
                 </section>
 
                 {fault.status === 'RESOLVED' && (
