@@ -15,7 +15,7 @@ import { Async } from '../../components/States.jsx';
 
 const INK = '#0B0B0B';
 const VOLT = '#FFD400';
-const axisTick = { fontFamily: 'IBM Plex Mono, monospace', fontSize: 11, fill: '#5E5A52' };
+const axisTick = { fontFamily: 'Montserrat, sans-serif', fontSize: 11, fill: '#5E5A52' };
 const show = (value) => (value === null || value === undefined ? '—' : value);
 
 function Tile({ label, value, unit, note }) {

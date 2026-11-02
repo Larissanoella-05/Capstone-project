@@ -1,26 +1,45 @@
 @import 'tailwindcss';
 
-/* Design tokens from the approved Umuriro style guide */
+/* Design tokens from the Umuriro redesign (Figma "Umuriro redesign") */
 @theme {
   --color-ink: #0b0b0b;
-  --color-muted: #5e5a52;
-  --color-line: #cfcbc1;
-  --color-ash: #a9a69e;
-  --color-steel: #6b6b6b;
-  --color-paper: #f3f1ec;
-  --color-volt: #ffd400;
-  --color-volt-soft: #fff2b8;
-  --color-danger: #c2161c;
-  --color-ok: #2b6a3f;
-  --color-warn: #a8480f;
+  --color-paper: #f2f2ee;
+  --color-white: #ffffff;
+  --color-yellow: #ffd400;
+  --color-grey: #6a6a62;
+  --color-mute: #8a8a82;
+  --color-line: #e1e1da;
+  --color-border: #bdbdb5;
+  --color-green: #2e6b45;
+  --color-red: #c0392b;
+  --color-amber: #e0a100;
 
-  /* Hard, blur-free shadows in three sizes. Always down and to the right. */
-  --shadow-sm: 2px 2px 0 var(--color-ink);
-  --shadow-md: 4px 4px 0 var(--color-ink);
-  --shadow-lg: 8px 8px 0 var(--color-ink);
+  /* Names the pages already use, pointed at the new palette */
+  --color-volt: var(--color-yellow);
+  --color-volt-soft: color-mix(in srgb, var(--color-yellow) 25%, white);
+  --color-muted: var(--color-grey);
+  --color-ash: var(--color-mute);
+  --color-steel: var(--color-grey);
+  --color-danger: var(--color-red);
+  --color-ok: var(--color-green);
+  --color-warn: var(--color-amber);
 
-  --font-sans: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
+  /* Cards 16px, buttons and inputs 12px, status tags 4px, chips fully round */
+  --radius-card: 16px;
+  --radius-control: 12px;
+  --radius-tag: 4px;
+  --radius-chip: 9999px;
+
+  /* The redesign is flat: no shadows anywhere */
+  --shadow-sm: 0 0 #0000;
+  --shadow-md: 0 0 #0000;
+  --shadow-lg: 0 0 #0000;
+
+  --font-sans: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+  /* No monospace in the redesign: the existing font-mono classes render Montserrat */
+  --font-mono: var(--font-sans);
+  /* One place to switch to a lighter look later */
+  --font-heading-weight: 800;
 }
 
 @layer base {
@@ -30,8 +49,15 @@
   body {
     margin: 0;
     font-family: var(--font-sans);
+    font-size: 14px;
     color: var(--color-ink);
-    background: #ffffff;
+    background: var(--color-paper);
+  }
+  input,
+  select,
+  textarea,
+  button {
+    font-family: var(--font-sans);
   }
   a {
     color: inherit;
@@ -49,20 +75,21 @@
 }
 
 @layer components {
-  /* Small monospace label used above headings and inside panels */
+  /* Small spaced label (CURRENT STATUS, TECHNICIAN, STAGE 3 OF 5) */
   .eyebrow {
-    font-family: var(--font-mono);
     font-size: 12px;
+    font-weight: 600;
     line-height: 16px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    color: var(--color-grey);
   }
-  /* Heavy uppercase heading */
+  /* Uppercase heading; the weight comes from --font-heading-weight */
   .display {
     margin: 0;
-    font-weight: 900;
-    line-height: 0.95;
-    letter-spacing: -0.02em;
+    font-weight: var(--font-heading-weight);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
     text-transform: uppercase;
   }
   .btn {
@@ -74,46 +101,42 @@
     min-height: 44px;
     padding: 0 20px;
     border: 1px solid var(--color-ink);
-    font-size: 14px;
+    border-radius: var(--radius-control);
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     text-decoration: none;
     text-align: center;
     cursor: pointer;
-    background: #ffffff;
+    background: var(--color-white);
     color: var(--color-ink);
-    box-shadow: var(--shadow-sm);
-    transition:
-      transform 80ms ease-out,
-      box-shadow 80ms ease-out;
-  }
-  /* Pressing sinks the button into its shadow */
-  .btn:active:not(:disabled) {
-    transform: translate(2px, 2px);
-    box-shadow: none;
-  }
-  /* The ring sits outside the shadow so the shadow never hides it */
-  .btn:focus-visible {
-    outline-offset: 5px;
+    transition: background-color 80ms ease-out;
   }
   .btn:disabled {
     cursor: not-allowed;
     opacity: 0.55;
-    box-shadow: none;
   }
   .btn-ink {
     background: var(--color-ink);
-    color: #ffffff;
+    color: var(--color-white);
   }
   .btn-ink:hover:not(:disabled) {
-    background: #2a2a2a;
+    background: color-mix(in srgb, var(--color-ink) 85%, white);
   }
   .btn-volt {
-    background: var(--color-volt);
+    background: var(--color-yellow);
   }
   .btn-volt:hover:not(:disabled) {
-    background: #f2c900;
+    background: color-mix(in srgb, var(--color-yellow) 90%, black);
+  }
+  /* Cancel / destructive actions */
+  .btn-danger {
+    border-color: var(--color-red);
+    color: var(--color-red);
+  }
+  .btn-danger:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-red) 8%, white);
   }
   .btn-outline:hover:not(:disabled) {
     background: var(--color-paper);
@@ -121,27 +144,25 @@
   .btn-lg {
     min-height: 56px;
     padding: 0 24px;
-    font-size: 16px;
-    box-shadow: var(--shadow-md);
-  }
-  .btn-lg:active:not(:disabled) {
-    transform: translate(4px, 4px);
+    font-size: 14px;
   }
   .panel {
-    border: 1px solid var(--color-ink);
-    background: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-white);
+    overflow: hidden;
   }
   .panel-head {
     min-height: 44px;
     box-sizing: border-box;
     padding: 0 16px;
-    border-bottom: 1px solid var(--color-ink);
+    border-bottom: 1px solid var(--color-line);
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    font-family: var(--font-mono);
     font-size: 12px;
+    font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
@@ -157,9 +178,9 @@
     box-sizing: border-box;
     min-height: 48px;
     padding: 12px;
-    border: 1px solid var(--color-ink);
-    border-radius: 0;
-    background: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--color-white);
     font-family: var(--font-sans);
     font-size: 16px;
     color: var(--color-ink);
@@ -175,9 +196,9 @@
     display: inline-block;
     padding: 3px 8px;
     border: 1px solid var(--color-ink);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 500;
+    border-radius: var(--radius-tag);
+    font-size: 11px;
+    font-weight: 600;
     line-height: 16px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -187,7 +208,7 @@
 
 /* ---- Leaflet, restyled to match the flat monochrome maps in the design ---- */
 .leaflet-container {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   background: var(--color-paper);
   border-radius: 0;
 }
@@ -214,7 +235,7 @@
   border-radius: 0;
   box-shadow: none;
   padding: 2px 6px;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: 12px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
