@@ -2,7 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
-import { Button, Eyebrow, Panel, PanelHead } from '../../../src/components/Bits.js';
+import { Button, Eyebrow, Panel, PanelHead, StageBar } from '../../../src/components/Bits.js';
 import MapView from '../../../src/components/MapView.js';
 import { PriorityPill, StatusPill } from '../../../src/components/Pills.js';
 import { Screen } from '../../../src/components/Shell.js';
@@ -25,17 +25,17 @@ import {
 } from '../../../src/lib/format.js';
 import { TRACKED_STATUSES } from '../../../src/lib/location.js';
 import { faultMapParts } from '../../../src/lib/mapParts.js';
-import { colors, fonts } from '../../../src/theme.js';
+import { colors, fonts, radius } from '../../../src/theme.js';
 
 // What the main button does at each stage.
 const NEXT_ACTION = {
   ASSIGNED: {
     status: 'ON_THE_WAY',
-    label: 'Start Response: On the Way',
+    label: 'Start: on my way',
     done: 'Status updated: On the Way.',
   },
-  ON_THE_WAY: { status: 'ARRIVED', label: 'Mark as Arrived', done: 'Status updated: Arrived.' },
-  ARRIVED: { status: 'WORKING', label: 'Start Work', done: 'Status updated: Working.' },
+  ON_THE_WAY: { status: 'ARRIVED', label: 'I have arrived', done: 'Status updated: Arrived.' },
+  ARRIVED: { status: 'WORKING', label: 'Start work', done: 'Status updated: Working.' },
 };
 
 export default function JobDetails() {
@@ -66,13 +66,35 @@ export default function JobDetails() {
     }
   }
 
+  const current = state.data?.fault;
+  const currentNext = current ? NEXT_ACTION[current.status] : null;
+  const footer =
+    current && (currentNext || current.status === 'WORKING') ? (
+      <View style={{ gap: 12 }}>
+        <FormError>{actionError}</FormError>
+        {currentNext ? (
+          <Button
+            label={busy ? 'Updating…' : currentNext.label}
+            disabled={busy}
+            onPress={() => advance(current, currentNext)}
+            style={{ minHeight: 54 }}
+          />
+        ) : (
+          <Button
+            label="Record resolution"
+            onPress={() => router.push(`/technician/jobs/${current.id}/resolve`)}
+            style={{ minHeight: 54 }}
+          />
+        )}
+      </View>
+    ) : null;
+
   return (
-    <Screen>
+    <Screen footer={footer}>
       <Async state={state} label="Loading job">
         {({ fault }) => {
           const location = fault.serviceLocation;
           const { markers, lines } = faultMapParts(fault);
-          const next = NEXT_ACTION[fault.status];
           const stageIndex = STAGES.indexOf(fault.status);
           const approaching = ['ASSIGNED', 'ON_THE_WAY'].includes(fault.status);
           const sharing = TRACKED_STATUSES.includes(fault.status);
@@ -81,7 +103,7 @@ export default function JobDetails() {
           return (
             <>
               <View style={styles.hero}>
-                <Eyebrow style={{ color: colors.muted }}>
+                <Eyebrow>
                   Fault #{fault.reference} · Reported {fmtTime(fault.reportedAt)}
                 </Eyebrow>
                 <Text accessibilityRole="header" style={styles.title}>
@@ -91,12 +113,15 @@ export default function JobDetails() {
                   <PriorityPill priority={fault.priority} withLabel />
                   <StatusPill status={fault.status} />
                 </View>
+                <View style={{ marginTop: 12 }}>
+                  <StageBar status={fault.status} />
+                </View>
               </View>
 
               <Panel>
                 <MapView markers={markers} lines={lines} height={240} />
                 <View style={styles.block}>
-                  <Eyebrow style={{ color: colors.muted }}>Service location</Eyebrow>
+                  <Eyebrow>Service location</Eyebrow>
                   <Text style={styles.location}>{locationLine(location)}</Text>
                   <Text style={styles.text}>
                     {[location.village && `${location.village} village`, location.landmark]
@@ -112,8 +137,8 @@ export default function JobDetails() {
                 </View>
                 <View style={styles.blockPadded}>
                   <Button
-                    label="Navigate to Location"
-                    tone="outline"
+                    label="Navigate"
+                    tone="ink"
                     icon="navigation"
                     onPress={() =>
                       open(
@@ -121,7 +146,22 @@ export default function JobDetails() {
                         'No app can open directions.'
                       )
                     }
+                    style={{ flex: 1 }}
                   />
+                  {customerPhone ? (
+                    <Button
+                      label="Call customer"
+                      tone="outline"
+                      icon="phone"
+                      onPress={() =>
+                        open(
+                          `tel:${customerPhone.replace(/\s/g, '')}`,
+                          'This phone cannot make calls.'
+                        )
+                      }
+                      style={{ flex: 1 }}
+                    />
+                  ) : null}
                 </View>
               </Panel>
 
@@ -140,17 +180,17 @@ export default function JobDetails() {
                       style={[
                         styles.stage,
                         index > 0 && styles.stageDivider,
-                        active && { backgroundColor: colors.volt },
+                        active && { backgroundColor: colors.tint },
                       ]}
                     >
                       <View
                         style={[
                           styles.box,
-                          done && { backgroundColor: colors.ink, borderColor: colors.ink },
-                          active && { borderColor: colors.ink, backgroundColor: colors.white },
+                          done && { backgroundColor: colors.accent, borderColor: colors.accent },
+                          active && { borderColor: colors.accent, backgroundColor: colors.white },
                         ]}
                       >
-                        {done ? <Feather name="check" size={14} color={colors.white} /> : null}
+                        {done ? <Feather name="check" size={14} color={colors.onAccent} /> : null}
                         {active ? <View style={styles.core} /> : null}
                       </View>
                       <Text
@@ -167,26 +207,6 @@ export default function JobDetails() {
                     </View>
                   );
                 })}
-
-                {next || fault.status === 'WORKING' ? (
-                  <View style={styles.actions}>
-                    <FormError>{actionError}</FormError>
-                    {next ? (
-                      <Button
-                        label={busy ? 'Updating…' : next.label}
-                        disabled={busy}
-                        onPress={() => advance(fault, next)}
-                        style={{ minHeight: 56 }}
-                      />
-                    ) : (
-                      <Button
-                        label="Record Resolution"
-                        onPress={() => router.push(`/technician/jobs/${fault.id}/resolve`)}
-                        style={{ minHeight: 56 }}
-                      />
-                    )}
-                  </View>
-                ) : null}
               </Panel>
 
               {sharing ? <TrackingNotice status={tracking} /> : null}
@@ -301,24 +321,27 @@ function TrackingNotice({ status }) {
 
 const styles = StyleSheet.create({
   sharingProblem: { backgroundColor: colors.white, borderColor: colors.danger },
-  hero: { borderBottomWidth: 1, borderBottomColor: colors.ink, paddingBottom: 16 },
+  hero: { paddingBottom: 4 },
   title: {
-    marginTop: 8,
+    marginTop: 6,
     fontFamily: fonts.black,
-    fontSize: 30,
+    fontSize: 26,
     lineHeight: 30,
-    letterSpacing: -0.6,
-    textTransform: 'uppercase',
     color: colors.ink,
   },
   pills: { marginTop: 12, flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  block: { borderTopWidth: 1, borderTopColor: colors.ink, padding: 16 },
-  blockPadded: { borderTopWidth: 1, borderTopColor: colors.ink, padding: 12 },
+  block: { borderTopWidth: 1, borderTopColor: colors.line, padding: 16 },
+  blockPadded: {
+    flexDirection: 'row',
+    gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+    padding: 12,
+  },
   location: {
     marginTop: 4,
     fontFamily: fonts.black,
     fontSize: 18,
-    textTransform: 'uppercase',
     color: colors.ink,
   },
   text: { marginTop: 4, fontFamily: fonts.regular, fontSize: 14, color: colors.ink },
@@ -334,26 +357,27 @@ const styles = StyleSheet.create({
   box: {
     width: 24,
     height: 24,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: colors.line,
   },
-  core: { width: 8, height: 8, backgroundColor: colors.ink },
+  core: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.accent },
   stageLabel: { flex: 1, fontFamily: fonts.regular, fontSize: 14, color: colors.ink },
-  actions: { gap: 12, borderTopWidth: 1, borderTopColor: colors.ink, padding: 12 },
   sharing: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     borderWidth: 1,
-    borderColor: colors.ink,
-    backgroundColor: colors.voltSoft,
+    borderColor: colors.accent,
+    borderRadius: radius,
+    backgroundColor: colors.tint,
     padding: 12,
   },
   sharingText: { flex: 1, fontFamily: fonts.semibold, fontSize: 14, color: colors.ink },
   body: { padding: 16, gap: 8 },
-  outcome: { fontFamily: fonts.black, fontSize: 16, textTransform: 'uppercase', color: colors.ink },
-  photo: { width: '100%', height: 240, borderWidth: 1, borderColor: colors.line },
+  outcome: { fontFamily: fonts.black, fontSize: 16, color: colors.ink },
+  photo: { width: '100%', height: 240, borderRadius: radius },
   customer: { fontFamily: fonts.bold, fontSize: 16, color: colors.ink },
 });

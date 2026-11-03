@@ -1,5 +1,6 @@
-// Guards the verbatim copy of format.js used by the Android app, and that its labels still
-// cover the enums the API uses. If this fails, copy frontend/src/lib/format.js over mobile/src/lib/format.js.
+// Guards the verbatim copies of format.js, statusTone.js, reportSteps.js and landingCopy.js used by the Android app, and that
+// their labels still cover the enums the API uses. If this fails, copy the frontend/src/lib file over its
+// mobile/src/lib twin.
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -11,15 +12,19 @@ import * as backend from '../../../backend/src/utils/constants.js';
 const read = (relative) =>
   readFileSync(new URL(relative, import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 
-describe('format.js shared with the mobile app', () => {
-  it('has the same content in frontend and mobile', () => {
-    assert.equal(
-      read('../../../mobile/src/lib/format.js'),
-      read('./format.js'),
-      'mobile/src/lib/format.js differs from frontend/src/lib/format.js'
-    );
-  });
+describe('lib files shared with the mobile app', () => {
+  for (const name of ['format.js', 'statusTone.js', 'reportSteps.js', 'landingCopy.js']) {
+    it(`has the same ${name} in frontend and mobile`, () => {
+      assert.equal(
+        read(`../../../mobile/src/lib/${name}`),
+        read(`./${name}`),
+        `mobile/src/lib/${name} differs from frontend/src/lib/${name}`
+      );
+    });
+  }
+});
 
+describe('format.js shared with the mobile app', () => {
   it('lists the same stages as the API', () => {
     assert.deepEqual(format.STAGES, backend.STATUS_FLOW);
     assert.deepEqual(format.OPEN_STATUSES, backend.OPEN_STATUSES);

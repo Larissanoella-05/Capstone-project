@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, fonts } from '../theme.js';
@@ -20,15 +21,25 @@ const SIZE = { site: 22, unassigned: 22, technician: 24, onsite: 24 };
 
 // Same colours as the web markers (frontend index.css .map-marker--*).
 const MARKER_STYLE = {
-  unassigned: { backgroundColor: colors.danger, borderWidth: 2, borderColor: colors.white },
-  site: { backgroundColor: colors.ink, borderWidth: 2, borderColor: colors.white },
-  technician: {
-    backgroundColor: colors.volt,
-    borderWidth: 3,
-    borderColor: colors.ink,
+  unassigned: {
+    backgroundColor: colors.accent,
+    borderWidth: 2,
+    borderColor: colors.white,
     borderRadius: 12,
   },
-  onsite: { backgroundColor: colors.ok, borderWidth: 3, borderColor: colors.ink, borderRadius: 12 },
+  site: { backgroundColor: colors.ink, borderWidth: 2, borderColor: colors.white, borderRadius: 4 },
+  technician: {
+    backgroundColor: colors.blue,
+    borderWidth: 2,
+    borderColor: colors.white,
+    borderRadius: 4,
+  },
+  onsite: {
+    backgroundColor: colors.ok,
+    borderWidth: 2,
+    borderColor: colors.white,
+    borderRadius: 4,
+  },
 };
 
 /**
@@ -144,7 +155,7 @@ function MapLibreView({
               id="links-line"
               type="line"
               layout={{ 'line-cap': 'butt' }}
-              paint={{ 'line-color': colors.ink, 'line-width': 4, 'line-dasharray': [0.5, 2] }}
+              paint={{ 'line-color': colors.accent, 'line-width': 3, 'line-dasharray': [0.5, 2] }}
             />
           </GeoJSONSource>
         ) : null}
@@ -155,8 +166,16 @@ function MapLibreView({
             <Marker key={marker.id} id={marker.id} lngLat={[marker.lng, marker.lat]}>
               <View
                 accessibilityLabel={marker.label}
-                style={[{ width: size, height: size }, MARKER_STYLE[marker.kind]]}
-              />
+                style={[
+                  { width: size, height: size },
+                  styles.markerBase,
+                  MARKER_STYLE[marker.kind],
+                ]}
+              >
+                {marker.kind === 'technician' || marker.kind === 'onsite' ? (
+                  <Feather name="zap" size={13} color={colors.white} />
+                ) : null}
+              </View>
             </Marker>
           );
         })}
@@ -178,6 +197,7 @@ function MapLibreView({
 }
 
 const styles = StyleSheet.create({
+  markerBase: { alignItems: 'center', justifyContent: 'center' },
   map: { flex: 1 },
   lock: {
     ...StyleSheet.absoluteFillObject,
@@ -189,15 +209,12 @@ const styles = StyleSheet.create({
   lockText: {
     fontFamily: fonts.mono,
     fontSize: 11,
-    letterSpacing: 0.9,
-    textTransform: 'uppercase',
     color: colors.white,
   },
   missing: { alignItems: 'center', justifyContent: 'center', backgroundColor: colors.paper },
   missingText: {
     fontFamily: fonts.mono,
     fontSize: 12,
-    textTransform: 'uppercase',
     color: colors.muted,
   },
 });

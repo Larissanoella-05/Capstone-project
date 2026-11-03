@@ -1,7 +1,8 @@
 // Copy and link data for the public landing page. Kept out of the components so a test can scan it.
 import { loginLink, TARGETS } from './landingLinks.js';
+import { CTA, FAQ, HERO, HOTLINE, ROLES_COPY, STEP_CARDS } from './landingCopy.js';
 
-export const HOTLINE = '2727';
+export { CTA, FAQ, HERO, HOTLINE, STEP_CARDS };
 export const HOTLINE_HREF = `tel:${HOTLINE}`;
 export const HOTLINE_TEXT = `Real fault? Call ${HOTLINE}`;
 
@@ -23,23 +24,6 @@ export const DASHBOARD_MENU = [
 
 export const REPORT_LINK = loginLink(TARGETS.customerReport);
 export const COORDINATOR_LINK = loginLink(TARGETS.coordinator);
-
-export const HERO = {
-  headline: ['Umuriro', 'restores'],
-  accentWord: 'power',
-  tagline: 'Report a fault. Get a technician. Track it until the lights are back.',
-};
-
-export const STEP_CARDS = [
-  { title: 'Report the fault in under a minute', icon: 'M13 3L5 14h6l-1 9 8-11h-6z' },
-  {
-    title: 'Coordinator assigns the nearest technician',
-    icon: 'M13 4a4 4 0 100 8 4 4 0 000-8zM5 22c0-4 3.500-6 8-6s8 2 8 6',
-    highlight: true,
-  },
-  { title: 'Track every step with live status', icon: 'M4 13h5l3-7 4 14 3-7h3' },
-  { title: 'Closed with a record of the repair', icon: 'M5 13l5 5L21 7' },
-];
 
 export const ABOUT = {
   eyebrow: 'About Umuriro',
@@ -88,74 +72,6 @@ export const SERVICES = {
   ].map((item) => ({ ...item, link: loginLink(TARGETS.customerReport) })),
 };
 
-export const ROLES = {
-  eyebrow: 'One app, three views',
-  title: 'Built around the people who restore power',
-  items: [
-    {
-      title: 'Customer',
-      body: 'Report and track a fault',
-      go: 'Open customer view',
-      image: 'poles',
-      link: loginLink(TARGETS.customerReport),
-    },
-    {
-      title: 'Service coordinator',
-      body: 'Assign technicians and monitor',
-      go: 'Open coordinator view',
-      image: 'panel',
-      highlight: true,
-      link: loginLink(TARGETS.coordinator),
-    },
-    {
-      title: 'Technician',
-      body: 'See jobs and update status',
-      go: 'Open technician view',
-      image: 'tower',
-      link: loginLink(TARGETS.technician),
-    },
-  ],
-};
-
-export const FAQ = {
-  eyebrow: 'Umuriro FAQ',
-  title: 'Frequently asked questions',
-  items: [
-    {
-      q: 'How do I report a fault?',
-      a: 'Sign in, open the report page, pick the type of fault, confirm your location and send. You get a reference you can use to follow progress.',
-    },
-    {
-      q: 'Who gets my report?',
-      a: 'Service coordinators see new reports and assign the most suitable technician.',
-    },
-    {
-      q: 'Can I see where my technician is?',
-      a: 'Yes. Your report has a status timeline (reported, assigned, on the way, arrived, working, resolved) and a map of the fault site and the assigned technician. In this pilot the technician position on the web map is simulated.',
-    },
-    {
-      q: 'What if the fault is dangerous?',
-      a: 'For fallen lines, sparks or fire, keep away and call 2727 first, then report it here so it is prioritised.',
-    },
-    {
-      q: 'How do technicians get jobs?',
-      a: 'Assigned jobs appear in the technician’s list with the location and fault details. They update the status as they work.',
-    },
-    {
-      q: 'Does it work on my phone?',
-      a: 'Yes. Customers and technicians can use the web app or the Android app; coordinators use the web dashboard.',
-    },
-    {
-      q: 'Do I need an account?',
-      a: 'Yes. Sign in with your account to report a fault, so the report is tied to you and you can follow it.',
-    },
-    {
-      q: 'How do I know it is fixed?',
-      a: 'The technician marks the job resolved and you get a notification in the app. The report stays in your list of reports.',
-    },
-  ],
-};
-
 export const SAFETY_TIPS = {
   eyebrow: 'Updates and guides',
   title: 'Staying safe and informed',
@@ -177,13 +93,6 @@ export const SAFETY_TIPS = {
       image: 'panel',
     },
   ],
-};
-
-export const CTA = {
-  title: ['Secure reliable power for', 'your home and business!'],
-  body: 'No more guessing when the lights will return. Sign in to report a fault and follow the repair until power is back.',
-  signIn: 'Sign in to report',
-  call: `Call ${HOTLINE}`,
 };
 
 export const FOOTER = {
@@ -212,4 +121,15 @@ export const FOOTER = {
   socials: [],
   copyright: '© 2026 Umuriro. All Rights Reserved.',
   legal: 'Privacy Policy | Terms of Service',
+};
+
+const ROLE_LINKS = {
+  Customer: loginLink(TARGETS.customerReport),
+  'Service coordinator': loginLink(TARGETS.coordinator),
+  Technician: loginLink(TARGETS.technician),
+};
+
+export const ROLES = {
+  ...ROLES_COPY,
+  items: ROLES_COPY.items.map((item) => ({ ...item, link: ROLE_LINKS[item.title] })),
 };

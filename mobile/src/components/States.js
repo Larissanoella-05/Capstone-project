@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, fonts } from '../theme.js';
+import { colors, fonts, radius } from '../theme.js';
 import { Eyebrow } from './Bits.js';
 
 export function Loading({ label = 'Loading' }) {
@@ -103,12 +103,20 @@ export function OfflineStrip({ onRetry }) {
 }
 
 const styles = StyleSheet.create({
-  box: { borderWidth: 1, borderColor: colors.line, paddingHorizontal: 16, paddingVertical: 32 },
+  box: {
+    borderWidth: 1,
+    borderColor: colors.line,
+    borderRadius: radius,
+    backgroundColor: colors.white,
+    paddingHorizontal: 16,
+    paddingVertical: 32,
+  },
   centerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 },
   outline: {
     minHeight: 44,
     borderWidth: 1,
-    borderColor: colors.ink,
+    borderColor: colors.line,
+    borderRadius: radius,
     backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
@@ -117,17 +125,20 @@ const styles = StyleSheet.create({
   outlineText: {
     fontFamily: fonts.bold,
     fontSize: 14,
-    letterSpacing: 1.1,
-    textTransform: 'uppercase',
     color: colors.ink,
   },
   pressed: { backgroundColor: colors.paper },
-  errorBox: { borderWidth: 1, borderColor: colors.danger },
+  errorBox: {
+    borderWidth: 1,
+    borderColor: colors.danger,
+    borderRadius: radius,
+    backgroundColor: colors.white,
+    overflow: 'hidden',
+  },
   errorBody: { flexDirection: 'row', gap: 12, padding: 16 },
   errorTitle: {
     fontFamily: fonts.black,
     fontSize: 16,
-    textTransform: 'uppercase',
     color: colors.ink,
   },
   errorMessage: { marginTop: 4, fontFamily: fonts.regular, fontSize: 14, color: colors.ink },
@@ -137,8 +148,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     borderWidth: 1,
-    borderColor: colors.ink,
-    backgroundColor: colors.voltSoft,
+    borderColor: colors.accent,
+    borderRadius: radius,
+    backgroundColor: colors.tint,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
@@ -146,8 +158,6 @@ const styles = StyleSheet.create({
   offlineAction: {
     fontFamily: fonts.mono,
     fontSize: 11,
-    letterSpacing: 0.9,
-    textTransform: 'uppercase',
     color: colors.ink,
     textDecorationLine: 'underline',
   },
@@ -155,7 +165,6 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontFamily: fonts.black,
     fontSize: 16,
-    textTransform: 'uppercase',
     color: colors.ink,
     textAlign: 'center',
   },
@@ -171,6 +180,7 @@ const styles = StyleSheet.create({
     gap: 8,
     borderWidth: 1,
     borderColor: colors.danger,
+    borderRadius: radius,
     backgroundColor: colors.white,
     padding: 12,
   },

@@ -19,7 +19,7 @@ import {
   timeAgo,
 } from '../../../src/lib/format.js';
 import { faultMapParts } from '../../../src/lib/mapParts.js';
-import { colors, fonts } from '../../../src/theme.js';
+import { colors, fonts, radius } from '../../../src/theme.js';
 
 export default function Tracking() {
   const { id } = useLocalSearchParams();
@@ -39,8 +39,14 @@ export default function Tracking() {
             technician?.phone && fault.status !== 'RESOLVED' && fault.status !== 'CANCELLED';
           return (
             <>
-              <View style={styles.hero}>
-                <Eyebrow style={{ color: colors.muted }}>
+              <View
+                style={[
+                  styles.hero,
+                  fault.status === 'RESOLVED' && { backgroundColor: colors.ok },
+                  fault.status === 'CANCELLED' && { backgroundColor: colors.danger },
+                ]}
+              >
+                <Eyebrow style={{ color: colors.onAccent, opacity: 0.85 }}>
                   Fault #{fault.reference} · {CATEGORY_LABEL[fault.category]}
                 </Eyebrow>
                 <Text accessibilityRole="header" style={styles.title}>
@@ -68,7 +74,7 @@ export default function Tracking() {
                   <View style={styles.callRow}>
                     <Button
                       label={`Call ${firstNames(technician.name)}`}
-                      tone="outline"
+                      tone="volt"
                       icon="phone"
                       onPress={async () => {
                         if (!(await openLink(`tel:${technician.phone.replace(/\s/g, '')}`)))
@@ -99,18 +105,18 @@ export default function Tracking() {
                 <PanelHead>Your report</PanelHead>
                 <View style={styles.body}>
                   <View>
-                    <Eyebrow style={{ color: colors.muted }}>Service location</Eyebrow>
+                    <Eyebrow>Service location</Eyebrow>
                     <Text style={styles.value}>
                       {locationLine(fault.serviceLocation)} · Meter{' '}
                       {fault.serviceLocation.meterNumber}
                     </Text>
                   </View>
                   <View>
-                    <Eyebrow style={{ color: colors.muted }}>Reported</Eyebrow>
+                    <Eyebrow>Reported</Eyebrow>
                     <Text style={styles.value}>{fmtDateTime(fault.reportedAt)}</Text>
                   </View>
                   <View>
-                    <Eyebrow style={{ color: colors.muted }}>Description</Eyebrow>
+                    <Eyebrow>Description</Eyebrow>
                     <Text style={styles.text}>{fault.description || 'No description given.'}</Text>
                   </View>
                   {fault.photo ? (
@@ -132,25 +138,23 @@ export default function Tracking() {
 }
 
 const styles = StyleSheet.create({
-  hero: { borderBottomWidth: 1, borderBottomColor: colors.ink, paddingBottom: 16 },
-  title: {
-    marginTop: 8,
-    fontFamily: fonts.black,
-    fontSize: 30,
-    lineHeight: 30,
-    letterSpacing: -0.6,
-    textTransform: 'uppercase',
-    color: colors.ink,
+  hero: {
+    gap: 6,
+    borderRadius: radius,
+    backgroundColor: colors.accent,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
   },
-  cells: { flexDirection: 'row', flexWrap: 'wrap', borderTopWidth: 1, borderTopColor: colors.ink },
+  title: { fontFamily: fonts.black, fontSize: 24, lineHeight: 28, color: colors.onAccent },
+  cells: { flexDirection: 'row', flexWrap: 'wrap', borderTopWidth: 1, borderTopColor: colors.line },
   half: { width: '50%' },
-  leftRule: { borderLeftWidth: 1, borderLeftColor: colors.ink },
-  topRule: { borderTopWidth: 1, borderTopColor: colors.ink },
-  callRow: { borderTopWidth: 1, borderTopColor: colors.ink, padding: 12 },
+  leftRule: { borderLeftWidth: 1, borderLeftColor: colors.line },
+  topRule: { borderTopWidth: 1, borderTopColor: colors.line },
+  callRow: { borderTopWidth: 1, borderTopColor: colors.line, padding: 12 },
   body: { padding: 16, gap: 12 },
-  outcome: { fontFamily: fonts.black, fontSize: 16, textTransform: 'uppercase', color: colors.ink },
+  outcome: { fontFamily: fonts.black, fontSize: 16, color: colors.ink },
   text: { marginTop: 4, fontFamily: fonts.regular, fontSize: 14, color: colors.ink },
   completed: { fontFamily: fonts.mono, fontSize: 12, color: colors.muted },
   value: { marginTop: 4, fontFamily: fonts.semibold, fontSize: 14, color: colors.ink },
-  photo: { width: '100%', height: 240, borderWidth: 1, borderColor: colors.line },
+  photo: { width: '100%', height: 240, borderRadius: radius },
 });

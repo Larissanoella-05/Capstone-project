@@ -1,11 +1,13 @@
+import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Button, Eyebrow, KeyRow, Panel, StageBar } from '../../src/components/Bits.js';
+import { Button, Eyebrow, FaultIcon, KeyRow, Panel, StageBar } from '../../src/components/Bits.js';
 import MapView from '../../src/components/MapView.js';
 import { StatusPill } from '../../src/components/Pills.js';
 import { Screen } from '../../src/components/Shell.js';
 import { Async, EmptyState } from '../../src/components/States.js';
 import { useAuth } from '../../src/context/AuthContext.js';
+import { useToast } from '../../src/context/ToastContext.js';
 import { useApi } from '../../src/hooks/useApi.js';
 import {
   CATEGORY_LABEL,
@@ -16,12 +18,14 @@ import {
   locationLine,
   timeAgo,
 } from '../../src/lib/format.js';
+import { openLink } from '../../src/lib/links.js';
 import { faultMapParts } from '../../src/lib/mapParts.js';
-import { colors, fonts } from '../../src/theme.js';
+import { colors, fonts, radius, shadow } from '../../src/theme.js';
 
 export default function CustomerDashboard() {
   const { user } = useAuth();
   const router = useRouter();
+  const toast = useToast();
   const state = useApi('/faults', { interval: 5000 });
 
   const faults = state.data?.faults ?? [];
@@ -31,18 +35,12 @@ export default function CustomerDashboard() {
   return (
     <Screen>
       <View style={styles.hero}>
-        <Eyebrow style={{ color: colors.muted }}>
+        <Text style={styles.greeting}>
           {greeting()}, {firstNames(user.name)}
-        </Eyebrow>
+        </Text>
         <Text accessibilityRole="header" style={styles.title}>
           {current ? 'Your fault is being handled' : 'Is your electricity not working?'}
         </Text>
-        <Button
-          label="Report a Fault"
-          icon="zap"
-          onPress={() => router.navigate('/customer/report')}
-          style={{ alignSelf: 'flex-start' }}
-        />
       </View>
 
       <Async state={state} label="Loading your faults">
@@ -60,11 +58,38 @@ export default function CustomerDashboard() {
               </EmptyState>
             )}
 
-            <Panel>
-              <View style={styles.panelHeadRow}>
-                <Text style={styles.panelHeadLabel}>Recent reports</Text>
+            <View style={styles.tiles}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => router.navigate('/customer/report')}
+                style={[styles.tile, styles.tileAccent]}
+              >
+                <Feather name="zap" size={26} color={colors.onAccent} />
+                <Text style={[styles.tileTitle, { color: colors.onAccent }]}>Report a fault</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Real emergency? Call 2727"
+                onPress={async () => {
+                  if (!(await openLink('tel:2727')))
+                    toast('This phone cannot make calls.', 'error');
+                }}
+                style={[styles.tile, styles.tileWhite]}
+              >
+                <Feather name="phone" size={26} color={colors.accent} />
+                <View>
+                  <Text style={styles.tileTitle}>Real emergency?</Text>
+                  <Text style={styles.tileNote}>Call 2727</Text>
+                </View>
+              </Pressable>
+            </View>
+
+            <View style={{ gap: 12 }}>
+              <View style={styles.sectionRow}>
+                <Text style={styles.sectionTitle}>Recent reports</Text>
                 <Pressable
                   accessibilityRole="link"
+                  hitSlop={12}
                   onPress={() => router.navigate('/customer/reports')}
                 >
                   <Text style={styles.link}>View all</Text>
@@ -73,26 +98,26 @@ export default function CustomerDashboard() {
               {recent.length === 0 ? (
                 <Text style={styles.empty}>No reports yet.</Text>
               ) : (
-                recent.map((fault, index) => (
+                recent.map((fault) => (
                   <Pressable
                     key={fault.id}
                     accessibilityRole="link"
                     onPress={() => router.push(`/customer/faults/${fault.id}`)}
-                    style={({ pressed }) => [
-                      styles.recent,
-                      index > 0 && styles.recentDivider,
-                      pressed && { backgroundColor: colors.paper },
-                    ]}
                   >
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.ref}>#{fault.reference}</Text>
-                      <Text style={styles.category}>{CATEGORY_LABEL[fault.category]}</Text>
-                    </View>
-                    <StatusPill status={fault.status} />
+                    <Panel style={styles.recent}>
+                      <FaultIcon category={fault.category} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.category}>{CATEGORY_LABEL[fault.category]}</Text>
+                        <Text style={styles.ref}>
+                          #{fault.reference} · {timeAgo(fault.reportedAt)}
+                        </Text>
+                      </View>
+                      <StatusPill status={fault.status} />
+                    </Panel>
                   </Pressable>
                 ))
               )}
-            </Panel>
+            </View>
           </>
         )}
       </Async>
@@ -105,7 +130,9 @@ function CurrentFault({ fault, onTrack }) {
   return (
     <Panel accessibilityLabel={`Current fault ${fault.reference}`}>
       <View style={styles.statusBlock}>
-        <Eyebrow>Current status · Fault #{fault.reference}</Eyebrow>
+        <Eyebrow style={{ color: colors.onAccent, opacity: 0.85 }}>
+          Current status · Fault #{fault.reference}
+        </Eyebrow>
         <Text style={styles.headline}>{CUSTOMER_HEADLINE[fault.status]}</Text>
         <Text style={styles.updated}>Last updated {timeAgo(fault.updatedAt)}</Text>
       </View>
@@ -121,9 +148,9 @@ function CurrentFault({ fault, onTrack }) {
         <View style={{ marginTop: 16 }}>
           <StageBar status={fault.status} />
         </View>
-        <Button label="Track response" tone="ink" onPress={onTrack} style={{ marginTop: 16 }} />
+        <Button label="Track live" tone="ink" onPress={onTrack} style={{ marginTop: 16 }} />
       </View>
-      <View style={{ borderTopWidth: 1, borderTopColor: colors.ink }}>
+      <View style={{ borderTopWidth: 1, borderTopColor: colors.line }}>
         <MapView markers={markers} lines={lines} interactive={false} height={190} />
       </View>
     </Panel>
@@ -131,68 +158,37 @@ function CurrentFault({ fault, onTrack }) {
 }
 
 const styles = StyleSheet.create({
-  hero: { gap: 12, borderBottomWidth: 1, borderBottomColor: colors.ink, paddingBottom: 16 },
-  title: {
-    fontFamily: fonts.black,
-    fontSize: 30,
-    lineHeight: 30,
-    letterSpacing: -0.6,
-    textTransform: 'uppercase',
-    color: colors.ink,
-  },
-  statusBlock: {
-    backgroundColor: colors.volt,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.ink,
-    padding: 20,
-  },
-  headline: {
-    marginTop: 8,
-    fontFamily: fonts.black,
-    fontSize: 32,
-    lineHeight: 32,
-    textTransform: 'uppercase',
-    color: colors.ink,
-  },
-  updated: { marginTop: 12, fontFamily: fonts.mono, fontSize: 12, color: colors.ink },
+  hero: { gap: 6 },
+  greeting: { fontFamily: fonts.regular, fontSize: 14, color: colors.muted },
+  title: { fontFamily: fonts.black, fontSize: 26, lineHeight: 30, color: colors.ink },
+  statusBlock: { backgroundColor: colors.accent, padding: 20, gap: 6 },
+  headline: { fontFamily: fonts.black, fontSize: 26, lineHeight: 30, color: colors.onAccent },
+  updated: { fontFamily: fonts.regular, fontSize: 12, color: colors.onAccent, opacity: 0.85 },
   details: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 20 },
-  panelHeadRow: {
-    flexDirection: 'row',
+  tiles: { flexDirection: 'row', gap: 12 },
+  tile: {
+    flex: 1,
+    minHeight: 112,
     justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: colors.ink,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    borderRadius: radius,
+    padding: 16,
+    ...shadow,
   },
-  panelHeadLabel: {
-    fontFamily: fonts.mono,
-    fontSize: 11,
-    letterSpacing: 0.9,
-    textTransform: 'uppercase',
-    color: colors.white,
-  },
-  link: {
-    fontFamily: fonts.mono,
-    fontSize: 11,
-    letterSpacing: 0.9,
-    textTransform: 'uppercase',
-    color: colors.volt,
-  },
-  empty: { padding: 16, fontFamily: fonts.regular, fontSize: 14, color: colors.muted },
+  tileAccent: { backgroundColor: colors.accent },
+  tileWhite: { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.line },
+  tileTitle: { fontFamily: fonts.black, fontSize: 16, color: colors.ink },
+  tileNote: { fontFamily: fonts.regular, fontSize: 12, color: colors.muted },
+  sectionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  sectionTitle: { fontFamily: fonts.black, fontSize: 16, color: colors.ink },
+  link: { fontFamily: fonts.bold, fontSize: 14, color: colors.accent },
+  empty: { fontFamily: fonts.regular, fontSize: 14, color: colors.muted },
   recent: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 12,
   },
-  recentDivider: { borderTopWidth: 1, borderTopColor: colors.line },
-  ref: { fontFamily: fonts.mono, fontSize: 12, color: colors.ink },
-  category: {
-    marginTop: 2,
-    fontFamily: fonts.black,
-    fontSize: 16,
-    textTransform: 'uppercase',
-    color: colors.ink,
-  },
+  ref: { marginTop: 2, fontFamily: fonts.regular, fontSize: 11, color: colors.muted },
+  category: { fontFamily: fonts.black, fontSize: 15, color: colors.ink },
 });

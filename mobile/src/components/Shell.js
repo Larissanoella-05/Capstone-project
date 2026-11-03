@@ -11,7 +11,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext.js';
-import { colors, fonts } from '../theme.js';
+import { colors, fonts, radius } from '../theme.js';
+import Backdrop from './Backdrop.js';
 import { LogoMark, PilotBanner } from './Brand.js';
 
 /** Pilot strip, brand, alerts bell and sign-out: the top bar of both role layouts. */
@@ -60,16 +61,20 @@ export function AppHeader({ base, unread = 0 }) {
   );
 }
 
-/** Scrolling page body with the standard phone padding. */
-export function Screen({ children }) {
+/**
+ * Scrolling page body with the standard phone padding, on the paper background with the circuit art.
+ * `footer` is a sticky action bar that stays above the tab bar while the page scrolls.
+ */
+export function Screen({ children, footer }) {
   // Android draws edge to edge, so the system no longer shrinks the page for the keyboard; do it here.
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: colors.white }}
+      style={{ flex: 1, backgroundColor: colors.paper }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
+      <Backdrop />
       <ScrollView
-        style={{ backgroundColor: colors.white }}
+        style={{ backgroundColor: 'transparent' }}
         contentContainerStyle={styles.screen}
         keyboardShouldPersistTaps="handled"
         overScrollMode="never"
@@ -77,6 +82,7 @@ export function Screen({ children }) {
       >
         {children}
       </ScrollView>
+      {footer ? <View style={styles.footer}>{footer}</View> : null}
     </KeyboardAvoidingView>
   );
 }
@@ -88,13 +94,12 @@ const styles = StyleSheet.create({
     alignItems: 'stretch',
     justifyContent: 'space-between',
     borderBottomWidth: 1,
-    borderBottomColor: colors.ink,
+    borderBottomColor: colors.line,
   },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16 },
   brandText: {
     fontFamily: fonts.black,
     fontSize: 18,
-    textTransform: 'uppercase',
     color: colors.ink,
   },
   actions: { flexDirection: 'row' },
@@ -102,8 +107,6 @@ const styles = StyleSheet.create({
     width: 56,
     alignItems: 'center',
     justifyContent: 'center',
-    borderLeftWidth: 1,
-    borderLeftColor: colors.ink,
   },
   badge: {
     position: 'absolute',
@@ -114,10 +117,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.volt,
-    borderWidth: 1,
-    borderColor: colors.ink,
+    borderRadius: radius,
+    backgroundColor: colors.accent,
   },
-  badgeText: { fontFamily: fonts.monoMedium, fontSize: 11, color: colors.ink },
+  badgeText: { fontFamily: fonts.bold, fontSize: 11, color: colors.onAccent },
   screen: { padding: 16, paddingBottom: 32, gap: 20 },
+  footer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+    backgroundColor: colors.white,
+  },
 });

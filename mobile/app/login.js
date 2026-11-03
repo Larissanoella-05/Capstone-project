@@ -17,7 +17,8 @@ import { LogoMark } from '../src/components/Brand.js';
 import { FormError } from '../src/components/States.js';
 import { useAuth } from '../src/context/AuthContext.js';
 import { isDemoLogin } from '../src/lib/demo.js';
-import { colors, fonts } from '../src/theme.js';
+import Backdrop from '../src/components/Backdrop.js';
+import { colors, fonts, radius } from '../src/theme.js';
 
 const DEMO = isDemoLogin(process.env.EXPO_PUBLIC_DEMO_LOGIN);
 const DEMO_PASSWORD = 'demo1234';
@@ -95,9 +96,10 @@ export default function Login() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: colors.white }}
+      style={{ flex: 1, backgroundColor: colors.paper }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
+      <Backdrop />
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
@@ -112,17 +114,17 @@ export default function Login() {
             onPress={() => router.back()}
             style={styles.back}
           >
-            <Feather name="arrow-left" size={22} color={colors.white} />
+            <Feather name="arrow-left" size={22} color={colors.ink} />
           </Pressable>
           <View style={styles.brandRow}>
-            <LogoMark inverse />
+            <LogoMark />
             <Text style={styles.brandText}>Umuriro</Text>
           </View>
         </View>
 
         <View style={[styles.form, { paddingBottom: insets.bottom + 32 }]}>
           <View>
-            <Eyebrow style={{ color: colors.muted }}>Sign in</Eyebrow>
+            <Eyebrow>Sign in</Eyebrow>
             <Text accessibilityRole="header" style={styles.formTitle}>
               Login
             </Text>
@@ -130,9 +132,9 @@ export default function Login() {
 
           {DEMO ? (
             <View style={{ gap: 8 }}>
-              <Eyebrow>Demo role</Eyebrow>
+              <Eyebrow>Signing in as</Eyebrow>
               <View accessibilityRole="radiogroup" style={styles.roles}>
-                {ROLES.map((item, index) => {
+                {ROLES.map((item) => {
                   const active = item.key === role.key;
                   return (
                     <Pressable
@@ -140,13 +142,13 @@ export default function Login() {
                       accessibilityRole="radio"
                       accessibilityState={{ selected: active }}
                       onPress={() => chooseRole(item)}
-                      style={[
-                        styles.role,
-                        index > 0 && styles.roleDivider,
-                        { backgroundColor: active ? colors.volt : colors.white },
-                      ]}
+                      style={[styles.role, active && styles.roleActive]}
                     >
-                      <Feather name={item.icon} size={20} color={colors.ink} />
+                      <Feather
+                        name={item.icon}
+                        size={20}
+                        color={active ? colors.accent : colors.ink}
+                      />
                       <Text style={styles.roleLabel}>{item.label}</Text>
                     </Pressable>
                   );
@@ -190,7 +192,7 @@ export default function Login() {
             ) : DEMO ? (
               <Text style={styles.hint}>
                 Prototype: every demo account uses the password{' '}
-                <Text style={{ fontFamily: fonts.mono }}>demo1234</Text>.
+                <Text style={{ fontFamily: fonts.medium }}>demo1234</Text>.
               </Text>
             ) : null}
           </View>
@@ -204,7 +206,7 @@ export default function Login() {
             onPress={onSubmit}
             style={({ pressed }) => [styles.submit, (submitting || pressed) && { opacity: 0.75 }]}
           >
-            <Text style={styles.submitText}>{submitting ? 'Signing in…' : 'Sign In'}</Text>
+            <Text style={styles.submitText}>{submitting ? 'Signing in…' : 'Sign in'}</Text>
           </Pressable>
 
           {slow ? (
@@ -220,7 +222,6 @@ export default function Login() {
 
 const styles = StyleSheet.create({
   hero: {
-    backgroundColor: colors.ink,
     paddingHorizontal: 24,
     paddingBottom: 20,
     flexDirection: 'row',
@@ -233,38 +234,47 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: colors.steel,
+    borderColor: colors.line,
+    borderRadius: radius,
+    backgroundColor: colors.white,
   },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   brandText: {
     fontFamily: fonts.black,
     fontSize: 18,
-    textTransform: 'uppercase',
-    color: colors.white,
+    color: colors.ink,
   },
   form: { padding: 24, gap: 20 },
   formTitle: {
     marginTop: 8,
     fontFamily: fonts.black,
-    fontSize: 40,
-    lineHeight: 40,
-    textTransform: 'uppercase',
+    fontSize: 34,
+    lineHeight: 38,
     color: colors.ink,
   },
-  roles: { flexDirection: 'row', borderWidth: 1, borderColor: colors.ink },
-  role: { flex: 1, minHeight: 64, padding: 12, justifyContent: 'space-between' },
-  roleDivider: { borderLeftWidth: 1, borderLeftColor: colors.ink },
+  roles: { flexDirection: 'row', gap: 8 },
+  role: {
+    flex: 1,
+    minHeight: 64,
+    padding: 12,
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: colors.line,
+    borderRadius: radius,
+    backgroundColor: colors.white,
+  },
+  roleActive: { borderColor: colors.accent, backgroundColor: colors.tint },
   roleLabel: {
     fontFamily: fonts.black,
     fontSize: 14,
-    textTransform: 'uppercase',
     color: colors.ink,
   },
   hint: { fontFamily: fonts.regular, fontSize: 14, color: colors.muted },
   field: {
     minHeight: 48,
     borderWidth: 1,
-    borderColor: colors.ink,
+    borderColor: colors.line,
+    borderRadius: radius,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontFamily: fonts.regular,
@@ -278,15 +288,12 @@ const styles = StyleSheet.create({
     minHeight: 56,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.ink,
-    backgroundColor: colors.volt,
+    borderRadius: radius,
+    backgroundColor: colors.accent,
   },
   submitText: {
     fontFamily: fonts.bold,
     fontSize: 16,
-    letterSpacing: 1.3,
-    textTransform: 'uppercase',
-    color: colors.ink,
+    color: colors.onAccent,
   },
 });
