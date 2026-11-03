@@ -154,7 +154,7 @@ export default function Assign() {
                   onMouseLeave={() => setHovered(null)}
                 >
                   <div className="flex items-start justify-between gap-3 p-4">
-                    <h3 className="m-0 text-lg font-black uppercase">{technician.name}</h3>
+                    <h3 className="m-0 text-lg heading-weight uppercase">{technician.name}</h3>
                     <AvailabilityPill availability={technician.availability} />
                   </div>
                   <div className="grid grid-cols-3 border-t border-ink">
@@ -164,7 +164,7 @@ export default function Assign() {
                         ? `${fmtKm(technician.distanceKm)} away`
                         : '—'}
                       {recommended?.id === technician.id && (
-                        <span className="ml-1 bg-volt px-1 font-mono text-[10px] font-medium uppercase">
+                        <span className="ml-1 bg-volt px-1 font-mono text-xs font-medium uppercase">
                           Recommended
                         </span>
                       )}

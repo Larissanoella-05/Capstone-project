@@ -34,12 +34,12 @@ export const CUSTOMER_HEADLINE = {
 };
 
 export const CUSTOMER_TIMELINE_LABEL = {
-  REPORTED: 'Fault Reported',
-  ASSIGNED: 'Technician Assigned',
-  ON_THE_WAY: 'Technician On the Way',
-  ARRIVED: 'Technician Arrived',
-  WORKING: 'Work in Progress',
-  RESOLVED: 'Fault Resolved',
+  REPORTED: 'Fault reported',
+  ASSIGNED: 'Technician assigned',
+  ON_THE_WAY: 'Technician on the way',
+  ARRIVED: 'Technician arrived',
+  WORKING: 'Work in progress',
+  RESOLVED: 'Fault resolved',
 };
 
 export const CATEGORIES = [

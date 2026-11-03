@@ -17,25 +17,25 @@ export function customerMessageFor(status, { reference, technicianName }) {
     case 'ON_THE_WAY':
       return {
         type: 'TECHNICIAN_ON_THE_WAY',
-        title: 'Technician On the Way',
+        title: 'Technician on the way',
         message: `${first} is on the way to your service location for fault #${reference}.`,
       };
     case 'ARRIVED':
       return {
         type: 'TECHNICIAN_ARRIVED',
-        title: 'Technician Arrived',
+        title: 'Technician arrived',
         message: `${first} has arrived at your service location for fault #${reference}.`,
       };
     case 'RESOLVED':
       return {
         type: 'FAULT_RESOLVED',
-        title: 'Fault Resolved',
-        message: `Your electricity fault #${reference} has been resolved. Thank you for your patience.`,
+        title: 'Fault resolved',
+        message: `Your electricity fault #${reference} is fixed. If the power is still off, report it again.`,
       };
     case 'CANCELLED':
       return {
         type: 'FAULT_CANCELLED',
-        title: 'Report Cancelled',
+        title: 'Report cancelled',
         message: `Your fault report #${reference} was cancelled by the service coordinator.`,
       };
     default:

@@ -97,7 +97,7 @@ export default function Monitoring() {
                   <button
                     type="button"
                     aria-label="Close fault details"
-                    className="flex h-9 w-9 cursor-pointer items-center justify-center border border-ink bg-white"
+                    className="flex h-11 w-11 cursor-pointer items-center justify-center border border-ink bg-white"
                     onClick={() => select(null)}
                   >
                     <X size={16} aria-hidden="true" />

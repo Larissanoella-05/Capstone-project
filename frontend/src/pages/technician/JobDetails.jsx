@@ -149,7 +149,7 @@ export default function JobDetails() {
                   />
                   <div className="border-t border-ink p-4">
                     <div className="eyebrow text-muted">Service location</div>
-                    <div className="mt-1 text-lg font-black uppercase">
+                    <div className="mt-1 text-lg heading-weight uppercase">
                       {locationLine(location)}
                     </div>
                     <div className="mt-1 text-sm">
@@ -279,7 +279,7 @@ export default function JobDetails() {
                   <section className="panel">
                     <div className="panel-head bg-ok text-white">Resolution recorded</div>
                     <div className="flex flex-col gap-2 p-4 text-sm">
-                      <div className="text-base font-black uppercase">
+                      <div className="text-base heading-weight uppercase">
                         {OUTCOME_LABEL[fault.outcome]}
                       </div>
                       <p className="m-0">{fault.resolutionNote}</p>

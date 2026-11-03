@@ -41,7 +41,9 @@ export function ErrorState({ error, onRetry }) {
         />
         <View style={{ flex: 1 }}>
           <Text style={styles.errorTitle}>{offline ? 'No connection' : 'This did not load'}</Text>
-          <Text style={styles.errorMessage}>{error?.message || 'Something went wrong.'}</Text>
+          <Text style={styles.errorMessage}>
+            {error?.message || 'Could not load this. Check your connection and try again.'}
+          </Text>
         </View>
       </View>
       {onRetry ? (
@@ -56,7 +58,6 @@ export function ErrorState({ error, onRetry }) {
 export function EmptyState({ title, children, action }) {
   return (
     <View style={[styles.box, styles.emptyBox]}>
-      <Feather name="inbox" size={22} color={colors.muted} />
       <Text style={styles.emptyTitle}>{title}</Text>
       {children ? <Text style={styles.emptyText}>{children}</Text> : null}
       {action ? <View style={{ marginTop: 16 }}>{action}</View> : null}
@@ -152,7 +153,6 @@ const styles = StyleSheet.create({
   },
   emptyBox: { alignItems: 'center' },
   emptyTitle: {
-    marginTop: 12,
     fontFamily: fonts.black,
     fontSize: 16,
     textTransform: 'uppercase',

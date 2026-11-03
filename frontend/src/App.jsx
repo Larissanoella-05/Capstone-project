@@ -1,9 +1,13 @@
+import { Bell, House, ListTodo, TriangleAlert } from 'lucide-react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { HOME_BY_ROLE, useAuth } from './context/AuthContext.jsx';
 import MobileShell from './components/MobileShell.jsx';
 import CoordinatorShell from './components/CoordinatorShell.jsx';
 import { Loading } from './components/States.jsx';
 
+import { homeDecision } from './lib/landingLinks.js';
+
+import Landing from './pages/landing/Landing.jsx';
 import Login from './pages/Login.jsx';
 import NotFound from './pages/NotFound.jsx';
 import Notifications from './pages/Notifications.jsx';
@@ -27,34 +31,38 @@ import Assign from './pages/coordinator/Assign.jsx';
 import Monitoring from './pages/coordinator/Monitoring.jsx';
 
 const CUSTOMER_TABS = [
-  { to: '/customer', label: 'Home', isActive: (path) => path === '/customer' },
+  { to: '/customer', label: 'Home', icon: House, isActive: (path) => path === '/customer' },
   {
     to: '/customer/report',
     label: 'Report',
-    isActive: (path) =>
-      path.startsWith('/customer/report') || path.startsWith('/customer/submitted'),
+    icon: TriangleAlert,
+    isActive: (path) => path === '/customer/report' || path.startsWith('/customer/submitted'),
   },
   {
     to: '/customer/reports',
     label: 'Reports',
+    icon: ListTodo,
     isActive: (path) => path.startsWith('/customer/reports') || path.startsWith('/customer/faults'),
   },
   {
     to: '/customer/notifications',
     label: 'Alerts',
+    icon: Bell,
     isActive: (path) => path.startsWith('/customer/notifications'),
   },
 ];
 const TECHNICIAN_TABS = [
-  { to: '/technician', label: 'Home', isActive: (path) => path === '/technician' },
+  { to: '/technician', label: 'Home', icon: House, isActive: (path) => path === '/technician' },
   {
     to: '/technician/jobs',
     label: 'Jobs',
+    icon: ListTodo,
     isActive: (path) => path.startsWith('/technician/jobs'),
   },
   {
     to: '/technician/notifications',
     label: 'Alerts',
+    icon: Bell,
     isActive: (path) => path.startsWith('/technician/notifications'),
   },
 ];
@@ -75,10 +83,13 @@ function RequireRole({ role, children }) {
   return children;
 }
 
+/** Signed-in users go to their role home; signed-out visitors see the public landing page. */
 function Home() {
   const { user, loading } = useAuth();
-  if (loading) return null;
-  return <Navigate to={user ? HOME_BY_ROLE[user.role] : '/login'} replace />;
+  const decision = homeDecision(user, loading, HOME_BY_ROLE);
+  if (decision === 'wait') return null;
+  if (decision === 'landing') return <Landing />;
+  return <Navigate to={decision} replace />;
 }
 
 export default function App() {

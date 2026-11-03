@@ -108,6 +108,12 @@ erDiagram
 
 - `App.jsx` defines the routes. `RequireRole` keeps each role inside its own area
   (`/customer`, `/technician`, `/coordinator`).
+- `/` is public. Signed-in users are redirected to their role home; signed-out visitors see the landing
+  page in `pages/landing/`. Its styles are scoped to `.landing` (`landing.css`, `lp-` class names) and use
+  Plus Jakarta Sans and Inter, so they do not affect the Montserrat app. Every action on it leads to `/login`
+  with `state.from`, so a customer lands on `/customer/report` after signing in. The scroll-driven hero maths
+  is in `lib/landingHero.js`, and the copy and link data in `lib/landingContent.js`. Photos are in
+  `public/landing/`.
 - Customer and technician pages render in `MobileShell` (phone layout). Coordinator pages render in
   `CoordinatorShell` (desktop layout).
 - Data: `lib/api.js` (fetch wrapper) and `hooks/useApi.js` (load plus polling). State: `context/AuthContext`

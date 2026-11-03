@@ -5,10 +5,20 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { useApi } from '../../hooks/useApi.js';
 import { api } from '../../lib/api.js';
 import { CATEGORIES, locationLine } from '../../lib/format.js';
+import { errorSummary } from '../../lib/formErrors.js';
 import { PageHeading } from '../../components/Bits.jsx';
-import { FormError } from '../../components/States.jsx';
+import { CategoryOption, Field } from '../../components/Field.jsx';
+import { ErrorSummary, FormError } from '../../components/States.jsx';
 
 const MAX_PHOTO_BYTES = 1024 * 1024; // 1 MB
+
+// The fields in page order, for the "There is a problem" summary.
+const FIELDS = [
+  { key: 'category', id: 'category-group' },
+  { key: 'description', id: 'description' },
+  { key: 'photo', id: 'photo-input' },
+  { key: 'contactPhone', id: 'contact-phone' },
+];
 
 function readAsDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -40,13 +50,13 @@ export default function ReportFault() {
     event.target.value = '';
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      setErrors((current) => ({ ...current, photo: 'Choose an image file.' }));
+      setErrors((current) => ({ ...current, photo: 'Choose an image file for the photo.' }));
       return;
     }
     if (file.size > MAX_PHOTO_BYTES) {
       setErrors((current) => ({
         ...current,
-        photo: 'The photo is too large. Choose one under 1 MB.',
+        photo: 'Choose a photo smaller than 1 MB.',
       }));
       return;
     }
@@ -61,20 +71,15 @@ export default function ReportFault() {
   async function onSubmit(event) {
     event.preventDefault();
     const nextErrors = {};
-    if (!category) nextErrors.category = 'Choose a fault category.';
+    if (!category) nextErrors.category = 'Choose the type of fault.';
     if (description.length > 1000)
-      nextErrors.description = 'Keep the description under 1000 characters.';
+      nextErrors.description = 'Shorten the description to 1000 characters or fewer.';
     if (contactPhone && !/^[+\d][\d\s-]{7,}$/.test(contactPhone.trim())) {
       nextErrors.contactPhone = 'Enter a phone number such as +250 788 300 114.';
     }
     setErrors(nextErrors);
     setFormError('');
-    if (Object.keys(nextErrors).length) {
-      document
-        .getElementById(nextErrors.category ? 'category-group' : 'contact-phone')
-        ?.scrollIntoView({ block: 'center' });
-      return;
-    }
+    if (Object.keys(nextErrors).length) return;
 
     setSubmitting(true);
     try {
@@ -91,86 +96,94 @@ export default function ReportFault() {
       reloadNotifications?.();
       navigate(`/customer/submitted/${fault.id}`, { replace: true });
     } catch (error) {
-      setFormError(error.message);
+      setFormError(`Your report was not sent. What you typed is still here. ${error.message}`);
       setSubmitting(false);
     }
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
+    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-3.5">
       <PageHeading eyebrow="New report" title="Report a fault">
-        <p className="mb-0 mt-3 text-sm text-muted">
+        <p className="mb-0 mt-3.5 text-xs text-grey">
           Tell us what is wrong. It takes less than a minute.
         </p>
       </PageHeading>
 
-      <div className="grid gap-5 lg:grid-cols-2 lg:items-start lg:gap-8">
+      <ErrorSummary items={errorSummary(errors, FIELDS)} />
+
+      <div className="panel flex flex-col gap-1.5 px-[18px] py-4">
+        {locations.loading ? (
+          <div className="eyebrow">Loading your service location…</div>
+        ) : location ? (
+          <>
+            <div className="eyebrow">Service location · Meter {location.meterNumber}</div>
+            <div className="heading-weight text-[15px] uppercase">{locationLine(location)}</div>
+            <p className="m-0 text-[11px] text-grey">
+              Your registered service location will automatically be associated with this report.
+            </p>
+          </>
+        ) : (
+          <p className="m-0 text-sm font-semibold text-red">
+            {locations.error?.message ||
+              'No registered service location was found for your account.'}
+          </p>
+        )}
+      </div>
+
+      <div className="grid gap-3.5 lg:grid-cols-2 lg:items-start lg:gap-8">
         <fieldset id="category-group" className="m-0 flex min-w-0 flex-col border-0 p-0">
-          <legend className="eyebrow mb-2 p-0">01 · Fault category</legend>
-          <div
-            className={`flex flex-col border ${errors.category ? 'border-danger' : 'border-ink'}`}
-          >
-            {CATEGORIES.map((item, index) => (
-              <label
+          <legend className="eyebrow mb-3.5 p-0">01 · Fault category</legend>
+          <div className="flex flex-col gap-2.5">
+            {CATEGORIES.map((item) => (
+              <CategoryOption
                 key={item.value}
-                className={`flex min-h-[60px] cursor-pointer items-center gap-3.5 px-3.5 py-2.5 ${
-                  index < CATEGORIES.length - 1 ? 'border-b border-ink' : ''
-                } ${category === item.value ? 'bg-volt' : 'bg-white'}`}
-              >
-                <input
-                  type="radio"
-                  name="category"
-                  value={item.value}
-                  checked={category === item.value}
-                  onChange={() => {
-                    setCategory(item.value);
-                    setErrors((current) => ({ ...current, category: undefined }));
-                  }}
-                  className="m-0 h-5 w-5 shrink-0"
-                />
-                <span>
-                  <span className="block text-base font-black uppercase">{item.label}</span>
-                  <span className="block text-[13px]">{item.hint}</span>
-                </span>
-              </label>
+                name="category"
+                value={item.value}
+                label={item.label}
+                hint={item.hint}
+                checked={category === item.value}
+                onChange={() => {
+                  setCategory(item.value);
+                  setErrors((current) => ({ ...current, category: undefined }));
+                }}
+              />
             ))}
           </div>
           {errors.category && (
-            <span className="mt-2 text-sm font-semibold text-danger">{errors.category}</span>
+            <span className="mt-2 text-sm font-semibold text-red">{errors.category}</span>
           )}
         </fieldset>
 
-        <div className="flex min-w-0 flex-col gap-5">
-          <div className="flex flex-col gap-2">
-            <label htmlFor="description" className="eyebrow flex justify-between">
-              <span>02 · Description</span>
-              <span className="text-muted">Optional</span>
-            </label>
+        <div className="flex min-w-0 flex-col gap-3.5">
+          <Field
+            id="description"
+            label="02 · Description"
+            hint="(optional)"
+            error={errors.description}
+          >
             <textarea
               id="description"
               rows={4}
               className="field"
-              placeholder="For example: electricity went off suddenly, the neighbours still have power."
+              placeholder="Describe the problem"
               value={description}
               aria-invalid={Boolean(errors.description)}
+              aria-describedby={errors.description ? 'description-error' : undefined}
               onChange={(event) => setDescription(event.target.value)}
             />
-            {errors.description && (
-              <span className="text-sm font-semibold text-danger">{errors.description}</span>
-            )}
-          </div>
+          </Field>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             <div className="eyebrow flex justify-between">
               <span>03 · Photo</span>
-              <span className="text-muted">Optional</span>
+              <span>(optional)</span>
             </div>
             {photo ? (
-              <div className="flex items-center gap-3 border border-ink p-2">
+              <div className="flex items-center gap-3 rounded-control border border-border bg-white p-2">
                 <img
                   src={photo.dataUrl}
                   alt="Selected fault"
-                  className="h-16 w-16 border border-line object-cover"
+                  className="h-16 w-16 rounded-lg border border-line object-cover"
                 />
                 <span className="min-w-0 flex-1 truncate text-sm font-semibold">{photo.name}</span>
                 <button
@@ -183,21 +196,22 @@ export default function ReportFault() {
                 </button>
               </div>
             ) : (
-              <label className="btn btn-outline w-full cursor-pointer border-dashed">
-                <Camera size={16} aria-hidden="true" />
-                Add a photo
-                <input type="file" accept="image/*" className="sr-only" onChange={onPhotoChange} />
+              <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-control border border-dashed border-border bg-white px-4 py-[22px] has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-ink">
+                <Camera size={26} strokeWidth={1.75} aria-hidden="true" />
+                <span className="text-xs font-medium uppercase tracking-[0.04em]">Add a photo</span>
+                <input
+                  id="photo-input"
+                  type="file"
+                  accept="image/*"
+                  className="sr-only"
+                  onChange={onPhotoChange}
+                />
               </label>
             )}
-            {errors.photo && (
-              <span className="text-sm font-semibold text-danger">{errors.photo}</span>
-            )}
+            {errors.photo && <span className="text-sm font-semibold text-red">{errors.photo}</span>}
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label htmlFor="contact-phone" className="eyebrow">
-              04 · Contact phone
-            </label>
+          <Field id="contact-phone" label="04 · Contact phone" error={errors.contactPhone}>
             <input
               id="contact-phone"
               type="tel"
@@ -205,34 +219,10 @@ export default function ReportFault() {
               className="field"
               value={contactPhone}
               aria-invalid={Boolean(errors.contactPhone)}
+              aria-describedby={errors.contactPhone ? 'contact-phone-error' : undefined}
               onChange={(event) => setContactPhone(event.target.value)}
             />
-            {errors.contactPhone && (
-              <span className="text-sm font-semibold text-danger">{errors.contactPhone}</span>
-            )}
-          </div>
-
-          <div className="border border-ink bg-paper p-4">
-            {locations.loading ? (
-              <div className="eyebrow text-muted">Loading your service location…</div>
-            ) : location ? (
-              <>
-                <div className="eyebrow text-muted">
-                  Service location · Meter {location.meterNumber}
-                </div>
-                <div className="mt-1 text-lg font-black uppercase">{locationLine(location)}</div>
-                <p className="mb-0 mt-2 text-sm">
-                  Your registered service location will automatically be associated with this
-                  report.
-                </p>
-              </>
-            ) : (
-              <p className="m-0 text-sm font-semibold text-danger">
-                {locations.error?.message ||
-                  'No registered service location was found for your account.'}
-              </p>
-            )}
-          </div>
+          </Field>
         </div>
       </div>
 
@@ -240,10 +230,10 @@ export default function ReportFault() {
 
       <button
         type="submit"
-        className="btn btn-volt btn-lg w-full lg:w-auto lg:self-end lg:px-12"
+        className="btn btn-ink w-full lg:w-auto lg:self-end lg:px-12"
         disabled={submitting || !location}
       >
-        {submitting ? 'Submitting…' : 'Submit Fault'}
+        {submitting ? 'Sending…' : 'Submit fault'}
       </button>
     </form>
   );

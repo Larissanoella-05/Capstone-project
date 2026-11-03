@@ -30,19 +30,17 @@ export default function Reports() {
       <Async state={state} label="Loading your reports">
         {() => (
           <>
-            <div
-              className="grid grid-cols-3 border border-ink md:max-w-md"
-              role="group"
-              aria-label="Filter reports"
-            >
-              {FILTERS.map((item, index) => (
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Filter reports">
+              {FILTERS.map((item) => (
                 <button
                   key={item.key}
                   type="button"
                   aria-pressed={filter === item.key}
                   onClick={() => setFilter(item.key)}
-                  className={`eyebrow h-11 cursor-pointer ${index > 0 ? 'border-l border-ink' : ''} ${
-                    filter === item.key ? 'bg-ink text-white' : 'bg-white'
+                  className={`relative cursor-pointer rounded-chip border px-3.5 py-2 text-[11px] uppercase tracking-[0.05em] after:absolute after:-inset-y-1.5 after:inset-x-0 after:content-[''] ${
+                    filter === item.key
+                      ? 'border-ink bg-ink font-medium text-white'
+                      : 'border-border bg-white text-ink'
                   }`}
                 >
                   {item.label} {faults.filter(item.test).length}
@@ -64,29 +62,30 @@ export default function Reports() {
                   : 'When you report a fault it is listed here.'}
               </EmptyState>
             ) : (
-              <ul className="m-0 grid list-none gap-3 p-0 md:grid-cols-2 2xl:grid-cols-3">
+              <ul className="m-0 grid list-none gap-3.5 p-0 md:grid-cols-2 2xl:grid-cols-3">
                 {visible.map((fault) => (
                   <li key={fault.id}>
                     <Link
                       to={`/customer/faults/${fault.id}`}
-                      className="panel block no-underline hover:bg-paper"
+                      className="panel flex flex-col gap-2.5 px-[18px] py-4 no-underline hover:bg-paper"
                     >
-                      <div className="flex items-start justify-between gap-3 p-4">
-                        <div>
-                          <div className="font-mono text-xs">#{fault.reference}</div>
-                          <div className="mt-1 text-lg font-black uppercase">
-                            {CATEGORY_LABEL[fault.category]}
-                          </div>
-                          <div className="mt-1 text-sm">{locationLine(fault.serviceLocation)}</div>
-                        </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-[11px] text-grey">#{fault.reference}</span>
                         <StatusPill status={fault.status} />
                       </div>
-                      <div className="flex justify-between gap-3 border-t border-ink px-4 py-2.5 font-mono text-xs">
-                        <span>{fmtDateTime(fault.reportedAt)}</span>
-                        <span>
-                          <span className="text-muted">Technician </span>
-                          {fault.technician?.name ?? '—'}
-                        </span>
+                      <div className="heading-weight text-[17px] uppercase">
+                        {CATEGORY_LABEL[fault.category]}
+                      </div>
+                      <div className="text-xs text-grey">{locationLine(fault.serviceLocation)}</div>
+                      <div className="flex flex-col gap-1.5 border-t border-line pt-2.5 text-xs font-medium">
+                        <div className="flex justify-between gap-3">
+                          <span className="eyebrow">Technician</span>
+                          <span>{fault.technician?.name ?? '—'}</span>
+                        </div>
+                        <div className="flex justify-between gap-3">
+                          <span className="eyebrow">Reported</span>
+                          <span>{fmtDateTime(fault.reportedAt)}</span>
+                        </div>
                       </div>
                     </Link>
                   </li>

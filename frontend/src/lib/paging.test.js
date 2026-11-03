@@ -1,7 +1,7 @@
 // Unit tests for the paging helpers used by the coordinator fault list. Run with: npm test
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { PAGE_SIZE, pageSummary, pagedPath } from './paging.js';
+import { PAGE_SIZE, pageSummary, pagedPath, showFirst } from './paging.js';
 
 describe('pageSummary', () => {
   it('describes the first page', () => {
@@ -72,5 +72,15 @@ describe('pagedPath', () => {
   it('encodes the search text', () => {
     const path = pagedPath({ status: 'ALL', search: 'a&b c', page: 1 });
     assert.equal(new URL(path, 'http://x').searchParams.get('search'), 'a&b c');
+  });
+});
+
+describe('showFirst', () => {
+  it('shows the first items and counts the hidden ones', () => {
+    assert.deepEqual(showFirst([1, 2, 3, 4, 5], 2), { visible: [1, 2], hidden: 3 });
+  });
+
+  it('hides nothing when the list is shorter than the limit', () => {
+    assert.deepEqual(showFirst([1, 2], 10), { visible: [1, 2], hidden: 0 });
   });
 });

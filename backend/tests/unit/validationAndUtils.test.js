@@ -191,6 +191,17 @@ describe('customerMessageFor', () => {
     assert.match(message.message, /FR-1001/);
   });
 
+  it('uses sentence-case titles and tells the customer what to do if the power is still off', () => {
+    const details = { reference: 'FR-1', technicianName: 'Jean Claude' };
+    assert.equal(customerMessageFor('ON_THE_WAY', details).title, 'Technician on the way');
+    assert.equal(customerMessageFor('ARRIVED', details).title, 'Technician arrived');
+    assert.equal(customerMessageFor('CANCELLED', details).title, 'Report cancelled');
+    const resolved = customerMessageFor('RESOLVED', details);
+    assert.equal(resolved.title, 'Fault resolved');
+    assert.match(resolved.message, /report it again/);
+    assert.doesNotMatch(resolved.message, /patience/);
+  });
+
   it('does not notify the customer when work starts', () => {
     assert.equal(customerMessageFor('WORKING', { reference: 'FR-1' }), null);
   });

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { Text } from 'react-native';
-import { Async, ErrorState } from './States.js';
+import { Async, EmptyState, ErrorState } from './States.js';
 
 // The icon font is a binary asset that Jest cannot load; the icons are not what is being tested.
 jest.mock('@expo/vector-icons', () => ({ Feather: () => null }));
@@ -35,6 +35,23 @@ describe('ErrorState', () => {
     );
     expect(screen.getByText('This did not load')).toBeTruthy();
     expect(screen.queryByText('No connection')).toBeNull();
+  });
+});
+
+describe('ErrorState without a message', () => {
+  it('falls back to a message that says what to do', async () => {
+    await render(<ErrorState error={{ status: 500 }} />);
+    expect(
+      screen.getByText('Could not load this. Check your connection and try again.')
+    ).toBeTruthy();
+  });
+});
+
+describe('EmptyState', () => {
+  it('shows the title and body', async () => {
+    await render(<EmptyState title="No reports yet">Report a fault to start.</EmptyState>);
+    expect(screen.getByText('No reports yet')).toBeTruthy();
+    expect(screen.getByText('Report a fault to start.')).toBeTruthy();
   });
 });
 
