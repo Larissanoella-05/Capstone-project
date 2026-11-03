@@ -60,6 +60,26 @@ describe('useApi', () => {
     expect(api).toHaveBeenCalledTimes(3);
   });
 
+  it('keeps the same reload function across renders, so effects that depend on it do not re-run', async () => {
+    const { result } = await renderHook(() => useApi('/faults', { interval: 5000 }));
+    const first = result.current.reload;
+    await advance(0); // the first load finishes and the state changes
+    await advance(5000); // a poll finishes and the state changes again
+    expect(result.current.data).toEqual({ n: 1 });
+    expect(result.current.reload).toBe(first);
+  });
+
+  it('gives a new reload function when the path changes, because it loads a different record', async () => {
+    const { result, rerender } = await renderHook(({ path }) => useApi(path), {
+      initialProps: { path: '/faults/5' },
+    });
+    await advance(0);
+    const first = result.current.reload;
+    await rerender({ path: '/faults/7' });
+    await advance(0);
+    expect(result.current.reload).not.toBe(first);
+  });
+
   it('stops polling in the background and reloads on return', async () => {
     await renderHook(() => useApi('/faults', { interval: 5000 }));
     await advance(0);

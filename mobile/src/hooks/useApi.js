@@ -85,5 +85,8 @@ export function useApi(path, { interval = 0 } = {}) {
     return () => clearInterval(timer);
   }, [polling, interval, load]);
 
-  return { ...state, reload: () => load(true) };
+  // Same function until the path changes, so effects that depend on it (such as a push listener) do not re-run.
+  const reload = useCallback(() => load(true), [load]);
+
+  return { ...state, reload };
 }

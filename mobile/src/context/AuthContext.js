@@ -4,6 +4,9 @@ import { getRegisteredToken, setRegisteredToken } from '../lib/deviceToken.js';
 
 const AuthContext = createContext(null);
 
+// How long signing out waits for the server to stop pushes to this phone. A sleeping free-tier server can take a minute.
+const UNREGISTER_WAIT_MS = 3000;
+
 // Coordinators work on the web app, so they have no home here.
 export const HOME_BY_ROLE = {
   CUSTOMER: '/customer',
@@ -59,11 +62,16 @@ export function AuthProvider({ children }) {
     // Stop pushes to this phone while the session is still valid; a failure must not block signing out.
     const pushToken = getRegisteredToken();
     if (pushToken) {
-      try {
-        await api('/devices', { method: 'DELETE', body: { token: pushToken } });
-      } catch (error) {
-        console.warn('[push] could not unregister this phone:', error.message);
-      }
+      const unregister = api('/devices', { method: 'DELETE', body: { token: pushToken } }).catch(
+        (error) => console.warn('[push] could not unregister this phone:', error.message)
+      );
+      // Give the server a moment, but never keep the user waiting: sign out either way.
+      let timer;
+      const giveUp = new Promise((resolve) => {
+        timer = setTimeout(resolve, UNREGISTER_WAIT_MS);
+      });
+      await Promise.race([unregister, giveUp]);
+      clearTimeout(timer);
       setRegisteredToken(null);
     }
     await tokenStore.clear();

@@ -23,7 +23,12 @@ export default function Faults() {
   // Wait until typing pauses before asking the API.
   useEffect(() => {
     const timer = setTimeout(
-      () => setFilters((current) => ({ ...current, search: search.trim(), page: 1 })),
+      () =>
+        setFilters((current) =>
+          current.search === search.trim()
+            ? current
+            : { ...current, search: search.trim(), page: 1 }
+        ),
       300
     );
     return () => clearTimeout(timer);
@@ -65,6 +70,7 @@ export default function Faults() {
           <input
             id="search"
             type="search"
+            maxLength={100}
             className="field"
             placeholder="Fault ID, category, cell, customer or technician"
             value={search}

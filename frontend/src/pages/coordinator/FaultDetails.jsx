@@ -3,6 +3,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi.js';
 import { api } from '../../lib/api.js';
+import { fmtMetres } from '../../lib/distance.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import {
   CATEGORY_LABEL,
@@ -205,6 +206,9 @@ export default function FaultDetails() {
                     </KeyRow>
                     <KeyRow label="On-site work" mono>
                       {fmtMinutes(minutesBetween(fault.arrivedAt, fault.resolvedAt))}
+                    </KeyRow>
+                    <KeyRow label="Arrival distance from the registered point" mono>
+                      {fmtMetres(fault.arrivalDistanceM)}
                     </KeyRow>
                     <KeyRow label="Clarification contacts" mono last>
                       {fault.status === 'RESOLVED' ? fault.clarificationContacts : '—'}

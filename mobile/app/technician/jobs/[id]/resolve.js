@@ -61,6 +61,7 @@ export default function ResolveJob() {
       router.replace(`/technician/jobs/${id}`);
     } catch (error) {
       setFormError(error.message);
+      if (error.status === 409) state.reload(); // someone else changed it: show the real status
       setSubmitting(false);
     }
   }
