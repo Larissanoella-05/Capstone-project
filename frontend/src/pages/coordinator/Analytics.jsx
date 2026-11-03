@@ -63,7 +63,8 @@ export default function Analytics() {
 
       <Async state={state} label="Calculating the report">
         {({ analytics }) => {
-          const { averages, clarification, arrivalDistance } = analytics;
+          // An API from before arrival distance was added has no arrivalDistance; show dashes instead of crashing.
+          const { averages, clarification, arrivalDistance = {} } = analytics;
           const distribution = analytics.statusDistribution.map((row) => ({
             name: STATUS_LABEL[row.status],
             count: row.count,
@@ -133,7 +134,7 @@ export default function Analytics() {
                   label="Median arrival distance"
                   value={arrivalDistance.medianMetres}
                   unit="m"
-                  note={`Typical distance from the registered point · ${arrivalDistance.measuredJobs} arrivals measured`}
+                  note={`Typical distance from the registered point · ${arrivalDistance.measuredJobs ?? 0} arrivals measured`}
                 />
                 <Tile
                   label="Average arrival distance"
