@@ -5,6 +5,9 @@ import MobileShell from './components/MobileShell.jsx';
 import CoordinatorShell from './components/CoordinatorShell.jsx';
 import { Loading } from './components/States.jsx';
 
+import { homeDecision } from './lib/landingLinks.js';
+
+import Landing from './pages/landing/Landing.jsx';
 import Login from './pages/Login.jsx';
 import NotFound from './pages/NotFound.jsx';
 import Notifications from './pages/Notifications.jsx';
@@ -80,10 +83,13 @@ function RequireRole({ role, children }) {
   return children;
 }
 
+/** Signed-in users go to their role home; signed-out visitors see the public landing page. */
 function Home() {
   const { user, loading } = useAuth();
-  if (loading) return null;
-  return <Navigate to={user ? HOME_BY_ROLE[user.role] : '/login'} replace />;
+  const decision = homeDecision(user, loading, HOME_BY_ROLE);
+  if (decision === 'wait') return null;
+  if (decision === 'landing') return <Landing />;
+  return <Navigate to={decision} replace />;
 }
 
 export default function App() {
