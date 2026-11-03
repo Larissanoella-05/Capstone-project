@@ -79,11 +79,11 @@ export default function Assign() {
         Fault #{fault.reference}
       </Link>
 
-      <div className="border-b border-ink pb-5">
+      <div className="pb-1">
         <div className="eyebrow text-muted">
           Fault #{fault.reference} · {CATEGORY_LABEL[fault.category]}
         </div>
-        <h1 className="display mt-2 text-[clamp(2rem,5vw,3rem)]">Assign technician</h1>
+        <h1 className="display mt-1.5 text-[clamp(1.5rem,3.5vw,1.75rem)]">Assign technician</h1>
       </div>
 
       {!assignable ? (
@@ -113,7 +113,7 @@ export default function Assign() {
             </section>
 
             <section className="panel">
-              <h2 className="panel-head m-0 font-normal">Fault information</h2>
+              <h2 className="panel-head m-0">Fault information</h2>
               <div className="px-4 py-1">
                 <KeyRow label="Fault ID" mono>
                   #{fault.reference}
@@ -131,7 +131,7 @@ export default function Assign() {
                   {fault.serviceLocation.landmark || '—'}
                 </KeyRow>
               </div>
-              <div className="border-t border-ink p-4">
+              <div className="border-t border-line p-4">
                 <div className="eyebrow text-muted">Description</div>
                 <p className="mb-0 mt-1 text-sm">
                   {fault.description || 'The customer did not add a description.'}
@@ -141,7 +141,7 @@ export default function Assign() {
           </div>
 
           <div className="flex flex-col gap-4">
-            <h2 className="eyebrow m-0 font-normal">Technicians · available first, then nearest</h2>
+            <h2 className="eyebrow m-0">Technicians · available first, then nearest</h2>
             <FormError>{formError}</FormError>
             {technicians.length === 0 && <EmptyState title="No technicians on record" />}
             {technicians.map((technician) => {
@@ -154,29 +154,29 @@ export default function Assign() {
                   onMouseLeave={() => setHovered(null)}
                 >
                   <div className="flex items-start justify-between gap-3 p-4">
-                    <h3 className="m-0 text-lg heading-weight uppercase">{technician.name}</h3>
+                    <h3 className="m-0 text-lg heading-weight">{technician.name}</h3>
                     <AvailabilityPill availability={technician.availability} />
                   </div>
-                  <div className="grid grid-cols-3 border-t border-ink">
+                  <div className="grid grid-cols-3 border-t border-line">
                     <Cell label="Location">{technician.location?.label ?? 'Not recorded'}</Cell>
-                    <Cell label="Distance" className="border-l border-ink">
+                    <Cell label="Distance" className="border-l border-line">
                       {technician.distanceKm !== null
                         ? `${fmtKm(technician.distanceKm)} away`
                         : '—'}
                       {recommended?.id === technician.id && (
-                        <span className="ml-1 bg-volt px-1 font-mono text-xs font-medium uppercase">
+                        <span className="ml-1 rounded-tag bg-accent px-1.5 py-0.5 text-[11px] font-bold text-on-accent">
                           Recommended
                         </span>
                       )}
                     </Cell>
-                    <Cell label="Active jobs" className="border-l border-ink">
+                    <Cell label="Active jobs" className="border-l border-line">
                       {technician.activeJobs.length}
                     </Cell>
                   </div>
-                  <div className="border-t border-ink p-3">
+                  <div className="border-t border-line p-3">
                     <button
                       type="button"
-                      className={`btn w-full ${technician.availability === 'AVAILABLE' ? 'btn-ink' : 'btn-outline'}`}
+                      className={`btn w-full ${technician.availability === 'AVAILABLE' ? 'btn-accent' : 'btn-outline'}`}
                       disabled={Boolean(assigning) || isCurrent || !technician.onDuty}
                       onClick={() => assign(technician)}
                     >

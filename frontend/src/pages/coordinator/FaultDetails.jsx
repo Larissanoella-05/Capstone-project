@@ -60,10 +60,10 @@ export default function FaultDetails() {
               Fault management
             </Link>
 
-            <div className="flex flex-wrap items-end justify-between gap-4 border-b border-ink pb-5">
+            <div className="flex flex-wrap items-end justify-between gap-4 pb-1">
               <div>
                 <div className="eyebrow text-muted">Fault #{fault.reference} · Test report</div>
-                <h1 className="display mt-2 text-[clamp(2rem,5vw,3rem)]">
+                <h1 className="display mt-1.5 text-[clamp(1.5rem,3.5vw,1.75rem)]">
                   {CATEGORY_LABEL[fault.category]}
                 </h1>
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -77,7 +77,7 @@ export default function FaultDetails() {
                     to={`/coordinator/faults/${fault.id}/assign`}
                     className="btn btn-volt btn-lg"
                   >
-                    {fault.technician ? 'Reassign Technician' : 'Assign Technician'}
+                    {fault.technician ? 'Reassign technician' : 'Assign technician'}
                   </Link>
                 )}
                 {isOpen(fault) && (
@@ -85,7 +85,7 @@ export default function FaultDetails() {
                     to={`/coordinator/monitoring?fault=${fault.id}`}
                     className="btn btn-outline btn-lg"
                   >
-                    View Live Location
+                    View live location
                   </Link>
                 )}
               </div>
@@ -110,7 +110,7 @@ export default function FaultDetails() {
                 </section>
 
                 <section className="panel">
-                  <h2 className="panel-head m-0 font-normal">Customer and service location</h2>
+                  <h2 className="panel-head m-0">Customer and service location</h2>
                   <div className="px-4 py-1">
                     <KeyRow label="Customer">{fault.customer.name}</KeyRow>
                     <KeyRow label="Phone" mono>
@@ -136,7 +136,7 @@ export default function FaultDetails() {
 
               <div className="flex flex-col gap-8">
                 <section className="panel">
-                  <h2 className="panel-head m-0 font-normal">Report</h2>
+                  <h2 className="panel-head m-0">Report</h2>
                   <div className="px-4 py-1">
                     <KeyRow label="Fault ID" mono>
                       #{fault.reference}
@@ -155,7 +155,7 @@ export default function FaultDetails() {
                         : 'Not assigned'}
                     </KeyRow>
                   </div>
-                  <div className="border-t border-ink p-4">
+                  <div className="border-t border-line p-4">
                     <div className="eyebrow text-muted">Description</div>
                     <p className="mb-0 mt-1 text-sm">
                       {fault.description || 'The customer did not add a description.'}
@@ -171,17 +171,15 @@ export default function FaultDetails() {
                 </section>
 
                 <section className="panel">
-                  <h2 className="panel-head m-0 font-normal">Response timeline</h2>
+                  <h2 className="panel-head m-0">Response timeline</h2>
                   <VerticalTimeline fault={fault} audience="coordinator" />
                 </section>
 
                 {fault.status === 'RESOLVED' && (
                   <section className="panel">
-                    <h2 className="panel-head m-0 bg-ok font-normal text-white">Resolution</h2>
+                    <h2 className="panel-head m-0 bg-ok text-white">Resolution</h2>
                     <div className="flex flex-col gap-2 p-4 text-sm">
-                      <div className="text-base heading-weight uppercase">
-                        {OUTCOME_LABEL[fault.outcome]}
-                      </div>
+                      <div className="text-base heading-weight">{OUTCOME_LABEL[fault.outcome]}</div>
                       <p className="m-0">{fault.resolutionNote}</p>
                       {fault.workCompleted && (
                         <p className="m-0">
@@ -193,7 +191,7 @@ export default function FaultDetails() {
                 )}
 
                 <section className="panel">
-                  <h2 className="panel-head m-0 font-normal">Measured intervals</h2>
+                  <h2 className="panel-head m-0">Measured intervals</h2>
                   <div className="px-4 py-1">
                     <KeyRow label="Report to assignment" mono>
                       {fmtMinutes(minutesBetween(fault.reportedAt, fault.assignedAt))}
@@ -218,7 +216,7 @@ export default function FaultDetails() {
 
                 {isOpen(fault) && (
                   <section className="panel">
-                    <h2 className="panel-head m-0 font-normal">Coordinator actions</h2>
+                    <h2 className="panel-head m-0">Coordinator actions</h2>
                     <div className="flex flex-col gap-4 p-4">
                       <div className="flex flex-col gap-2">
                         <label htmlFor="priority" className="eyebrow">
@@ -249,7 +247,7 @@ export default function FaultDetails() {
                       </div>
                       <FormError>{actionError}</FormError>
                       {confirmCancel ? (
-                        <div className="border border-danger p-3">
+                        <div className="rounded-control border border-danger p-3">
                           <p className="m-0 text-sm font-semibold">
                             Cancel report #{fault.reference}? The customer will be notified.
                           </p>

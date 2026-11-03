@@ -89,7 +89,7 @@ export default function Monitoring() {
           <div className="flex flex-col gap-4">
             {selected ? (
               <aside aria-label={`Fault ${selected.reference}`} className="panel">
-                <div className="flex items-start justify-between gap-3 border-b border-ink bg-volt p-4">
+                <div className="flex items-start justify-between gap-3 border-b border-line bg-accent p-4 text-on-accent">
                   <div>
                     <div className="font-mono text-xs">{selected.reference}</div>
                     <h2 className="display mt-1 text-2xl">{CATEGORY_LABEL[selected.category]}</h2>
@@ -97,7 +97,7 @@ export default function Monitoring() {
                   <button
                     type="button"
                     aria-label="Close fault details"
-                    className="flex h-11 w-11 cursor-pointer items-center justify-center border border-ink bg-white"
+                    className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-control border border-line bg-white text-ink"
                     onClick={() => select(null)}
                   >
                     <X size={16} aria-hidden="true" />
@@ -124,14 +124,14 @@ export default function Monitoring() {
                   </KeyRow>
                 </div>
                 {selected.serviceLocation.landmark && (
-                  <p className="m-0 border-t border-ink bg-paper p-4 text-sm">
+                  <p className="m-0 border-t border-line bg-paper p-4 text-sm">
                     {selected.serviceLocation.landmark}
                   </p>
                 )}
-                <div className="flex flex-col gap-3 border-t border-ink p-3">
+                <div className="flex flex-col gap-3 border-t border-line p-3">
                   {selected.status === 'REPORTED' && (
                     <Link to={`/coordinator/faults/${selected.id}/assign`} className="btn btn-volt">
-                      Assign Technician
+                      Assign technician
                     </Link>
                   )}
                   <Link to={`/coordinator/faults/${selected.id}`} className="btn btn-ink">
@@ -140,7 +140,7 @@ export default function Monitoring() {
                 </div>
               </aside>
             ) : (
-              <p className="eyebrow m-0 border border-line p-4 text-muted">
+              <p className="panel eyebrow m-0 p-4">
                 Select a fault on the map or in the list to see its progress.
               </p>
             )}

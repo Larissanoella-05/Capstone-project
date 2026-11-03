@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi.js';
 import { CATEGORY_LABEL, fmtDateTime, isOpen, locationLine } from '../../lib/format.js';
-import { PageHeading } from '../../components/Bits.jsx';
+import { FaultIcon, PageHeading } from '../../components/Bits.jsx';
 import { StatusPill } from '../../components/Pills.jsx';
 import { Async, EmptyState } from '../../components/States.jsx';
 
@@ -37,11 +37,7 @@ export default function Reports() {
                   type="button"
                   aria-pressed={filter === item.key}
                   onClick={() => setFilter(item.key)}
-                  className={`relative cursor-pointer rounded-chip border px-3.5 py-2 text-[11px] uppercase tracking-[0.05em] after:absolute after:-inset-y-1.5 after:inset-x-0 after:content-[''] ${
-                    filter === item.key
-                      ? 'border-ink bg-ink font-medium text-white'
-                      : 'border-border bg-white text-ink'
-                  }`}
+                  className="chip"
                 >
                   {item.label} {faults.filter(item.test).length}
                 </button>
@@ -52,8 +48,8 @@ export default function Reports() {
               <EmptyState
                 title={faults.length ? 'Nothing in this list' : 'No reports yet'}
                 action={
-                  <Link to="/customer/report" className="btn btn-volt">
-                    Report a Fault
+                  <Link to="/customer/report" className="btn btn-accent">
+                    Report a fault
                   </Link>
                 }
               >
@@ -67,16 +63,20 @@ export default function Reports() {
                   <li key={fault.id}>
                     <Link
                       to={`/customer/faults/${fault.id}`}
-                      className="panel flex flex-col gap-2.5 px-[18px] py-4 no-underline hover:bg-paper"
+                      className="panel flex flex-col gap-2.5 px-4 py-3.5 no-underline hover:bg-paper"
                     >
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-[11px] text-grey">#{fault.reference}</span>
+                      <div className="flex items-center gap-3">
+                        <FaultIcon category={fault.category} />
+                        <div className="min-w-0 flex-1">
+                          <div className="heading-weight text-[15px]">
+                            {CATEGORY_LABEL[fault.category]}
+                          </div>
+                          <div className="text-[11px] text-grey">
+                            #{fault.reference} · {locationLine(fault.serviceLocation)}
+                          </div>
+                        </div>
                         <StatusPill status={fault.status} />
                       </div>
-                      <div className="heading-weight text-[17px] uppercase">
-                        {CATEGORY_LABEL[fault.category]}
-                      </div>
-                      <div className="text-xs text-grey">{locationLine(fault.serviceLocation)}</div>
                       <div className="flex flex-col gap-1.5 border-t border-line pt-2.5 text-xs font-medium">
                         <div className="flex justify-between gap-3">
                           <span className="eyebrow">Technician</span>

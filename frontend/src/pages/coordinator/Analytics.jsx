@@ -13,15 +13,17 @@ import { STATUS_LABEL } from '../../lib/format.js';
 import { CoordinatorHeading } from '../../components/CoordinatorShell.jsx';
 import { Async } from '../../components/States.jsx';
 
-const INK = '#0B0B0B';
-const VOLT = '#FFD400';
-const axisTick = { fontFamily: 'Montserrat, sans-serif', fontSize: 11, fill: '#5E5A52' };
+const INK = '#0b0b0c';
+const ACCENT = '#e30613';
+const GREEN = '#17623a';
+const GRID = '#e2e2ea';
+const axisTick = { fontFamily: 'Inter, sans-serif', fontSize: 11, fill: '#6b6b76' };
 const show = (value) => (value === null || value === undefined ? '—' : value);
 
 function Tile({ label, value, unit, note }) {
   return (
-    <div className="flex min-h-[120px] flex-col justify-between bg-white p-4">
-      <div className="eyebrow text-muted">{label}</div>
+    <div className="panel flex min-h-[120px] flex-col justify-between p-4">
+      <div className="eyebrow">{label}</div>
       <div>
         <div className="text-4xl heading-weight leading-none">
           {show(value)}
@@ -36,8 +38,8 @@ function Tile({ label, value, unit, note }) {
 function ChartPanel({ title, note, summary, children }) {
   return (
     <section className="panel">
-      <div className="border-b border-ink p-4">
-        <h2 className="m-0 text-lg heading-weight uppercase">{title}</h2>
+      <div className="border-b border-line p-4">
+        <h2 className="m-0 text-lg heading-weight">{title}</h2>
         <p className="mb-0 mt-1 text-sm text-muted">{note}</p>
       </div>
       <div className="h-64 p-4" role="img" aria-label={summary}>
@@ -76,7 +78,7 @@ export default function Analytics() {
 
           return (
             <>
-              <div className="grid grid-cols-2 gap-px border border-ink bg-ink lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 <Tile
                   label="Average response time"
                   value={averages.responseMinutes}
@@ -126,7 +128,7 @@ export default function Analytics() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-px border border-ink bg-ink">
+              <div className="grid grid-cols-2 gap-3">
                 <Tile
                   label="Median arrival distance"
                   value={arrivalDistance.medianMetres}
@@ -152,7 +154,7 @@ export default function Analytics() {
                       data={distribution}
                       margin={{ top: 18, right: 8, left: -20, bottom: 0 }}
                     >
-                      <CartesianGrid stroke="#CFCBC1" vertical={false} />
+                      <CartesianGrid stroke={GRID} vertical={false} />
                       <XAxis
                         dataKey="name"
                         tick={axisTick}
@@ -172,9 +174,9 @@ export default function Analytics() {
                             key={row.status}
                             fill={
                               row.status === 'RESOLVED'
-                                ? '#2B6A3F'
+                                ? GREEN
                                 : row.status === 'REPORTED'
-                                  ? '#C2161C'
+                                  ? ACCENT
                                   : INK
                             }
                           />
@@ -200,7 +202,7 @@ export default function Analytics() {
                       layout="vertical"
                       margin={{ top: 0, right: 56, left: 8, bottom: 0 }}
                     >
-                      <CartesianGrid stroke="#CFCBC1" horizontal={false} />
+                      <CartesianGrid stroke={GRID} horizontal={false} />
                       <XAxis
                         type="number"
                         tick={axisTick}
@@ -215,7 +217,7 @@ export default function Analytics() {
                         tickLine={false}
                         axisLine={false}
                       />
-                      <Bar dataKey="minutes" fill={VOLT} stroke={INK} isAnimationActive={false}>
+                      <Bar dataKey="minutes" fill={ACCENT} isAnimationActive={false}>
                         <LabelList
                           dataKey="minutes"
                           position="right"
@@ -237,7 +239,7 @@ export default function Analytics() {
                       data={analytics.completedLast7Days}
                       margin={{ top: 18, right: 8, left: -20, bottom: 0 }}
                     >
-                      <CartesianGrid stroke="#CFCBC1" vertical={false} />
+                      <CartesianGrid stroke={GRID} vertical={false} />
                       <XAxis
                         dataKey="label"
                         tick={axisTick}
@@ -262,10 +264,8 @@ export default function Analytics() {
                 </ChartPanel>
 
                 <section className="panel">
-                  <div className="border-b border-ink p-4">
-                    <h2 className="m-0 text-lg heading-weight uppercase">
-                      How the figures are measured
-                    </h2>
+                  <div className="border-b border-line p-4">
+                    <h2 className="m-0 text-lg heading-weight">How the figures are measured</h2>
                     <p className="mb-0 mt-1 text-sm text-muted">
                       Each interval is the difference between two stored status times.
                     </p>

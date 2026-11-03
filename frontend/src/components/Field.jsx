@@ -25,12 +25,12 @@ export function Field({ id, label, hint, error, help, children }) {
   );
 }
 
-/** One radio card in a group. The selected card is yellow with an ink border. */
+/** One radio card in a group. The selected card has an accent border and a tint. */
 export function CategoryOption({ name, value, label, hint, checked, onChange }) {
   return (
     <label
       className={`flex min-h-[60px] cursor-pointer items-center gap-3.5 rounded-control border px-4 py-3.5 ${
-        checked ? 'border-ink bg-yellow' : 'border-border bg-white'
+        checked ? 'border-accent bg-tint' : 'border-border bg-white'
       }`}
     >
       <input
@@ -42,8 +42,8 @@ export function CategoryOption({ name, value, label, hint, checked, onChange }) 
         className="m-0 h-5 w-5 shrink-0"
       />
       <span>
-        <span className="heading-weight block text-sm uppercase leading-tight">{label}</span>
-        <span className={`block text-xs ${checked ? 'text-ink' : 'text-grey'}`}>{hint}</span>
+        <span className="heading-weight block text-[15px] leading-tight">{label}</span>
+        <span className="block text-xs text-grey">{hint}</span>
       </span>
     </label>
   );

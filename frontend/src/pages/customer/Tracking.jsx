@@ -41,11 +41,9 @@ export default function Tracking() {
               Fault #{fault.reference} · {CATEGORY_LABEL[fault.category]}
             </div>
             <div
-              className={`flex flex-col gap-1.5 rounded-card px-5 py-[18px] ${BANNER_STYLE[fault.status] ?? 'bg-yellow text-ink'}`}
+              className={`flex flex-col gap-1.5 rounded-card px-5 py-[18px] ${BANNER_STYLE[fault.status] ?? 'bg-accent text-on-accent'}`}
             >
-              <h1 className="display text-[26px] leading-none">
-                {CUSTOMER_HEADLINE[fault.status]}
-              </h1>
+              <h1 className="display text-[24px]">{CUSTOMER_HEADLINE[fault.status]}</h1>
               <div className="text-xs">Last updated {timeAgo(fault.updatedAt)}</div>
             </div>
             <div>
@@ -58,13 +56,13 @@ export default function Tracking() {
                 <Card className="flex items-center justify-between gap-3 px-[18px] py-3.5">
                   <div>
                     <div className="eyebrow">Technician</div>
-                    <div className="heading-weight mt-0.5 text-base uppercase">
+                    <div className="heading-weight mt-0.5 text-base">
                       {technician?.name ?? 'Not assigned yet'}
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="eyebrow">Distance</div>
-                    <div className="heading-weight mt-0.5 text-base uppercase">
+                    <div className="heading-weight mt-0.5 text-base">
                       {enRoute || fault.status === 'ASSIGNED'
                         ? fmtKm(technician?.distanceKm)
                         : fault.status === 'ARRIVED' || fault.status === 'WORKING'
@@ -90,7 +88,7 @@ export default function Tracking() {
                 {canCall && (
                   <a
                     href={`tel:${technician.phone.replace(/\s/g, '')}`}
-                    className="btn btn-ink w-full"
+                    className="btn btn-accent w-full"
                   >
                     <Phone size={18} aria-hidden="true" />
                     Call {firstNames(technician.name)}
@@ -99,7 +97,7 @@ export default function Tracking() {
               </div>
 
               <div className="flex min-w-0 flex-col gap-3.5 lg:col-span-2">
-                <div className="eyebrow">Response timeline</div>
+                <h2 className="heading-weight m-0 text-base">Response timeline</h2>
                 <Card className="p-[18px]">
                   <VerticalTimeline fault={fault} audience="customer" />
                 </Card>
@@ -108,7 +106,7 @@ export default function Tracking() {
                   <Card>
                     <div className="panel-head bg-green text-white">Resolution</div>
                     <div className="flex flex-col gap-2 p-[18px]">
-                      <div className="heading-weight text-base uppercase">
+                      <div className="heading-weight text-base">
                         {OUTCOME_LABEL[fault.outcome] ?? 'Resolved'}
                       </div>
                       <p className="m-0 text-sm">{fault.resolutionNote}</p>

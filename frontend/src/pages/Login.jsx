@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { HOME_BY_ROLE, useAuth } from '../context/AuthContext.jsx';
+import Backdrop from '../components/Backdrop.jsx';
 import { LogoMark, PilotBanner } from '../components/Brand.jsx';
 import { Field } from '../components/Field.jsx';
 import { FormError } from '../components/States.jsx';
@@ -34,7 +35,7 @@ function PilotArea({ className = '' }) {
   return (
     <div className={`panel flex-col gap-2 px-[18px] py-4 ${className}`}>
       <div className="eyebrow">Pilot area</div>
-      <div className="heading-weight text-base uppercase">Ndera Sector</div>
+      <div className="heading-weight text-base">Ndera Sector</div>
       <div className="text-xs text-grey">Gasabo, Kigali</div>
       <div className="text-xs font-medium">Real fault? Call 2727</div>
     </div>
@@ -88,15 +89,18 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
-      <PilotBanner />
-      <div className="mx-auto grid w-full max-w-5xl flex-1 content-start gap-[18px] px-5 pb-7 pt-8 lg:grid-cols-2 lg:content-center lg:items-center lg:gap-16 lg:py-12">
+    <div className="relative flex min-h-dvh flex-col bg-paper">
+      <Backdrop />
+      <div className="relative z-[1]">
+        <PilotBanner />
+      </div>
+      <div className="relative z-[1] mx-auto grid w-full max-w-5xl flex-1 content-start gap-[18px] px-5 pb-7 pt-8 lg:grid-cols-2 lg:content-center lg:items-center lg:gap-16 lg:py-12">
         <div className="flex flex-col gap-[18px]">
           <div className="flex items-center gap-3">
             <LogoMark />
-            <div className="heading-weight text-2xl uppercase tracking-[0.03em]">Umuriro</div>
+            <div className="heading-weight text-2xl tracking-[-0.02em]">Umuriro</div>
           </div>
-          <div className="eyebrow">Electricity fault response</div>
+          <div className="eyebrow text-accent">Electricity fault response</div>
           <h1 className="display text-[28px] lg:text-5xl">
             Report a fault and follow the response.
           </h1>
@@ -107,7 +111,7 @@ export default function Login() {
           {DEMO && (
             <div className="flex flex-col gap-2">
               <div className="eyebrow" id="role-label">
-                Sign in as
+                Signing in as
               </div>
               <div role="group" aria-labelledby="role-label" className="grid grid-cols-3 gap-2">
                 {ROLES.map((item) => {
@@ -118,8 +122,10 @@ export default function Login() {
                       type="button"
                       aria-pressed={active}
                       onClick={() => chooseRole(item)}
-                      className={`min-h-11 cursor-pointer rounded-control border px-1 py-3 text-[11px] uppercase tracking-[0.03em] text-ink ${
-                        active ? 'border-ink bg-yellow font-medium' : 'border-border bg-white'
+                      className={`min-h-11 cursor-pointer rounded-control border px-1 py-3 text-[13px] ${
+                        active
+                          ? 'border-accent bg-tint font-bold text-accent'
+                          : 'border-border bg-white font-medium text-ink'
                       }`}
                     >
                       {item.label}
@@ -174,7 +180,7 @@ export default function Login() {
 
           <FormError>{formError}</FormError>
 
-          <button type="submit" className="btn btn-ink w-full" disabled={submitting}>
+          <button type="submit" className="btn btn-accent btn-lg w-full" disabled={submitting}>
             {submitting ? 'Signing in…' : 'Sign in'}
           </button>
         </form>

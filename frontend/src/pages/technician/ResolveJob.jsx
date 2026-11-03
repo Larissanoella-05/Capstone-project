@@ -3,7 +3,6 @@ import { ArrowLeft } from 'lucide-react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi.js';
 import { api } from '../../lib/api.js';
-import { useToast } from '../../context/ToastContext.jsx';
 import { CATEGORY_LABEL, OUTCOMES, fmtTime, locationLine } from '../../lib/format.js';
 import { KeyRow } from '../../components/Bits.jsx';
 import { Async, FormError } from '../../components/States.jsx';
@@ -11,7 +10,6 @@ import { Async, FormError } from '../../components/States.jsx';
 export default function ResolveJob() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const toast = useToast();
   const state = useApi(`/faults/${id}`);
 
   const [outcome, setOutcome] = useState('SUPPLY_RESTORED');
@@ -44,8 +42,7 @@ export default function ResolveJob() {
           clarificationContacts: contacts,
         },
       });
-      toast('Fault marked as resolved. The customer has been notified.');
-      navigate(`/technician/jobs/${id}`, { replace: true });
+      navigate(`/technician/jobs/${id}/closed`, { replace: true });
     } catch (error) {
       setFormError(error.message);
       setSubmitting(false);
@@ -62,15 +59,15 @@ export default function ResolveJob() {
           <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
             <Link
               to={`/technician/jobs/${fault.id}`}
-              className="eyebrow flex items-center gap-2 self-start"
+              className="flex items-center gap-2 self-start text-sm font-semibold no-underline"
             >
-              <ArrowLeft size={14} aria-hidden="true" />
+              <ArrowLeft size={16} aria-hidden="true" />
               Job details
             </Link>
 
-            <div className="border-b border-ink pb-4">
-              <div className="eyebrow text-muted">Fault #{fault.reference}</div>
-              <h1 className="display mt-2 text-3xl">Record resolution</h1>
+            <div>
+              <div className="eyebrow">Fault #{fault.reference}</div>
+              <h1 className="display mt-1.5 text-[26px]">Close job</h1>
             </div>
 
             <div className="grid gap-5 lg:grid-cols-2 lg:items-start lg:gap-8">
@@ -161,10 +158,10 @@ export default function ResolveJob() {
                   <label htmlFor="contacts" className="eyebrow">
                     Clarification contacts
                   </label>
-                  <div className="flex border border-ink">
+                  <div className="flex overflow-hidden rounded-control border border-border bg-white">
                     <button
                       type="button"
-                      className="h-12 w-14 cursor-pointer border-r border-ink bg-white text-xl heading-weight"
+                      className="h-12 w-14 cursor-pointer border-0 border-r border-border bg-white text-xl heading-weight"
                       aria-label="One fewer"
                       onClick={() => setContacts((n) => Math.max(0, n - 1))}
                     >
@@ -176,7 +173,7 @@ export default function ResolveJob() {
                       min={0}
                       max={50}
                       inputMode="numeric"
-                      className="h-12 min-w-0 flex-1 border-0 text-center font-mono text-lg"
+                      className="h-12 min-w-0 flex-1 border-0 text-center text-lg"
                       value={contacts}
                       onChange={(event) =>
                         setContacts(Math.max(0, Math.min(50, Number(event.target.value) || 0)))
@@ -184,7 +181,7 @@ export default function ResolveJob() {
                     />
                     <button
                       type="button"
-                      className="h-12 w-14 cursor-pointer border-l border-ink bg-white text-xl heading-weight"
+                      className="h-12 w-14 cursor-pointer border-0 border-l border-border bg-white text-xl heading-weight"
                       aria-label="One more"
                       onClick={() => setContacts((n) => Math.min(50, n + 1))}
                     >
@@ -200,17 +197,19 @@ export default function ResolveJob() {
 
             <FormError>{formError}</FormError>
 
-            <button
-              type="submit"
-              className="btn btn-volt btn-lg w-full lg:w-auto lg:self-end lg:px-12"
-              disabled={submitting}
-            >
-              {submitting ? 'Saving…' : 'Mark as Resolved'}
-            </button>
             <p className="m-0 text-sm text-muted">
               The customer will be notified and the fault closed. Status times cannot be edited
               afterwards.
             </p>
+            <div className="sticky-bar">
+              <button
+                type="submit"
+                className="btn btn-volt btn-lg w-full lg:w-auto lg:px-12"
+                disabled={submitting}
+              >
+                {submitting ? 'Saving…' : 'Mark as resolved'}
+              </button>
+            </div>
           </form>
         );
       }}
