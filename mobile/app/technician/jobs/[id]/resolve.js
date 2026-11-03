@@ -5,16 +5,14 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button, Eyebrow, KeyRow, Panel } from '../../../../src/components/Bits.js';
 import { Screen } from '../../../../src/components/Shell.js';
 import { Async, FormError } from '../../../../src/components/States.js';
-import { useToast } from '../../../../src/context/ToastContext.js';
 import { useApi } from '../../../../src/hooks/useApi.js';
 import { api } from '../../../../src/lib/api.js';
 import { CATEGORY_LABEL, OUTCOMES, fmtTime, locationLine } from '../../../../src/lib/format.js';
-import { colors, fonts } from '../../../../src/theme.js';
+import { colors, fonts, radius } from '../../../../src/theme.js';
 
 export default function ResolveJob() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const toast = useToast();
   const state = useApi(`/faults/${id}`);
 
   const [outcome, setOutcome] = useState('SUPPLY_RESTORED');
@@ -57,8 +55,7 @@ export default function ResolveJob() {
           clarificationContacts: contacts,
         },
       });
-      toast('Fault marked as resolved. The customer has been notified.');
-      router.replace(`/technician/jobs/${id}`);
+      router.replace(`/technician/jobs/${id}/closed`);
     } catch (error) {
       setFormError(error.message);
       if (error.status === 409) state.reload(); // someone else changed it: show the real status
@@ -66,8 +63,17 @@ export default function ResolveJob() {
     }
   }
 
+  const footer = (
+    <Button
+      label={submitting ? 'Saving…' : 'Mark as resolved'}
+      disabled={submitting}
+      onPress={onSubmit}
+      style={{ minHeight: 54 }}
+    />
+  );
+
   return (
-    <Screen>
+    <Screen footer={footer}>
       <Async state={state} label="Loading job">
         {({ fault }) => {
           // The resolution form only makes sense once work has started (and not again after it is saved).
@@ -75,14 +81,14 @@ export default function ResolveJob() {
           return (
             <>
               <Pressable accessibilityRole="link" onPress={() => router.back()} style={styles.back}>
-                <Feather name="arrow-left" size={14} color={colors.ink} />
+                <Feather name="arrow-left" size={16} color={colors.ink} />
                 <Eyebrow>Job details</Eyebrow>
               </Pressable>
 
               <View style={styles.hero}>
-                <Eyebrow style={{ color: colors.muted }}>Fault #{fault.reference}</Eyebrow>
+                <Eyebrow>Fault #{fault.reference}</Eyebrow>
                 <Text accessibilityRole="header" style={styles.title}>
-                  Record resolution
+                  Close job
                 </Text>
               </View>
 
@@ -101,7 +107,7 @@ export default function ResolveJob() {
               <View style={{ gap: 8 }}>
                 <Eyebrow>Outcome</Eyebrow>
                 <View accessibilityRole="radiogroup" style={styles.group}>
-                  {OUTCOMES.map((item, index) => {
+                  {OUTCOMES.map((item) => {
                     const selected = outcome === item.value;
                     return (
                       <Pressable
@@ -111,8 +117,10 @@ export default function ResolveJob() {
                         onPress={() => setOutcome(item.value)}
                         style={[
                           styles.option,
-                          index < OUTCOMES.length - 1 && styles.optionDivider,
-                          { backgroundColor: selected ? colors.volt : colors.white },
+                          {
+                            backgroundColor: selected ? colors.tint : colors.white,
+                            borderColor: selected ? colors.accent : colors.line,
+                          },
                         ]}
                       >
                         <View style={styles.radio}>
@@ -199,12 +207,6 @@ export default function ResolveJob() {
 
               <FormError>{formError}</FormError>
 
-              <Button
-                label={submitting ? 'Saving…' : 'Mark as Resolved'}
-                disabled={submitting}
-                onPress={onSubmit}
-                style={{ minHeight: 56 }}
-              />
               <Text style={styles.hint}>
                 The customer will be notified and the fault closed. Status times cannot be edited
                 afterwards.
@@ -225,17 +227,15 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     minHeight: 36,
   },
-  hero: { borderBottomWidth: 1, borderBottomColor: colors.ink, paddingBottom: 16 },
+  hero: { paddingBottom: 4 },
   title: {
-    marginTop: 8,
+    marginTop: 6,
     fontFamily: fonts.black,
-    fontSize: 30,
+    fontSize: 26,
     lineHeight: 30,
-    letterSpacing: -0.6,
-    textTransform: 'uppercase',
     color: colors.ink,
   },
-  group: { borderWidth: 1, borderColor: colors.ink },
+  group: { gap: 10 },
   option: {
     minHeight: 52,
     flexDirection: 'row',
@@ -243,24 +243,27 @@ const styles = StyleSheet.create({
     gap: 14,
     paddingHorizontal: 14,
     paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: colors.line,
+    borderRadius: radius,
   },
-  optionDivider: { borderBottomWidth: 1, borderBottomColor: colors.ink },
   radio: {
     width: 20,
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: colors.ink,
+    borderColor: colors.ash,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.white,
   },
-  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.ink },
+  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.accent },
   optionLabel: { flex: 1, fontFamily: fonts.bold, fontSize: 15, color: colors.ink },
   field: {
     minHeight: 96,
     borderWidth: 1,
-    borderColor: colors.ink,
+    borderColor: colors.line,
+    borderRadius: radius,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontFamily: fonts.regular,
@@ -271,13 +274,20 @@ const styles = StyleSheet.create({
   fieldInvalid: { borderColor: colors.danger },
   error: { fontFamily: fonts.semibold, fontSize: 14, color: colors.danger },
   hint: { fontFamily: fonts.regular, fontSize: 14, color: colors.muted },
-  stepper: { flexDirection: 'row', borderWidth: 1, borderColor: colors.ink },
+  stepper: {
+    flexDirection: 'row',
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.line,
+    borderRadius: radius,
+    backgroundColor: colors.white,
+  },
   step: {
     width: 56,
     height: 48,
     alignItems: 'center',
     justifyContent: 'center',
-    borderColor: colors.ink,
+    borderColor: colors.line,
     backgroundColor: colors.white,
   },
   stepText: { fontFamily: fonts.black, fontSize: 20, color: colors.ink },

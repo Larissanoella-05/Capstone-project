@@ -22,6 +22,7 @@ import TechnicianDashboard from './pages/technician/Dashboard.jsx';
 import Jobs from './pages/technician/Jobs.jsx';
 import JobDetails from './pages/technician/JobDetails.jsx';
 import ResolveJob from './pages/technician/ResolveJob.jsx';
+import JobClosed from './pages/technician/JobClosed.jsx';
 
 import CoordinatorDashboard from './pages/coordinator/Dashboard.jsx';
 import Analytics from './pages/coordinator/Analytics.jsx';
@@ -136,6 +137,7 @@ export default function App() {
         <Route path="jobs" element={<Jobs />} />
         <Route path="jobs/:id" element={<JobDetails />} />
         <Route path="jobs/:id/resolve" element={<ResolveJob />} />
+        <Route path="jobs/:id/closed" element={<JobClosed />} />
         <Route
           path="notifications"
           element={

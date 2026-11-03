@@ -11,15 +11,19 @@ import { EmptyState, ErrorState, Loading } from '../../components/States.jsx';
 function Tile({ label, value, note, unit, highlight = false }) {
   return (
     <div
-      className={`flex min-h-[120px] flex-col justify-between p-4 ${highlight ? 'bg-volt' : 'bg-white'}`}
+      className={`panel flex min-h-[120px] flex-col justify-between p-4 ${highlight ? 'border-accent bg-accent text-on-accent' : ''}`}
     >
-      <div className={`eyebrow ${highlight ? '' : 'text-muted'}`}>{label}</div>
+      <div className={`eyebrow ${highlight ? 'text-on-accent/85' : ''}`}>{label}</div>
       <div>
         <div className="text-4xl heading-weight leading-none">
           {value}
           {unit && <span className="ml-1 text-base font-bold">{unit}</span>}
         </div>
-        {note && <div className={`mt-1 text-xs ${highlight ? '' : 'text-muted'}`}>{note}</div>}
+        {note && (
+          <div className={`mt-1 text-xs ${highlight ? 'text-on-accent/85' : 'text-muted'}`}>
+            {note}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -69,7 +73,7 @@ export default function CoordinatorDashboard() {
         <Loading label="Loading the response overview" />
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-px border border-ink bg-ink sm:grid-cols-3 xl:grid-cols-7">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-7">
             <Tile label="Open faults" value={stats.openFaults} note="Total active" />
             <Tile
               label="Unassigned faults"
@@ -118,7 +122,7 @@ export default function CoordinatorDashboard() {
 
             <section className="panel self-start">
               <div className="panel-head">
-                <h2 className="m-0 text-xs font-normal">Open faults · {open.length}</h2>
+                <h2 className="m-0 text-sm">Open faults · {open.length}</h2>
                 <Link to="/coordinator/faults">Manage all</Link>
               </div>
               {open.length === 0 ? (
@@ -137,7 +141,7 @@ export default function CoordinatorDashboard() {
                             <th
                               key={heading}
                               scope="col"
-                              className="border-b border-ink px-3 py-2.5 font-medium"
+                              className="border-b border-line px-3 py-2.5 font-medium"
                             >
                               {heading}
                             </th>
@@ -181,7 +185,7 @@ export default function CoordinatorDashboard() {
                   </table>
                 </div>
               )}
-              <div className="eyebrow border-t border-ink px-4 py-3 text-muted">
+              <div className="eyebrow border-t border-line px-4 py-3 text-muted">
                 Select a row to highlight the fault on the map. Open it from the fault ID.
               </div>
             </section>

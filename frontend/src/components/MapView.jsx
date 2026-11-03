@@ -78,8 +78,8 @@ export default function MapView({
 
     lines.forEach((points) => {
       L.polyline(points, {
-        color: '#0B0B0B',
-        weight: 4,
+        color: '#e30613',
+        weight: 3,
         opacity: 1,
         dashArray: '2 8',
         lineCap: 'square',

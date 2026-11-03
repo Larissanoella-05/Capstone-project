@@ -15,6 +15,7 @@ import {
   fmtTime,
   locationLine,
 } from '../../lib/format.js';
+import { Stepper } from '../../components/Bits.jsx';
 import MapView, { faultMapParts } from '../../components/MapView.jsx';
 import { PriorityPill, StatusPill } from '../../components/Pills.jsx';
 import { Async, FormError } from '../../components/States.jsx';
@@ -23,11 +24,11 @@ import { Async, FormError } from '../../components/States.jsx';
 const NEXT_ACTION = {
   ASSIGNED: {
     status: 'ON_THE_WAY',
-    label: 'Start Response: On the Way',
+    label: 'Start: on my way',
     done: 'Status updated: On the Way.',
   },
-  ON_THE_WAY: { status: 'ARRIVED', label: 'Mark as Arrived', done: 'Status updated: Arrived.' },
-  ARRIVED: { status: 'WORKING', label: 'Start Work', done: 'Status updated: Working.' },
+  ON_THE_WAY: { status: 'ARRIVED', label: 'I have arrived', done: 'Status updated: Arrived.' },
+  ARRIVED: { status: 'WORKING', label: 'Start work', done: 'Status updated: Working.' },
 };
 
 export default function JobDetails() {
@@ -61,6 +62,7 @@ export default function JobDetails() {
         const next = NEXT_ACTION[fault.status];
         const stageIndex = STAGES.indexOf(fault.status);
         const canMove = ['ASSIGNED', 'ON_THE_WAY'].includes(fault.status);
+        const customerPhone = fault.contactPhone || fault.customer.phone;
 
         const advance = () =>
           run(
@@ -127,15 +129,16 @@ export default function JobDetails() {
 
         return (
           <>
-            <div className="border-b border-ink pb-4">
+            <div className="flex flex-col gap-3">
               <div className="eyebrow text-muted">
                 Fault #{fault.reference} · Reported {fmtTime(fault.reportedAt)}
               </div>
-              <h1 className="display mt-2 text-3xl">{CATEGORY_LABEL[fault.category]}</h1>
+              <h1 className="display mt-1.5 text-[26px]">{CATEGORY_LABEL[fault.category]}</h1>
               <div className="mt-3 flex flex-wrap gap-2">
                 <PriorityPill priority={fault.priority} withLabel />
                 <StatusPill status={fault.status} />
               </div>
+              <Stepper status={fault.status} />
             </div>
 
             <div className="grid gap-5 lg:grid-cols-2 lg:items-start lg:gap-6">
@@ -147,11 +150,9 @@ export default function JobDetails() {
                     className="h-60 md:h-80"
                     ariaLabel={`Map showing the service location for fault ${fault.reference} and your position`}
                   />
-                  <div className="border-t border-ink p-4">
+                  <div className="border-t border-line p-4">
                     <div className="eyebrow text-muted">Service location</div>
-                    <div className="mt-1 text-lg heading-weight uppercase">
-                      {locationLine(location)}
-                    </div>
+                    <div className="mt-1 text-lg heading-weight">{locationLine(location)}</div>
                     <div className="mt-1 text-sm">
                       {[location.village && `${location.village} village`, location.landmark]
                         .filter(Boolean)
@@ -164,16 +165,27 @@ export default function JobDetails() {
                         : ''}
                     </div>
                   </div>
-                  <div className="border-t border-ink p-3">
+                  <div className="grid grid-cols-2 gap-3 border-t border-line p-3">
                     <a
                       href={`https://www.google.com/maps/dir/?api=1&destination=${location.latitude},${location.longitude}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="btn btn-outline w-full"
+                      className="btn btn-ink"
                     >
                       <Navigation size={16} aria-hidden="true" />
-                      Navigate to Location
+                      Navigate
                     </a>
+                    {customerPhone ? (
+                      <a
+                        href={`tel:${customerPhone.replace(/\s/g, '')}`}
+                        className="btn btn-outline"
+                      >
+                        <Phone size={16} aria-hidden="true" />
+                        Call customer
+                      </a>
+                    ) : (
+                      <span />
+                    )}
                   </div>
                 </section>
 
@@ -189,15 +201,15 @@ export default function JobDetails() {
                         <li
                           key={stage}
                           aria-current={active ? 'step' : undefined}
-                          className={`flex items-center gap-3 px-4 py-3 ${index > 0 ? 'border-t border-line' : ''} ${active ? 'bg-volt' : ''}`}
+                          className={`flex items-center gap-3 px-4 py-3 ${index > 0 ? 'border-t border-line' : ''} ${active ? 'bg-tint' : ''}`}
                         >
                           <span
-                            className={`flex h-6 w-6 shrink-0 items-center justify-center border ${done ? 'border-ink bg-ink' : active ? 'border-ink bg-white' : 'border-line'}`}
+                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${done ? 'border-accent bg-accent' : active ? 'border-accent bg-white' : 'border-line'}`}
                           >
                             {done && (
                               <Check size={14} strokeWidth={3} color="#FFFFFF" aria-hidden="true" />
                             )}
-                            {active && <span className="h-2 w-2 bg-ink" />}
+                            {active && <span className="h-2 w-2 rounded-full bg-accent" />}
                           </span>
                           <span
                             className={`flex-1 text-sm ${done || active ? 'font-bold' : 'text-muted'}`}
@@ -211,30 +223,6 @@ export default function JobDetails() {
                       );
                     })}
                   </ol>
-
-                  {(next || fault.status === 'WORKING') && (
-                    <div className="flex flex-col gap-3 border-t border-ink p-3">
-                      <FormError>{actionError}</FormError>
-                      {next ? (
-                        <button
-                          type="button"
-                          className="btn btn-volt btn-lg w-full"
-                          disabled={Boolean(busy)}
-                          onClick={advance}
-                        >
-                          {busy === 'status' ? 'Updating…' : next.label}
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          className="btn btn-volt btn-lg w-full"
-                          onClick={() => navigate(`/technician/jobs/${fault.id}/resolve`)}
-                        >
-                          Record Resolution
-                        </button>
-                      )}
-                    </div>
-                  )}
                 </section>
 
                 {canMove && (
@@ -279,9 +267,7 @@ export default function JobDetails() {
                   <section className="panel">
                     <div className="panel-head bg-ok text-white">Resolution recorded</div>
                     <div className="flex flex-col gap-2 p-4 text-sm">
-                      <div className="text-base heading-weight uppercase">
-                        {OUTCOME_LABEL[fault.outcome]}
-                      </div>
+                      <div className="text-base heading-weight">{OUTCOME_LABEL[fault.outcome]}</div>
                       <p className="m-0">{fault.resolutionNote}</p>
                       {fault.workCompleted && (
                         <p className="m-0">
@@ -318,9 +304,9 @@ export default function JobDetails() {
                       <div className="text-base font-bold">{fault.customer.name}</div>
                       <div className="font-mono text-xs">Meter {location.meterNumber}</div>
                     </div>
-                    {(fault.contactPhone || fault.customer.phone) && (
+                    {customerPhone && (
                       <a
-                        href={`tel:${(fault.contactPhone || fault.customer.phone).replace(/\s/g, '')}`}
+                        href={`tel:${customerPhone.replace(/\s/g, '')}`}
                         className="btn btn-outline"
                       >
                         <Phone size={16} aria-hidden="true" />
@@ -335,6 +321,30 @@ export default function JobDetails() {
                 </Link>
               </div>
             </div>
+
+            {(next || fault.status === 'WORKING') && (
+              <div className="sticky-bar flex flex-col gap-3">
+                <FormError>{actionError}</FormError>
+                {next ? (
+                  <button
+                    type="button"
+                    className="btn btn-volt btn-lg w-full lg:w-auto lg:self-end lg:px-12"
+                    disabled={Boolean(busy)}
+                    onClick={advance}
+                  >
+                    {busy === 'status' ? 'Updating…' : next.label}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn btn-volt btn-lg w-full lg:w-auto lg:self-end lg:px-12"
+                    onClick={() => navigate(`/technician/jobs/${fault.id}/resolve`)}
+                  >
+                    Record resolution
+                  </button>
+                )}
+              </div>
+            )}
           </>
         );
       }}

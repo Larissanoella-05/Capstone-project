@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import ActiveJobTracker from '../../src/components/ActiveJobTracker.js';
 import { AppHeader } from '../../src/components/Shell.js';
-import { tabLabel, tabScreenOptions } from '../../src/components/tabOptions.js';
+import { tabIcon, tabLabel, tabScreenOptions } from '../../src/components/tabOptions.js';
 import { NotificationsProvider, useNotifications } from '../../src/context/NotificationsContext.js';
 import { TrackingProvider } from '../../src/context/TrackingContext.js';
 
@@ -17,14 +17,25 @@ function TechnicianTabs() {
         header: () => <AppHeader base="/technician" unread={unread} />,
       }}
     >
-      <Tabs.Screen name="index" options={{ tabBarLabel: tabLabel('Home') }} />
-      <Tabs.Screen name="jobs" options={{ tabBarLabel: tabLabel('Jobs') }} />
+      <Tabs.Screen
+        name="index"
+        options={{ tabBarLabel: tabLabel('Home'), tabBarIcon: tabIcon('home') }}
+      />
+      <Tabs.Screen
+        name="jobs"
+        options={{ tabBarLabel: tabLabel('Jobs'), tabBarIcon: tabIcon('list') }}
+      />
       <Tabs.Screen
         name="notifications"
-        options={{ tabBarLabel: tabLabel('Alerts'), tabBarBadge: unread > 0 ? unread : undefined }}
+        options={{
+          tabBarLabel: tabLabel('Alerts'),
+          tabBarIcon: tabIcon('bell'),
+          tabBarBadge: unread > 0 ? unread : undefined,
+        }}
       />
       <Tabs.Screen name="jobs/[id]" options={hidden} />
       <Tabs.Screen name="jobs/[id]/resolve" options={hidden} />
+      <Tabs.Screen name="jobs/[id]/closed" options={hidden} />
     </Tabs>
   );
 }

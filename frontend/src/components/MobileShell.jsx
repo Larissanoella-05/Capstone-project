@@ -1,6 +1,7 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useApi } from '../hooks/useApi.js';
+import Backdrop from './Backdrop.jsx';
 import { AppHeader, PilotBanner } from './Brand.jsx';
 import BottomNav from './BottomNav.jsx';
 import Sidebar from './Sidebar.jsx';
@@ -29,7 +30,8 @@ export default function MobileShell({ base, tabs, roleLabel }) {
   }));
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper md:flex-row">
+    <div className="relative flex min-h-dvh flex-col bg-paper md:flex-row">
+      <Backdrop />
       {/* Sidebar: tablet and desktop */}
       <Sidebar
         homeTo={base}
@@ -40,7 +42,7 @@ export default function MobileShell({ base, tabs, roleLabel }) {
         className="hidden md:flex"
       />
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="relative z-[1] flex min-w-0 flex-1 flex-col">
         <PilotBanner />
 
         {/* Header: phone only */}

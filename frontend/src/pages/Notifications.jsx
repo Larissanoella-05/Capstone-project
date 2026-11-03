@@ -60,7 +60,7 @@ export default function Notifications({ faultPath, intro }) {
           hasAny && (
             <button
               type="button"
-              className="relative mb-1 cursor-pointer border-0 bg-transparent p-0 text-[11px] uppercase text-ink underline after:absolute after:-inset-y-3 after:-inset-x-2 after:content-[''] disabled:cursor-not-allowed disabled:text-mute disabled:no-underline"
+              className="relative mb-1 cursor-pointer border-0 bg-transparent p-0 text-[13px] font-semibold text-accent after:absolute after:-inset-y-3 after:-inset-x-2 after:content-[''] disabled:cursor-not-allowed disabled:text-mute"
               disabled={busy || unread === 0}
               onClick={markAllRead}
             >
@@ -86,28 +86,23 @@ export default function Notifications({ faultPath, intro }) {
                     <button
                       type="button"
                       onClick={() => open(notification)}
-                      className={`flex w-full cursor-pointer flex-col gap-1.5 rounded-card border px-[18px] py-3.5 text-left ${
-                        notification.read ? 'border-border bg-white' : 'border-ink bg-yellow'
-                      }`}
+                      className="panel relative flex w-full cursor-pointer flex-col gap-1.5 px-[18px] py-3.5 text-left"
                     >
                       <div className="flex items-center justify-between gap-3">
-                        <span className="heading-weight text-[13px] uppercase">
-                          {notification.title}
+                        <span className="flex items-center gap-2">
+                          {!notification.read && (
+                            <span
+                              aria-hidden="true"
+                              className="h-2 w-2 shrink-0 rounded-full bg-accent"
+                            />
+                          )}
+                          <span className="heading-weight text-[14px]">{notification.title}</span>
                         </span>
-                        {notification.read ? (
-                          <span className="shrink-0 text-[11px] text-grey">
-                            {timeAgo(notification.createdAt)}
-                          </span>
-                        ) : (
-                          <span className="shrink-0 rounded-tag bg-ink px-[7px] py-[3px] text-[11px] font-medium uppercase tracking-[0.05em] text-yellow">
-                            New
-                          </span>
-                        )}
+                        <span className="shrink-0 text-[11px] text-grey">
+                          {timeAgo(notification.createdAt)}
+                        </span>
                       </div>
-                      <p className="m-0 text-xs">{notification.message}</p>
-                      {!notification.read && (
-                        <span className="text-[11px]">{timeAgo(notification.createdAt)}</span>
-                      )}
+                      <p className="m-0 text-xs text-grey">{notification.message}</p>
                     </button>
                   </li>
                 ))}

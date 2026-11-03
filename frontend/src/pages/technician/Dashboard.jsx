@@ -1,3 +1,4 @@
+import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useApi } from '../../hooks/useApi.js';
@@ -9,7 +10,7 @@ import {
   locationLine,
   timeAgo,
 } from '../../lib/format.js';
-import { PageHeading } from '../../components/Bits.jsx';
+import { Avatar, FaultIcon } from '../../components/Bits.jsx';
 import { PriorityPill, StatusPill } from '../../components/Pills.jsx';
 import { Async, EmptyState } from '../../components/States.jsx';
 
@@ -40,72 +41,72 @@ export default function TechnicianDashboard() {
 
   return (
     <>
-      <PageHeading eyebrow={`${greeting()}, ${firstNames(user.name)}`} title="Your jobs" />
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <div className="text-sm text-grey">{greeting()},</div>
+          <h1 className="display text-[26px]">{firstNames(user.name)}</h1>
+        </div>
+        <Avatar name={user.name} />
+      </div>
 
       <Async state={state} label="Loading your jobs">
         {() => (
-          <div className="grid gap-5 lg:grid-cols-2 lg:items-start lg:gap-6">
-            {active ? (
-              <section className="panel" aria-label="Active job">
-                <div className="flex items-center justify-between gap-3 border-b border-ink bg-volt px-4 py-3">
-                  <span className="eyebrow">Active job</span>
-                  <span className="font-mono text-xs">Assigned {timeAgo(active.assignedAt)}</span>
+          <div className="flex flex-col gap-5">
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                ["Today's assignments", assignedToday.length],
+                ['Pending', faults.filter(isOpen).length],
+                ['Completed today', completedToday.length],
+              ].map(([label, value]) => (
+                <div key={label} className="panel flex min-h-24 flex-col justify-between p-3">
+                  <div className="text-xs font-medium text-grey">{label}</div>
+                  <div className="heading-weight text-3xl leading-none">{value}</div>
                 </div>
-                <div className="flex flex-col gap-1 p-4">
-                  <div className="font-mono text-xs">Fault #{active.reference}</div>
-                  <div className="display text-[28px]">{CATEGORY_LABEL[active.category]}</div>
-                  <div className="mt-2 text-base font-bold">
-                    {locationLine(active.serviceLocation)}
+              ))}
+            </div>
+
+            <div className="grid gap-5 lg:grid-cols-2 lg:items-start lg:gap-6">
+              {active ? (
+                <section className="panel" aria-label="Next job">
+                  <div className="flex items-center justify-between gap-3 bg-ink px-4 py-3 text-white">
+                    <span className="heading-weight text-sm">Next job</span>
+                    <span className="text-xs text-white/75">
+                      Assigned {timeAgo(active.assignedAt)}
+                    </span>
                   </div>
-                  {active.serviceLocation.landmark && (
-                    <div className="text-sm">{active.serviceLocation.landmark}</div>
-                  )}
-                </div>
-                <div className="grid grid-cols-2 border-t border-ink">
-                  <div className="p-3">
-                    <div className="eyebrow text-muted">Priority</div>
-                    <div className="mt-1.5">
-                      <PriorityPill priority={active.priority} />
+                  <div className="flex flex-col gap-1 p-4">
+                    <div className="text-xs text-grey">Fault #{active.reference}</div>
+                    <div className="display text-[24px]">{CATEGORY_LABEL[active.category]}</div>
+                    <div className="mt-2 text-base font-bold">
+                      {locationLine(active.serviceLocation)}
                     </div>
-                  </div>
-                  <div className="border-l border-ink p-3">
-                    <div className="eyebrow text-muted">Status</div>
-                    <div className="mt-1.5">
+                    {active.serviceLocation.landmark && (
+                      <div className="text-sm text-grey">{active.serviceLocation.landmark}</div>
+                    )}
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <PriorityPill priority={active.priority} />
                       <StatusPill status={active.status} />
                     </div>
                   </div>
-                </div>
-                <div className="border-t border-ink p-3">
-                  <Link to={`/technician/jobs/${active.id}`} className="btn btn-ink btn-lg w-full">
-                    View Job
+                  <Link
+                    to={`/technician/jobs/${active.id}`}
+                    className="flex min-h-12 items-center justify-between bg-accent px-4 text-[15px] font-bold text-on-accent no-underline"
+                  >
+                    Open job
+                    <ChevronRight size={20} aria-hidden="true" />
                   </Link>
-                </div>
-              </section>
-            ) : (
-              <EmptyState title="No active job">
-                New jobs assigned by the service coordinator appear here automatically.
-              </EmptyState>
-            )}
-
-            <div className="flex min-w-0 flex-col gap-5">
-              <div className="grid grid-cols-3 gap-px border border-ink bg-ink">
-                {[
-                  ["Today's assignments", assignedToday.length],
-                  ['Pending jobs', faults.filter(isOpen).length],
-                  ['Completed today', completedToday.length],
-                ].map(([label, value]) => (
-                  <div key={label} className="flex min-h-24 flex-col justify-between bg-white p-3">
-                    <div className="eyebrow text-muted">{label}</div>
-                    <div className="text-3xl heading-weight leading-none">{value}</div>
-                  </div>
-                ))}
-              </div>
+                </section>
+              ) : (
+                <EmptyState title="No active job">
+                  New jobs assigned by the service coordinator appear here automatically.
+                </EmptyState>
+              )}
 
               {pending.length > 0 && (
-                <section className="panel">
-                  <div className="panel-head">Pending jobs</div>
-                  {pending.map((fault, index) => (
-                    <JobRow key={fault.id} fault={fault} bordered={index > 0} />
+                <section className="flex min-w-0 flex-col gap-3" aria-label="Waiting">
+                  <h2 className="heading-weight m-0 text-base">Waiting</h2>
+                  {pending.map((fault) => (
+                    <JobRow key={fault.id} fault={fault} />
                   ))}
                 </section>
               )}
@@ -117,24 +118,22 @@ export default function TechnicianDashboard() {
   );
 }
 
-function JobRow({ fault, bordered }) {
+function JobRow({ fault }) {
   return (
     <Link
       to={`/technician/jobs/${fault.id}`}
-      className={`flex items-start justify-between gap-3 p-4 no-underline hover:bg-paper ${bordered ? 'border-t border-ink' : ''}`}
+      className="panel flex items-center gap-3 px-4 py-3 no-underline hover:bg-paper"
     >
-      <div className="min-w-0">
-        <div className="font-mono text-xs">#{fault.reference}</div>
-        <div className="mt-1 text-lg heading-weight uppercase">
-          {CATEGORY_LABEL[fault.category]}
+      <FaultIcon category={fault.category} />
+      <div className="min-w-0 flex-1">
+        <div className="heading-weight text-[15px]">{CATEGORY_LABEL[fault.category]}</div>
+        <div className="truncate text-xs text-grey">
+          #{fault.reference} · {locationLine(fault.serviceLocation)}
         </div>
-        <div className="mt-1 text-sm">{locationLine(fault.serviceLocation)}</div>
       </div>
-      <div className="flex shrink-0 flex-col items-end gap-2">
+      <div className="flex shrink-0 flex-col items-end gap-1.5">
         <StatusPill status={fault.status} />
-        <span className="font-mono text-xs">
-          Priority: {fault.priority[0] + fault.priority.slice(1).toLowerCase()}
-        </span>
+        <PriorityPill priority={fault.priority} />
       </div>
     </Link>
   );

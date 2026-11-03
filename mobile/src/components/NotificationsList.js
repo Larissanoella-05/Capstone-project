@@ -10,7 +10,7 @@ import { useToast } from '../context/ToastContext.js';
 import { api } from '../lib/api.js';
 import { timeAgo } from '../lib/format.js';
 import { routeForNotification } from '../lib/routes.js';
-import { colors, fonts } from '../theme.js';
+import { colors, fonts, radius, shadow } from '../theme.js';
 
 /** The Alerts tab, shared by the customer and the technician. */
 export default function NotificationsList({ intro }) {
@@ -50,7 +50,7 @@ export default function NotificationsList({ intro }) {
 
   return (
     <Screen>
-      <PageHeading eyebrow={state.data ? `${state.unread} unread` : 'Alerts'} title="Notifications">
+      <PageHeading eyebrow={state.data ? `${state.unread} unread` : 'Alerts'} title="Alerts">
         {intro ? <Text style={styles.intro}>{intro}</Text> : null}
       </PageHeading>
 
@@ -76,20 +76,16 @@ export default function NotificationsList({ intro }) {
                     accessibilityRole="button"
                     accessibilityLabel={`${notification.read ? '' : 'Unread. '}${notification.title}. ${notification.message}`}
                     onPress={() => open(notification)}
-                    style={[styles.item, notification.read ? styles.read : styles.unread]}
+                    style={styles.item}
                   >
                     <View style={styles.top}>
-                      <Text style={styles.title}>{notification.title}</Text>
-                      <Eyebrow style={{ color: colors.muted }}>
-                        {timeAgo(notification.createdAt)}
-                      </Eyebrow>
+                      <View style={styles.titleRow}>
+                        {!notification.read ? <View style={styles.dot} /> : null}
+                        <Text style={styles.title}>{notification.title}</Text>
+                      </View>
+                      <Eyebrow>{timeAgo(notification.createdAt)}</Eyebrow>
                     </View>
                     <Text style={styles.message}>{notification.message}</Text>
-                    {!notification.read ? (
-                      <View style={styles.pill}>
-                        <Text style={styles.pillText}>New</Text>
-                      </View>
-                    ) : null}
                   </Pressable>
                 ))}
               </View>
@@ -103,32 +99,17 @@ export default function NotificationsList({ intro }) {
 
 const styles = StyleSheet.create({
   intro: { marginTop: 12, fontFamily: fonts.regular, fontSize: 14, color: colors.muted },
-  item: { borderWidth: 1, padding: 16 },
-  read: { borderColor: colors.line, backgroundColor: colors.white },
-  unread: { borderColor: colors.ink, backgroundColor: colors.voltSoft },
-  top: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 },
-  title: {
-    flex: 1,
-    fontFamily: fonts.black,
-    fontSize: 16,
-    textTransform: 'uppercase',
-    color: colors.ink,
-  },
-  message: { marginTop: 8, fontFamily: fonts.regular, fontSize: 14, color: colors.ink },
-  pill: {
-    alignSelf: 'flex-start',
-    marginTop: 12,
+  item: {
     borderWidth: 1,
-    borderColor: colors.ink,
-    backgroundColor: colors.volt,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    borderColor: colors.line,
+    borderRadius: radius,
+    backgroundColor: colors.white,
+    padding: 16,
+    ...shadow,
   },
-  pillText: {
-    fontFamily: fonts.monoMedium,
-    fontSize: 11,
-    letterSpacing: 0.9,
-    textTransform: 'uppercase',
-    color: colors.ink,
-  },
+  top: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 },
+  titleRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.accent },
+  title: { flexShrink: 1, fontFamily: fonts.black, fontSize: 15, color: colors.ink },
+  message: { marginTop: 8, fontFamily: fonts.regular, fontSize: 13, color: colors.muted },
 });

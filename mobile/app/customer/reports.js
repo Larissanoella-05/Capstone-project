@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Button, Eyebrow, PageHeading, Panel } from '../../src/components/Bits.js';
+import { Button, Chip, FaultIcon, PageHeading, Panel } from '../../src/components/Bits.js';
 import { StatusPill } from '../../src/components/Pills.js';
 import { Screen } from '../../src/components/Shell.js';
 import { Async, EmptyState } from '../../src/components/States.js';
@@ -12,7 +12,7 @@ import { colors, fonts } from '../../src/theme.js';
 const FILTERS = [
   { key: 'ALL', label: 'All', test: () => true },
   { key: 'OPEN', label: 'Open', test: isOpen },
-  { key: 'CLOSED', label: 'Closed', test: (fault) => !isOpen(fault) },
+  { key: 'CLOSED', label: 'Resolved', test: (fault) => !isOpen(fault) },
 ];
 
 export default function Reports() {
@@ -35,26 +35,14 @@ export default function Reports() {
         {() => (
           <>
             <View accessibilityRole="radiogroup" style={styles.filters}>
-              {FILTERS.map((item, index) => {
-                const active = filter === item.key;
-                return (
-                  <Pressable
-                    key={item.key}
-                    accessibilityRole="radio"
-                    accessibilityState={{ selected: active }}
-                    onPress={() => setFilter(item.key)}
-                    style={[
-                      styles.filter,
-                      index > 0 && styles.filterDivider,
-                      { backgroundColor: active ? colors.ink : colors.white },
-                    ]}
-                  >
-                    <Eyebrow style={{ color: active ? colors.white : colors.ink }}>
-                      {item.label} {faults.filter(item.test).length}
-                    </Eyebrow>
-                  </Pressable>
-                );
-              })}
+              {FILTERS.map((item) => (
+                <Chip
+                  key={item.key}
+                  label={`${item.label} ${faults.filter(item.test).length}`}
+                  active={filter === item.key}
+                  onPress={() => setFilter(item.key)}
+                />
+              ))}
             </View>
 
             {visible.length === 0 ? (
@@ -62,7 +50,7 @@ export default function Reports() {
                 title={faults.length ? 'Nothing in this list' : 'No reports yet'}
                 action={
                   <Button
-                    label="Report a Fault"
+                    label="Report a fault"
                     onPress={() => router.navigate('/customer/report')}
                   />
                 }
@@ -81,10 +69,12 @@ export default function Reports() {
                   >
                     <Panel>
                       <View style={styles.cardTop}>
+                        <FaultIcon category={fault.category} />
                         <View style={{ flex: 1 }}>
-                          <Text style={styles.ref}>#{fault.reference}</Text>
                           <Text style={styles.category}>{CATEGORY_LABEL[fault.category]}</Text>
-                          <Text style={styles.location}>{locationLine(fault.serviceLocation)}</Text>
+                          <Text style={styles.ref}>
+                            #{fault.reference} · {locationLine(fault.serviceLocation)}
+                          </Text>
                         </View>
                         <StatusPill status={fault.status} />
                       </View>
@@ -108,27 +98,18 @@ export default function Reports() {
 }
 
 const styles = StyleSheet.create({
-  filters: { flexDirection: 'row', borderWidth: 1, borderColor: colors.ink },
-  filter: { flex: 1, height: 44, alignItems: 'center', justifyContent: 'center' },
-  filterDivider: { borderLeftWidth: 1, borderLeftColor: colors.ink },
-  cardTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, padding: 16 },
+  filters: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  cardTop: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
   cardBottom: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 12,
     borderTopWidth: 1,
-    borderTopColor: colors.ink,
-    paddingHorizontal: 16,
+    borderTopColor: colors.line,
+    paddingHorizontal: 14,
     paddingVertical: 10,
   },
-  ref: { fontFamily: fonts.mono, fontSize: 12, color: colors.ink },
-  category: {
-    marginTop: 4,
-    fontFamily: fonts.black,
-    fontSize: 18,
-    textTransform: 'uppercase',
-    color: colors.ink,
-  },
-  location: { marginTop: 4, fontFamily: fonts.regular, fontSize: 14, color: colors.ink },
-  meta: { fontFamily: fonts.mono, fontSize: 12, color: colors.ink },
+  ref: { marginTop: 2, fontFamily: fonts.regular, fontSize: 12, color: colors.muted },
+  category: { fontFamily: fonts.black, fontSize: 16, color: colors.ink },
+  meta: { fontFamily: fonts.regular, fontSize: 12, color: colors.ink },
 });

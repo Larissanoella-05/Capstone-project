@@ -19,7 +19,7 @@ export function ErrorState({ error, onRetry }) {
       <div className="flex items-start gap-3 p-4">
         <AlertTriangle size={20} className="mt-0.5 shrink-0 text-red" aria-hidden="true" />
         <div>
-          <div className="heading-weight text-base uppercase">This did not load</div>
+          <div className="heading-weight text-base">This did not load</div>
           <p className="mt-1 text-sm">
             {error?.message || 'Could not load this. Check your connection and try again.'}
           </p>
@@ -39,7 +39,7 @@ export function ErrorState({ error, onRetry }) {
 export function EmptyState({ title, children, action }) {
   return (
     <div className="rounded-card border border-border bg-white px-4 py-8 text-center">
-      <div className="heading-weight text-base uppercase">{title}</div>
+      <div className="heading-weight text-base">{title}</div>
       {children && <p className="mx-auto mt-1 max-w-sm text-sm text-grey">{children}</p>}
       {action && <div className="mt-4 flex justify-center">{action}</div>}
     </div>
@@ -78,7 +78,7 @@ export function ErrorSummary({ items }) {
       tabIndex={-1}
       className="rounded-card border-2 border-red bg-white p-4 focus:outline-none"
     >
-      <h2 className="heading-weight m-0 text-base uppercase text-red">There is a problem</h2>
+      <h2 className="heading-weight m-0 text-base text-red">There is a problem</h2>
       <ul className="mb-0 mt-2 list-none p-0 text-sm font-semibold">
         {items.map((item) => (
           <li key={item.id}>

@@ -1,11 +1,14 @@
 import {
-  Archivo_400Regular,
-  Archivo_600SemiBold,
-  Archivo_700Bold,
-  Archivo_900Black,
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
   useFonts,
-} from '@expo-google-fonts/archivo';
-import { IBMPlexMono_400Regular, IBMPlexMono_500Medium } from '@expo-google-fonts/ibm-plex-mono';
+} from '@expo-google-fonts/inter';
+import {
+  PlusJakartaSans_700Bold,
+  PlusJakartaSans_800ExtraBold,
+} from '@expo-google-fonts/plus-jakarta-sans';
 import * as Notifications from 'expo-notifications';
 import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -58,12 +61,12 @@ function PushBridge() {
 function RootStack() {
   const { user, loading } = useAuth();
   const [fontsLoaded, fontError] = useFonts({
-    Archivo_400Regular,
-    Archivo_600SemiBold,
-    Archivo_700Bold,
-    Archivo_900Black,
-    IBMPlexMono_400Regular,
-    IBMPlexMono_500Medium,
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    PlusJakartaSans_700Bold,
+    PlusJakartaSans_800ExtraBold,
   });
   const ready = (fontsLoaded || fontError) && !loading;
 
@@ -76,10 +79,10 @@ function RootStack() {
 
   return (
     <>
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#ffffff' } }}>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#f3f3f9' } }}>
         <Stack.Screen name="index" />
         <Stack.Protected guard={!user}>
-          <Stack.Screen name="welcome" />
+          <Stack.Screen name="landing" />
           <Stack.Screen name="login" />
         </Stack.Protected>
         <Stack.Protected guard={user?.role === 'CUSTOMER'}>

@@ -1,18 +1,13 @@
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
-import { Button, Eyebrow, KeyRow, Panel, PanelHead } from '../../../src/components/Bits.js';
+import { Button, KeyRow, Panel, PanelHead, Timeline } from '../../../src/components/Bits.js';
+import { StatusPill } from '../../../src/components/Pills.js';
 import { Screen } from '../../../src/components/Shell.js';
 import { Async } from '../../../src/components/States.js';
 import { useApi } from '../../../src/hooks/useApi.js';
-import {
-  CATEGORY_LABEL,
-  STAGES,
-  STATUS_LABEL,
-  fmtTime,
-  locationLine,
-} from '../../../src/lib/format.js';
-import { colors, fonts } from '../../../src/theme.js';
+import { CATEGORY_LABEL, fmtTime, locationLine } from '../../../src/lib/format.js';
+import { colors, fonts, radius } from '../../../src/theme.js';
 
 export default function Submitted() {
   const { id } = useLocalSearchParams();
@@ -26,12 +21,12 @@ export default function Submitted() {
           <>
             <View style={styles.hero}>
               <View style={styles.tick}>
-                <Feather name="check" size={26} color={colors.white} />
+                <Feather name="check" size={32} color={colors.onAccent} />
               </View>
-              <Eyebrow style={{ marginTop: 16, color: colors.muted }}>Confirmation</Eyebrow>
               <Text accessibilityRole="header" style={styles.title}>
                 Fault report submitted
               </Text>
+              <Text style={styles.reference}>Reference #{fault.reference}</Text>
             </View>
 
             <Panel style={{ paddingHorizontal: 16, paddingVertical: 4 }}>
@@ -42,7 +37,7 @@ export default function Submitted() {
               <KeyRow label="Location">{locationLine(fault.serviceLocation)}</KeyRow>
               <KeyRow label="Reported">{fmtTime(fault.reportedAt)}</KeyRow>
               <KeyRow label="Status" last>
-                {STATUS_LABEL[fault.status]}
+                <StatusPill status={fault.status} />
               </KeyRow>
             </Panel>
 
@@ -53,30 +48,17 @@ export default function Submitted() {
 
             <Panel>
               <PanelHead>What happens next</PanelHead>
-              <View style={styles.grid}>
-                {STAGES.map((stage, index) => (
-                  <View
-                    key={stage}
-                    style={[
-                      styles.stage,
-                      { backgroundColor: stage === fault.status ? colors.volt : colors.white },
-                    ]}
-                  >
-                    <Text style={styles.stageNo}>{String(index + 1).padStart(2, '0')}</Text>
-                    <Text style={styles.stageLabel}>{STATUS_LABEL[stage]}</Text>
-                  </View>
-                ))}
-              </View>
+              <Timeline fault={fault} audience="customer" />
             </Panel>
 
             <View style={{ gap: 12 }}>
               <Button
-                label="View Fault"
+                label="Track this fault"
                 onPress={() => router.replace(`/customer/faults/${fault.id}`)}
                 style={{ minHeight: 56 }}
               />
               <Button
-                label="Back to dashboard"
+                label="Back to home"
                 tone="outline"
                 onPress={() => router.replace('/customer')}
               />
@@ -89,34 +71,29 @@ export default function Submitted() {
 }
 
 const styles = StyleSheet.create({
-  hero: { borderBottomWidth: 1, borderBottomColor: colors.ink, paddingBottom: 16 },
+  hero: { alignItems: 'center', gap: 10, paddingTop: 8 },
   tick: {
-    width: 48,
-    height: 48,
+    width: 64,
+    height: 64,
+    borderRadius: radius,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.ok,
+    backgroundColor: colors.accent,
   },
   title: {
-    marginTop: 8,
     fontFamily: fonts.black,
-    fontSize: 30,
+    fontSize: 26,
     lineHeight: 30,
-    letterSpacing: -0.6,
-    textTransform: 'uppercase',
     color: colors.ink,
+    textAlign: 'center',
   },
+  reference: { fontFamily: fonts.regular, fontSize: 14, color: colors.muted },
   note: {
-    borderWidth: 1,
-    borderColor: colors.ink,
-    backgroundColor: colors.paper,
+    borderRadius: radius,
+    backgroundColor: colors.tint,
     padding: 16,
-    fontFamily: fonts.regular,
-    fontSize: 14,
+    fontFamily: fonts.medium,
+    fontSize: 13,
     color: colors.ink,
   },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', backgroundColor: colors.line, gap: 1 },
-  stage: { width: '49.8%', flexGrow: 1, padding: 12 },
-  stageNo: { fontFamily: fonts.mono, fontSize: 11, color: colors.muted },
-  stageLabel: { marginTop: 4, fontFamily: fonts.bold, fontSize: 14, color: colors.ink },
 });

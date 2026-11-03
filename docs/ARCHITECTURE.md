@@ -109,13 +109,21 @@ erDiagram
 - `App.jsx` defines the routes. `RequireRole` keeps each role inside its own area
   (`/customer`, `/technician`, `/coordinator`).
 - `/` is public. Signed-in users are redirected to their role home; signed-out visitors see the landing
-  page in `pages/landing/`. Its styles are scoped to `.landing` (`landing.css`, `lp-` class names) and use
-  Plus Jakarta Sans and Inter, so they do not affect the Montserrat app. Every action on it leads to `/login`
+  page in `pages/landing/`. Its styles are scoped to `.landing` (`landing.css`, `lp-` class names) so they do
+  not affect the app screens. Every action on it leads to `/login`
   with `state.from`, so a customer lands on `/customer/report` after signing in. The scroll-driven hero maths
   is in `lib/landingHero.js`, and the copy and link data in `lib/landingContent.js`. Photos are in
   `public/landing/`.
 - Customer and technician pages render in `MobileShell` (phone layout). Coordinator pages render in
-  `CoordinatorShell` (desktop layout).
+  `CoordinatorShell` (desktop layout): a white 248 px `Sidebar` with icons, the active item tinted with a red bar,
+  a "Signed in as" block, and `Backdrop` behind the main area. Map pins: red = unassigned, ink square = assigned,
+  blue = technician, green = on site.
+- Look: the app screens use the Umuriro design tokens in `index.css` (`@theme`): red accent `#e30613`, Plus Jakarta
+  Sans for headings and Inter for text, 4 px radius, a soft shadow and a `#f3f3f9` page. `components/Backdrop.jsx` draws
+  the faint circuit lines and pylon behind both shells. Status, priority and availability chip colours live in
+  `lib/statusTone.js`; the Android app keeps a copy.
+- The customer report is three steps (type, details, review) in `pages/customer/ReportFault.jsx`, with the step rules
+  in `lib/reportSteps.js`. It still sends one `POST /faults`.
 - Data: `lib/api.js` (fetch wrapper) and `hooks/useApi.js` (load plus polling). State: `context/AuthContext`
   and `context/ToastContext`.
 - Maps: Leaflet with OpenStreetMap tiles. Charts: Recharts on the analytics page. Styling: Tailwind 4.
@@ -123,10 +131,19 @@ erDiagram
 
 ## Mobile (`mobile/`)
 
-- Expo SDK 58 with Expo Router. Routes in `app/`: `welcome`, `login`, `customer/*`, `technician/*`.
+- Expo SDK 58 with Expo Router. Routes in `app/`: `landing`, `login`, `customer/*`, `technician/*`.
+- Signed-out users open on `landing` (`components/Landing.js`), a short version of the web landing page: header,
+  hero photo, four step cards, the three views, FAQ and a sign-in call to action. It has no scroll animation. Every
+  action goes to `login`; coordinators have no mobile screens, so their card points to the web dashboard. The copy is
+  `lib/landingCopy.js`, a verbatim copy of the web file guarded by `sharedWithMobile.test.js`. Signed-in users skip it.
 - `src/context/` holds auth, notifications, tracking and toast state. `src/lib/` holds the API client,
   push registration, foreground location, photo picking and downscaling, and the secure token store
   (`expo-secure-store`).
+- Look: the same Umuriro design as the web. `src/theme.js` holds the colours, 4 px `radius` and soft `shadow`; text is
+  Plus Jakarta Sans and Inter (`@expo-google-fonts`, loaded in `app/_layout.js`). `components/Backdrop.js` draws the
+  circuit lines and pylon with `react-native-svg`. `lib/statusTone.js` and `lib/reportSteps.js` are verbatim copies of
+  the web files, guarded by `frontend/src/lib/sharedWithMobile.test.js`. The tab bars have icons and a red indicator.
+- The customer report is three steps (type, details, review) with a sticky button, as on the web.
 - Maps use MapLibre with OpenFreeMap tiles (no API key). The technician screen shares foreground location
   while a job is active (`ActiveJobTracker`).
 - Built into an installable APK with EAS Build (`eas.json`); the API URL is injected as `EXPO_PUBLIC_API_URL`.

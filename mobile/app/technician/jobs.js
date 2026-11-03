@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Eyebrow, PageHeading, Panel } from '../../src/components/Bits.js';
+import { Chip, FaultIcon, PageHeading, Panel } from '../../src/components/Bits.js';
 import { PriorityPill, StatusPill } from '../../src/components/Pills.js';
 import { Screen } from '../../src/components/Shell.js';
 import { Async, EmptyState } from '../../src/components/States.js';
@@ -9,15 +9,19 @@ import { useApi } from '../../src/hooks/useApi.js';
 import { CATEGORY_LABEL, fmtDateTime, isOpen, locationLine } from '../../src/lib/format.js';
 import { colors, fonts } from '../../src/theme.js';
 
+const FILTERS = [
+  { key: 'ALL', label: 'All', test: () => true },
+  { key: 'OPEN', label: 'Open', test: isOpen },
+  { key: 'DONE', label: 'Done', test: (fault) => !isOpen(fault) },
+];
+
 export default function Jobs() {
   const router = useRouter();
   const state = useApi('/faults', { interval: 5000 });
   const [tab, setTab] = useState('OPEN');
 
   const faults = state.data?.faults ?? [];
-  const open = faults.filter(isOpen);
-  const completed = faults.filter((fault) => !isOpen(fault));
-  const visible = tab === 'OPEN' ? open : completed;
+  const visible = faults.filter(FILTERS.find((item) => item.key === tab).test);
 
   return (
     <Screen>
@@ -30,33 +34,21 @@ export default function Jobs() {
         {() => (
           <>
             <View accessibilityRole="radiogroup" style={styles.filters}>
-              {[
-                ['OPEN', `Assigned ${open.length}`],
-                ['DONE', `Closed ${completed.length}`],
-              ].map(([key, label], index) => (
-                <Pressable
-                  key={key}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected: tab === key }}
-                  onPress={() => setTab(key)}
-                  style={[
-                    styles.filter,
-                    index > 0 && styles.divider,
-                    { backgroundColor: tab === key ? colors.ink : colors.white },
-                  ]}
-                >
-                  <Eyebrow style={{ color: tab === key ? colors.white : colors.ink }}>
-                    {label}
-                  </Eyebrow>
-                </Pressable>
+              {FILTERS.map((item) => (
+                <Chip
+                  key={item.key}
+                  label={`${item.label} ${faults.filter(item.test).length}`}
+                  active={tab === item.key}
+                  onPress={() => setTab(item.key)}
+                />
               ))}
             </View>
 
             {visible.length === 0 ? (
-              <EmptyState title={tab === 'OPEN' ? 'No assigned jobs' : 'No completed jobs yet'}>
-                {tab === 'OPEN'
-                  ? 'New jobs assigned by the service coordinator appear here automatically.'
-                  : 'Jobs you resolve are kept here.'}
+              <EmptyState title={tab === 'DONE' ? 'No completed jobs yet' : 'No jobs here'}>
+                {tab === 'DONE'
+                  ? 'Jobs you resolve are kept here.'
+                  : 'New jobs assigned by the service coordinator appear here automatically.'}
               </EmptyState>
             ) : (
               <View style={{ gap: 12 }}>
@@ -68,19 +60,21 @@ export default function Jobs() {
                   >
                     <Panel>
                       <View style={styles.top}>
+                        <FaultIcon category={fault.category} />
                         <View style={{ flex: 1 }}>
-                          <Text style={styles.mono}>#{fault.reference}</Text>
                           <Text style={styles.title}>{CATEGORY_LABEL[fault.category]}</Text>
-                          <Text style={styles.text}>{locationLine(fault.serviceLocation)}</Text>
+                          <Text numberOfLines={1} style={styles.ref}>
+                            #{fault.reference} · {locationLine(fault.serviceLocation)}
+                          </Text>
                         </View>
                         <StatusPill status={fault.status} />
                       </View>
                       <View style={styles.bottom}>
                         <PriorityPill priority={fault.priority} withLabel />
-                        <Text style={styles.mono}>
-                          {tab === 'OPEN'
+                        <Text style={styles.ref}>
+                          {isOpen(fault)
                             ? `Reported ${fmtDateTime(fault.reportedAt)}`
-                            : `Resolved ${fmtDateTime(fault.resolvedAt ?? fault.cancelledAt)}`}
+                            : `Closed ${fmtDateTime(fault.resolvedAt ?? fault.cancelledAt)}`}
                         </Text>
                       </View>
                     </Panel>
@@ -88,12 +82,6 @@ export default function Jobs() {
                 ))}
               </View>
             )}
-
-            {tab === 'OPEN' && visible.length > 0 ? (
-              <Text style={[styles.text, { color: colors.muted }]}>
-                New jobs assigned by the service coordinator appear here automatically.
-              </Text>
-            ) : null}
           </>
         )}
       </Async>
@@ -102,27 +90,18 @@ export default function Jobs() {
 }
 
 const styles = StyleSheet.create({
-  filters: { flexDirection: 'row', borderWidth: 1, borderColor: colors.ink },
-  filter: { flex: 1, height: 44, alignItems: 'center', justifyContent: 'center' },
-  divider: { borderLeftWidth: 1, borderLeftColor: colors.ink },
-  top: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, padding: 16 },
+  filters: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  top: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
   bottom: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
     borderTopWidth: 1,
-    borderTopColor: colors.ink,
-    paddingHorizontal: 16,
+    borderTopColor: colors.line,
+    paddingHorizontal: 14,
     paddingVertical: 10,
   },
-  mono: { fontFamily: fonts.mono, fontSize: 12, color: colors.ink },
-  title: {
-    marginTop: 4,
-    fontFamily: fonts.black,
-    fontSize: 18,
-    textTransform: 'uppercase',
-    color: colors.ink,
-  },
-  text: { marginTop: 4, fontFamily: fonts.regular, fontSize: 14, color: colors.ink },
+  ref: { fontFamily: fonts.regular, fontSize: 12, color: colors.muted },
+  title: { fontFamily: fonts.black, fontSize: 16, color: colors.ink },
 });

@@ -1,4 +1,4 @@
-import { ArrowRight, Zap } from 'lucide-react';
+import { Phone, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useApi } from '../../hooks/useApi.js';
@@ -11,7 +11,7 @@ import {
   locationLine,
   timeAgo,
 } from '../../lib/format.js';
-import { KeyRow, Stepper } from '../../components/Bits.jsx';
+import { FaultIcon, KeyRow, Stepper } from '../../components/Bits.jsx';
 import { StatusCard } from '../../components/Card.jsx';
 import { StatusPill } from '../../components/Pills.jsx';
 import { Async, EmptyState } from '../../components/States.jsx';
@@ -26,8 +26,8 @@ export default function CustomerDashboard() {
 
   return (
     <>
-      <div className="flex flex-col gap-3.5">
-        <div className="eyebrow">
+      <div className="flex flex-col gap-1.5">
+        <div className="text-sm text-grey">
           {greeting()}, {firstNames(user.name)}
         </div>
         <h1 className="display text-[26px]">
@@ -47,23 +47,32 @@ export default function CustomerDashboard() {
               </EmptyState>
             )}
 
-            <Link
-              to="/customer/report"
-              className="flex min-h-14 items-center justify-between rounded-card bg-ink px-5 py-4 text-[13px] font-semibold uppercase tracking-[0.08em] text-yellow no-underline"
-            >
-              <span className="flex items-center gap-2.5">
-                <Zap size={22} strokeWidth={1.75} aria-hidden="true" />
-                Report a fault
-              </span>
-              <ArrowRight size={22} strokeWidth={1.75} aria-hidden="true" />
-            </Link>
+            <div className="grid grid-cols-2 gap-3">
+              <Link
+                to="/customer/report"
+                className="flex min-h-28 flex-col justify-between rounded-card bg-accent p-4 text-on-accent no-underline shadow-sm"
+              >
+                <Zap size={26} strokeWidth={1.75} aria-hidden="true" />
+                <span className="heading-weight text-base">Report a fault</span>
+              </Link>
+              <a
+                href="tel:2727"
+                className="flex min-h-28 flex-col justify-between rounded-card border border-line bg-white p-4 text-ink no-underline shadow-sm"
+              >
+                <Phone size={26} strokeWidth={1.75} className="text-accent" aria-hidden="true" />
+                <span>
+                  <span className="heading-weight block text-base">Real emergency?</span>
+                  <span className="block text-xs text-grey">Call 2727</span>
+                </span>
+              </a>
+            </div>
 
-            <section className="flex flex-col gap-3.5" aria-label="Recent reports">
-              <div className="eyebrow flex items-center justify-between pt-1.5">
-                <span>Recent reports</span>
+            <section className="flex flex-col gap-3" aria-label="Recent reports">
+              <div className="flex items-center justify-between pt-1.5">
+                <h2 className="heading-weight m-0 text-base">Recent reports</h2>
                 <Link
                   to="/customer/reports"
-                  className="relative text-ink underline after:absolute after:-inset-y-3 after:inset-x-0 after:content-['']"
+                  className="relative text-sm font-semibold text-accent after:absolute after:-inset-y-3 after:inset-x-0 after:content-['']"
                 >
                   View all
                 </Link>
@@ -75,12 +84,15 @@ export default function CustomerDashboard() {
                   <Link
                     key={fault.id}
                     to={`/customer/faults/${fault.id}`}
-                    className="panel flex items-center justify-between gap-3 px-[18px] py-3.5 no-underline hover:bg-paper"
+                    className="panel flex items-center gap-3 px-4 py-3 no-underline hover:bg-paper"
                   >
-                    <div>
-                      <div className="text-[11px] text-grey">#{fault.reference}</div>
-                      <div className="heading-weight mt-0.5 text-[15px] uppercase">
+                    <FaultIcon category={fault.category} />
+                    <div className="min-w-0 flex-1">
+                      <div className="heading-weight text-[15px]">
                         {CATEGORY_LABEL[fault.category]}
+                      </div>
+                      <div className="text-[11px] text-grey">
+                        #{fault.reference} · {timeAgo(fault.reportedAt)}
                       </div>
                     </div>
                     <StatusPill status={fault.status} />
@@ -110,7 +122,7 @@ function CurrentFault({ fault }) {
         <Stepper status={fault.status} />
       </div>
       <Link to={`/customer/faults/${fault.id}`} className="btn btn-ink mt-4 w-full">
-        Track response
+        Track live
       </Link>
     </StatusCard>
   );

@@ -1,6 +1,7 @@
+import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Button, Eyebrow, PageHeading, Panel, PanelHead } from '../../src/components/Bits.js';
+import { Avatar, FaultIcon, Panel } from '../../src/components/Bits.js';
 import { PriorityPill, StatusPill } from '../../src/components/Pills.js';
 import { Screen } from '../../src/components/Shell.js';
 import { Async, EmptyState } from '../../src/components/States.js';
@@ -35,49 +36,59 @@ export default function TechnicianDashboard() {
 
   return (
     <Screen>
-      <PageHeading eyebrow={`${greeting()}, ${firstNames(user.name)}`} title="Your jobs" />
+      <View style={styles.greetingRow}>
+        <View>
+          <Text style={styles.greeting}>{greeting()},</Text>
+          <Text accessibilityRole="header" style={styles.name}>
+            {firstNames(user.name)}
+          </Text>
+        </View>
+        <Avatar name={user.name} />
+      </View>
 
       <Async state={state} label="Loading your jobs">
         {() => (
           <>
+            <View style={styles.stats}>
+              {[
+                ["Today's assignments", assignedToday.length],
+                ['Pending', faults.filter(isOpen).length],
+                ['Completed today', completedToday.length],
+              ].map(([label, value]) => (
+                <Panel key={label} style={styles.stat}>
+                  <Text style={styles.statLabel}>{label}</Text>
+                  <Text style={styles.statValue}>{value}</Text>
+                </Panel>
+              ))}
+            </View>
+
             {active ? (
-              <Panel accessibilityLabel="Active job">
+              <Panel accessibilityLabel="Next job">
                 <View style={styles.activeHead}>
-                  <Eyebrow>Active job</Eyebrow>
-                  <Text style={styles.mono}>Assigned {timeAgo(active.assignedAt)}</Text>
+                  <Text style={styles.activeHeadTitle}>Next job</Text>
+                  <Text style={styles.activeHeadNote}>Assigned {timeAgo(active.assignedAt)}</Text>
                 </View>
                 <View style={styles.activeBody}>
-                  <Text style={styles.mono}>Fault #{active.reference}</Text>
+                  <Text style={styles.ref}>Fault #{active.reference}</Text>
                   <Text style={styles.activeTitle}>{CATEGORY_LABEL[active.category]}</Text>
                   <Text style={styles.activeLocation}>{locationLine(active.serviceLocation)}</Text>
                   {active.serviceLocation.landmark ? (
                     <Text style={styles.text}>{active.serviceLocation.landmark}</Text>
                   ) : null}
-                </View>
-                <View style={styles.pair}>
-                  <View style={styles.pairCell}>
-                    <Eyebrow style={{ color: colors.muted }}>Priority</Eyebrow>
-                    <View style={{ marginTop: 6 }}>
-                      <PriorityPill priority={active.priority} />
-                    </View>
-                  </View>
-                  <View
-                    style={[styles.pairCell, { borderLeftWidth: 1, borderLeftColor: colors.ink }]}
-                  >
-                    <Eyebrow style={{ color: colors.muted }}>Status</Eyebrow>
-                    <View style={{ marginTop: 6 }}>
-                      <StatusPill status={active.status} />
-                    </View>
+                  <View style={styles.pills}>
+                    <PriorityPill priority={active.priority} />
+                    <StatusPill status={active.status} />
                   </View>
                 </View>
-                <View style={{ borderTopWidth: 1, borderTopColor: colors.ink, padding: 12 }}>
-                  <Button
-                    label="View Job"
-                    tone="ink"
-                    onPress={() => open(active.id)}
-                    style={{ minHeight: 56 }}
-                  />
-                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Open job"
+                  onPress={() => open(active.id)}
+                  style={({ pressed }) => [styles.openBar, pressed && { opacity: 0.85 }]}
+                >
+                  <Text style={styles.openText}>Open job</Text>
+                  <Feather name="chevron-right" size={20} color={colors.onAccent} />
+                </Pressable>
               </Panel>
             ) : (
               <EmptyState title="No active job">
@@ -85,47 +96,27 @@ export default function TechnicianDashboard() {
               </EmptyState>
             )}
 
-            <View style={styles.stats}>
-              {[
-                ["Today's assignments", assignedToday.length],
-                ['Pending jobs', faults.filter(isOpen).length],
-                ['Completed today', completedToday.length],
-              ].map(([label, value]) => (
-                <View key={label} style={styles.stat}>
-                  <Eyebrow style={{ color: colors.muted }}>{label}</Eyebrow>
-                  <Text style={styles.statValue}>{value}</Text>
-                </View>
-              ))}
-            </View>
-
             {pending.length > 0 ? (
-              <Panel>
-                <PanelHead>Pending jobs</PanelHead>
-                {pending.map((fault, index) => (
-                  <Pressable
-                    key={fault.id}
-                    accessibilityRole="link"
-                    onPress={() => open(fault.id)}
-                    style={({ pressed }) => [
-                      styles.row,
-                      index > 0 && styles.rowDivider,
-                      pressed && { backgroundColor: colors.paper },
-                    ]}
-                  >
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.mono}>#{fault.reference}</Text>
-                      <Text style={styles.rowTitle}>{CATEGORY_LABEL[fault.category]}</Text>
-                      <Text style={styles.text}>{locationLine(fault.serviceLocation)}</Text>
-                    </View>
-                    <View style={{ alignItems: 'flex-end', gap: 8 }}>
-                      <StatusPill status={fault.status} />
-                      <Text style={styles.mono}>
-                        Priority: {fault.priority[0] + fault.priority.slice(1).toLowerCase()}
-                      </Text>
-                    </View>
+              <View style={{ gap: 12 }}>
+                <Text style={styles.sectionTitle}>Waiting</Text>
+                {pending.map((fault) => (
+                  <Pressable key={fault.id} accessibilityRole="link" onPress={() => open(fault.id)}>
+                    <Panel style={styles.row}>
+                      <FaultIcon category={fault.category} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.rowTitle}>{CATEGORY_LABEL[fault.category]}</Text>
+                        <Text numberOfLines={1} style={styles.ref}>
+                          #{fault.reference} · {locationLine(fault.serviceLocation)}
+                        </Text>
+                      </View>
+                      <View style={{ alignItems: 'flex-end', gap: 6 }}>
+                        <StatusPill status={fault.status} />
+                        <PriorityPill priority={fault.priority} />
+                      </View>
+                    </Panel>
                   </Pressable>
                 ))}
-              </Panel>
+              </View>
             ) : null}
           </>
         )}
@@ -135,52 +126,46 @@ export default function TechnicianDashboard() {
 }
 
 const styles = StyleSheet.create({
-  mono: { fontFamily: fonts.mono, fontSize: 12, color: colors.ink },
-  text: { fontFamily: fonts.regular, fontSize: 14, color: colors.ink },
+  greetingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  greeting: { fontFamily: fonts.regular, fontSize: 14, color: colors.muted },
+  name: { fontFamily: fonts.black, fontSize: 26, lineHeight: 30, color: colors.ink },
+  stats: { flexDirection: 'row', gap: 12 },
+  stat: { flex: 1, minHeight: 96, justifyContent: 'space-between', padding: 12 },
+  statLabel: { fontFamily: fonts.medium, fontSize: 12, color: colors.muted },
+  statValue: { fontFamily: fonts.black, fontSize: 30, lineHeight: 32, color: colors.ink },
   activeHead: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.ink,
-    backgroundColor: colors.volt,
+    backgroundColor: colors.ink,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
+  activeHeadTitle: { fontFamily: fonts.heading, fontSize: 14, color: colors.white },
+  activeHeadNote: { fontFamily: fonts.regular, fontSize: 12, color: colors.white, opacity: 0.75 },
   activeBody: { padding: 16, gap: 4 },
-  activeTitle: {
-    fontFamily: fonts.black,
-    fontSize: 28,
-    lineHeight: 30,
-    textTransform: 'uppercase',
-    color: colors.ink,
-  },
+  activeTitle: { fontFamily: fonts.black, fontSize: 24, lineHeight: 28, color: colors.ink },
   activeLocation: { marginTop: 8, fontFamily: fonts.bold, fontSize: 16, color: colors.ink },
-  pair: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: colors.ink },
-  pairCell: { flex: 1, padding: 12 },
-  stats: {
+  pills: { marginTop: 8, flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  openBar: {
+    minHeight: 52,
     flexDirection: 'row',
-    gap: 1,
-    borderWidth: 1,
-    borderColor: colors.ink,
-    backgroundColor: colors.ink,
-  },
-  stat: {
-    flex: 1,
-    minHeight: 96,
+    alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: colors.white,
-    padding: 12,
+    backgroundColor: colors.accent,
+    paddingHorizontal: 16,
   },
-  statValue: { fontFamily: fonts.black, fontSize: 30, lineHeight: 30, color: colors.ink },
-  row: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, padding: 16 },
-  rowDivider: { borderTopWidth: 1, borderTopColor: colors.ink },
-  rowTitle: {
-    marginTop: 4,
-    fontFamily: fonts.black,
-    fontSize: 18,
-    textTransform: 'uppercase',
-    color: colors.ink,
+  openText: { fontFamily: fonts.bold, fontSize: 15, color: colors.onAccent },
+  ref: { fontFamily: fonts.regular, fontSize: 12, color: colors.muted },
+  text: { fontFamily: fonts.regular, fontSize: 14, color: colors.muted },
+  sectionTitle: { fontFamily: fonts.black, fontSize: 16, color: colors.ink },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
+  rowTitle: { fontFamily: fonts.black, fontSize: 15, color: colors.ink },
 });

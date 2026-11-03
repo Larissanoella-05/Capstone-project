@@ -62,7 +62,7 @@ export default function Faults() {
         title="Fault management"
       />
 
-      <div className="grid grid-cols-1 gap-4 border border-ink p-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))_auto] lg:items-end">
+      <div className="grid grid-cols-1 panel gap-4 p-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))_auto] lg:items-end">
         <div className="flex flex-col gap-2 sm:col-span-2 lg:col-span-1">
           <label htmlFor="search" className="eyebrow">
             Search
@@ -142,7 +142,7 @@ export default function Faults() {
                 : 'There are no open faults right now.'}
             </EmptyState>
           ) : (
-            <div className="overflow-x-auto border border-ink">
+            <div className="panel overflow-x-auto">
               <table className="w-full min-w-[920px] border-collapse text-left text-sm">
                 <thead>
                   <tr className="eyebrow bg-paper">
@@ -160,7 +160,7 @@ export default function Faults() {
                       <th
                         key={heading}
                         scope="col"
-                        className="border-b border-ink px-3 py-3 font-medium"
+                        className="border-b border-line px-3 py-3 font-medium"
                       >
                         {heading}
                       </th>
@@ -226,7 +226,7 @@ function Pager({ summary, onPrevious, onNext }) {
   return (
     <nav
       aria-label="Fault list pages"
-      className="flex items-center justify-between gap-3 border-t border-ink px-3 py-3"
+      className="flex items-center justify-between gap-3 border-t border-line px-3 py-3"
     >
       <p className="font-mono text-xs">
         {summary.from}–{summary.to} of {summary.total}
