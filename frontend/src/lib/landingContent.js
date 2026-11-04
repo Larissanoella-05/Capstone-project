@@ -1,8 +1,11 @@
 // Copy and link data for the public landing page. Kept out of the components so a test can scan it.
 import { loginLink, TARGETS } from './landingLinks.js';
-import { CTA, FAQ, HERO, HOTLINE, ROLES_COPY, STEP_CARDS } from './landingCopy.js';
+import { CTA, FAQ, FOOTER_COPY, HERO, HOTLINE, ROLES_COPY } from './landingCopy.js';
 
-export { CTA, FAQ, HERO, HOTLINE, STEP_CARDS };
+export { CTA, FAQ, HERO, HOTLINE };
+
+/** The web hero headline. The Android landing screen keeps its own wording in landingCopy.js. */
+export const HERO_HEADLINE = 'Power out? Report it, and watch it get fixed.';
 export const HOTLINE_HREF = `tel:${HOTLINE}`;
 export const HOTLINE_TEXT = `Real fault? Call ${HOTLINE}`;
 
@@ -10,7 +13,7 @@ export const HOTLINE_TEXT = `Real fault? Call ${HOTLINE}`;
 export const NAV_ITEMS = [
   { label: 'Home', href: '#top' },
   { label: 'About', href: '#about' },
-  { label: 'How it works', href: '#flow' },
+  { label: 'How it works', href: '#about' },
   { label: 'Dashboards', href: '#roles', menu: true },
   { label: 'FAQ', href: '#faq' },
   { label: 'Contact', href: '#cta' },
@@ -96,8 +99,7 @@ export const SAFETY_TIPS = {
 };
 
 export const FOOTER = {
-  blurb:
-    'We believe in a world powered by safe, reliable electricity. Umuriro is dedicated to getting faults reported, assigned and fixed faster.',
+  ...FOOTER_COPY,
   quickLinks: [
     { label: 'Home', href: '#top' },
     { label: 'About Us', href: '#about' },
@@ -111,16 +113,8 @@ export const FOOTER = {
     { label: 'Technician jobs', link: loginLink(TARGETS.technician) },
     { label: 'Safety guidance', href: '#faq' },
   ],
-  contactTitle: 'Electricity provider (REG)',
-  contact: [
-    { label: `Toll free: ${HOTLINE}`, href: HOTLINE_HREF },
-    { label: 'info@reg.rw', href: 'mailto:info@reg.rw' },
-    { label: 'KN82 ST3, Nyarugenge, Kigali' },
-  ],
   // Only REG accounts confirmed on reg.rw belong here. None could be confirmed yet.
   socials: [],
-  copyright: '© 2026 Umuriro. All Rights Reserved.',
-  legal: 'Privacy Policy | Terms of Service',
 };
 
 const ROLE_LINKS = {

@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Eyebrow } from '../src/components/Bits.js';
-import { LogoMark } from '../src/components/Brand.js';
+import { Brand } from '../src/components/Brand.js';
 import { FormError } from '../src/components/States.js';
 import { useAuth } from '../src/context/AuthContext.js';
 import { isDemoLogin } from '../src/lib/demo.js';
@@ -68,8 +68,11 @@ export default function Login() {
 
   function chooseRole(next) {
     setRole(next);
-    setEmail(next.email);
-    setPassword(DEMO_PASSWORD);
+    // Only the demo build fills in the account; a real sign-in keeps what the person typed.
+    if (DEMO) {
+      setEmail(next.email);
+      setPassword(DEMO_PASSWORD);
+    }
     setErrors({});
     setFormError('');
   }
@@ -87,7 +90,7 @@ export default function Login() {
     setSubmitting(true);
     try {
       // On success the root layout's guards move the user to their own tab tree.
-      await login(email.trim(), password);
+      await login(email.trim(), password, role.key);
     } catch (error) {
       setFormError(error.message);
       setSubmitting(false);
@@ -99,7 +102,7 @@ export default function Login() {
       style={{ flex: 1, backgroundColor: colors.paper }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <Backdrop />
+      <Backdrop pylons />
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
@@ -116,10 +119,7 @@ export default function Login() {
           >
             <Feather name="arrow-left" size={22} color={colors.ink} />
           </Pressable>
-          <View style={styles.brandRow}>
-            <LogoMark />
-            <Text style={styles.brandText}>Umuriro</Text>
-          </View>
+          <Brand />
         </View>
 
         <View style={[styles.form, { paddingBottom: insets.bottom + 32 }]}>
@@ -130,35 +130,33 @@ export default function Login() {
             </Text>
           </View>
 
-          {DEMO ? (
-            <View style={{ gap: 8 }}>
-              <Eyebrow>Signing in as</Eyebrow>
-              <View accessibilityRole="radiogroup" style={styles.roles}>
-                {ROLES.map((item) => {
-                  const active = item.key === role.key;
-                  return (
-                    <Pressable
-                      key={item.key}
-                      accessibilityRole="radio"
-                      accessibilityState={{ selected: active }}
-                      onPress={() => chooseRole(item)}
-                      style={[styles.role, active && styles.roleActive]}
-                    >
-                      <Feather
-                        name={item.icon}
-                        size={20}
-                        color={active ? colors.accent : colors.ink}
-                      />
-                      <Text style={styles.roleLabel}>{item.label}</Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-              <Text style={styles.hint}>
-                {role.blurb} Signing in as {role.person}.
-              </Text>
+          <View style={{ gap: 8 }}>
+            <Eyebrow>Signing in as</Eyebrow>
+            <View accessibilityRole="radiogroup" style={styles.roles}>
+              {ROLES.map((item) => {
+                const active = item.key === role.key;
+                return (
+                  <Pressable
+                    key={item.key}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: active }}
+                    onPress={() => chooseRole(item)}
+                    style={[styles.role, active && styles.roleActive]}
+                  >
+                    <Feather
+                      name={item.icon}
+                      size={20}
+                      color={active ? colors.accent : colors.ink}
+                    />
+                    <Text style={styles.roleLabel}>{item.label}</Text>
+                  </Pressable>
+                );
+              })}
             </View>
-          ) : null}
+            <Text style={styles.hint}>
+              {DEMO ? `${role.blurb} Signing in as ${role.person}.` : role.blurb}
+            </Text>
+          </View>
 
           <View style={{ gap: 8 }}>
             <Eyebrow>Email</Eyebrow>
@@ -237,12 +235,6 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
     borderRadius: radius,
     backgroundColor: colors.white,
-  },
-  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  brandText: {
-    fontFamily: fonts.black,
-    fontSize: 18,
-    color: colors.ink,
   },
   form: { padding: 24, gap: 20 },
   formTitle: {

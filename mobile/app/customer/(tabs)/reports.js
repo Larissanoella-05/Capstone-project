@@ -1,13 +1,13 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Button, Chip, FaultIcon, PageHeading, Panel } from '../../src/components/Bits.js';
-import { StatusPill } from '../../src/components/Pills.js';
-import { Screen } from '../../src/components/Shell.js';
-import { Async, EmptyState } from '../../src/components/States.js';
-import { useApi } from '../../src/hooks/useApi.js';
-import { CATEGORY_LABEL, fmtDateTime, isOpen, locationLine } from '../../src/lib/format.js';
-import { colors, fonts } from '../../src/theme.js';
+import { Button, Chip, FaultIcon, PageHeading, Panel } from '../../../src/components/Bits.js';
+import { StatusPill } from '../../../src/components/Pills.js';
+import { Screen } from '../../../src/components/Shell.js';
+import { Async, EmptyState } from '../../../src/components/States.js';
+import { useApi } from '../../../src/hooks/useApi.js';
+import { CATEGORY_LABEL, fmtDateTime, isOpen, locationLine } from '../../../src/lib/format.js';
+import { colors, fonts } from '../../../src/theme.js';
 
 const FILTERS = [
   { key: 'ALL', label: 'All', test: () => true },

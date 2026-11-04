@@ -73,7 +73,7 @@ export default function ResolveJob() {
   );
 
   return (
-    <Screen footer={footer}>
+    <Screen footer={footer} insetBottom>
       <Async state={state} label="Loading job">
         {({ fault }) => {
           // The resolution form only makes sense once work has started (and not again after it is saved).

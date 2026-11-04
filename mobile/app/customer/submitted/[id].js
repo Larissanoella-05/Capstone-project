@@ -15,7 +15,7 @@ export default function Submitted() {
   const state = useApi(`/faults/${id}`);
 
   return (
-    <Screen>
+    <Screen insetBottom>
       <Async state={state} label="Loading your report">
         {({ fault }) => (
           <>

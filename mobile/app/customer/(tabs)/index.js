@@ -1,14 +1,21 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Button, Eyebrow, FaultIcon, KeyRow, Panel, StageBar } from '../../src/components/Bits.js';
-import MapView from '../../src/components/MapView.js';
-import { StatusPill } from '../../src/components/Pills.js';
-import { Screen } from '../../src/components/Shell.js';
-import { Async, EmptyState } from '../../src/components/States.js';
-import { useAuth } from '../../src/context/AuthContext.js';
-import { useToast } from '../../src/context/ToastContext.js';
-import { useApi } from '../../src/hooks/useApi.js';
+import {
+  Button,
+  Eyebrow,
+  FaultIcon,
+  KeyRow,
+  Panel,
+  StageBar,
+} from '../../../src/components/Bits.js';
+import MapView from '../../../src/components/MapView.js';
+import { StatusPill } from '../../../src/components/Pills.js';
+import { Screen } from '../../../src/components/Shell.js';
+import { Async, EmptyState } from '../../../src/components/States.js';
+import { useAuth } from '../../../src/context/AuthContext.js';
+import { useToast } from '../../../src/context/ToastContext.js';
+import { useApi } from '../../../src/hooks/useApi.js';
 import {
   CATEGORY_LABEL,
   CUSTOMER_HEADLINE,
@@ -17,10 +24,10 @@ import {
   isOpen,
   locationLine,
   timeAgo,
-} from '../../src/lib/format.js';
-import { openLink } from '../../src/lib/links.js';
-import { faultMapParts } from '../../src/lib/mapParts.js';
-import { colors, fonts, radius, shadow } from '../../src/theme.js';
+} from '../../../src/lib/format.js';
+import { openLink } from '../../../src/lib/links.js';
+import { faultMapParts } from '../../../src/lib/mapParts.js';
+import { colors, fonts, radius, shadow } from '../../../src/theme.js';
 
 export default function CustomerDashboard() {
   const { user } = useAuth();
@@ -161,7 +168,13 @@ const styles = StyleSheet.create({
   hero: { gap: 6 },
   greeting: { fontFamily: fonts.regular, fontSize: 14, color: colors.muted },
   title: { fontFamily: fonts.black, fontSize: 26, lineHeight: 30, color: colors.ink },
-  statusBlock: { backgroundColor: colors.accent, padding: 20, gap: 6 },
+  statusBlock: {
+    backgroundColor: colors.accent,
+    borderTopLeftRadius: radius - 1,
+    borderTopRightRadius: radius - 1,
+    padding: 20,
+    gap: 6,
+  },
   headline: { fontFamily: fonts.black, fontSize: 26, lineHeight: 30, color: colors.onAccent },
   updated: { fontFamily: fonts.regular, fontSize: 12, color: colors.onAccent, opacity: 0.85 },
   details: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 20 },

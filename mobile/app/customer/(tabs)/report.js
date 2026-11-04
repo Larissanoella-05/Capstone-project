@@ -10,16 +10,16 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Button, Eyebrow, KeyRow, Panel } from '../../src/components/Bits.js';
-import { Screen } from '../../src/components/Shell.js';
-import { FormError } from '../../src/components/States.js';
-import { useAuth } from '../../src/context/AuthContext.js';
-import { useApi } from '../../src/hooks/useApi.js';
-import { api } from '../../src/lib/api.js';
-import { CATEGORIES, CATEGORY_LABEL, locationLine } from '../../src/lib/format.js';
-import { pickAndPreparePhoto } from '../../src/lib/photo.js';
-import { STEP_NAMES, validateStep } from '../../src/lib/reportSteps.js';
-import { colors, fonts, radius } from '../../src/theme.js';
+import { Button, Eyebrow, KeyRow, Panel } from '../../../src/components/Bits.js';
+import { Screen } from '../../../src/components/Shell.js';
+import { FormError } from '../../../src/components/States.js';
+import { useAuth } from '../../../src/context/AuthContext.js';
+import { useApi } from '../../../src/hooks/useApi.js';
+import { api } from '../../../src/lib/api.js';
+import { CATEGORIES, CATEGORY_LABEL, locationLine } from '../../../src/lib/format.js';
+import { pickAndPreparePhoto } from '../../../src/lib/photo.js';
+import { STEP_NAMES, validateStep } from '../../../src/lib/reportSteps.js';
+import { colors, fonts, radius } from '../../../src/theme.js';
 
 export default function ReportFault() {
   const { user } = useAuth();

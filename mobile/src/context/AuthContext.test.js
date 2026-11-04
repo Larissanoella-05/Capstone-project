@@ -69,6 +69,32 @@ describe('AuthContext', () => {
     expect(await tokenStore.get()).toBeNull();
   });
 
+  it('signs in when the account matches the role chosen on the sign-in screen', async () => {
+    api.mockResolvedValue({ token: 'tech-token', user: user('TECHNICIAN') });
+    const { result } = await renderAuth();
+
+    await act(async () => {
+      await result.current.login('t@demo.rw', 'demo1234', 'TECHNICIAN');
+    });
+
+    expect(result.current.user.role).toBe('TECHNICIAN');
+    expect(await tokenStore.get()).toBe('tech-token');
+  });
+
+  it('refuses an account of the other role, stores nothing and stays signed out', async () => {
+    api.mockResolvedValue({ token: 'customer-token', user: user('CUSTOMER') });
+    const { result } = await renderAuth();
+
+    await act(async () => {
+      await expect(result.current.login('t@demo.rw', 'demo1234', 'TECHNICIAN')).rejects.toThrow(
+        'This is a customer account. Choose customer above to sign in.'
+      );
+    });
+
+    expect(result.current.user).toBeNull();
+    expect(await tokenStore.get()).toBeNull();
+  });
+
   it('restores the session from a stored token through /auth/me', async () => {
     await tokenStore.set('saved');
     api.mockResolvedValue({ user: user('TECHNICIAN') });

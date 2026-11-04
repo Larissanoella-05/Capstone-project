@@ -90,7 +90,7 @@ export default function JobDetails() {
     ) : null;
 
   return (
-    <Screen footer={footer}>
+    <Screen footer={footer} insetBottom>
       <Async state={state} label="Loading job">
         {({ fault }) => {
           const location = fault.serviceLocation;

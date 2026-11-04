@@ -2,11 +2,12 @@ import { Feather } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 import { colors, fonts, radius } from '../theme.js';
 
-/** The square bolt mark. `inverse` is the accent-on-white variant used on dark backgrounds. */
-export function LogoMark({ inverse = false }) {
+/** The brand as the landing page's nav shows it: the accent bolt and the UMURIRO wordmark. */
+export function Brand({ onDark = false, iconSize = 22 }) {
   return (
-    <View style={[styles.mark, { backgroundColor: inverse ? colors.white : colors.accent }]}>
-      <Feather name="zap" size={20} color={inverse ? colors.accent : colors.onAccent} />
+    <View style={styles.brand}>
+      <Feather name="zap" size={iconSize} color={colors.accent} />
+      <Text style={[styles.wordmark, { color: onDark ? colors.white : colors.ink }]}>UMURIRO</Text>
     </View>
   );
 }
@@ -22,13 +23,8 @@ export function PilotBanner() {
 }
 
 const styles = StyleSheet.create({
-  mark: {
-    width: 40,
-    height: 40,
-    borderRadius: radius,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  brand: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  wordmark: { fontFamily: fonts.black, fontSize: 20 },
   banner: {
     backgroundColor: colors.ink,
     paddingHorizontal: 12,
