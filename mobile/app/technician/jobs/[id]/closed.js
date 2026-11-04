@@ -20,7 +20,7 @@ export default function JobClosed() {
   const state = useApi(`/faults/${id}`);
 
   return (
-    <Screen>
+    <Screen insetBottom>
       <Async state={state} label="Loading job">
         {({ fault }) => (
           <>

@@ -1,50 +1,28 @@
-import { Tabs } from 'expo-router';
+import { Stack } from 'expo-router';
 import { AppHeader } from '../../src/components/Shell.js';
-import { tabIcon, tabLabel, tabScreenOptions } from '../../src/components/tabOptions.js';
 import { NotificationsProvider, useNotifications } from '../../src/context/NotificationsContext.js';
+import { colors } from '../../src/theme.js';
 
-const hidden = { href: null };
+// The tabs sit at the bottom of the stack, so a link straight to a fault still has Home to go back to.
+export const unstable_settings = { initialRouteName: '(tabs)' };
 
-function CustomerTabs() {
+function Header({ back }) {
   const { unread } = useNotifications();
-  return (
-    <Tabs
-      backBehavior="history"
-      screenOptions={{
-        ...tabScreenOptions,
-        header: () => <AppHeader base="/customer" unread={unread} />,
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{ tabBarLabel: tabLabel('Home'), tabBarIcon: tabIcon('home') }}
-      />
-      <Tabs.Screen
-        name="report"
-        options={{ tabBarLabel: tabLabel('Report'), tabBarIcon: tabIcon('alert-triangle') }}
-      />
-      <Tabs.Screen
-        name="reports"
-        options={{ tabBarLabel: tabLabel('Reports'), tabBarIcon: tabIcon('list') }}
-      />
-      <Tabs.Screen
-        name="notifications"
-        options={{
-          tabBarLabel: tabLabel('Alerts'),
-          tabBarIcon: tabIcon('bell'),
-          tabBarBadge: unread > 0 ? unread : undefined,
-        }}
-      />
-      <Tabs.Screen name="submitted/[id]" options={hidden} />
-      <Tabs.Screen name="faults/[id]" options={hidden} />
-    </Tabs>
-  );
+  return <AppHeader base="/customer" unread={unread} back={back} />;
 }
 
+// The fault screens live in this stack, above the tabs. A tab hidden from the tab bar is redirected
+// to the first tab when it gets focus, so it cannot hold a detail screen.
 export default function CustomerLayout() {
   return (
     <NotificationsProvider>
-      <CustomerTabs />
+      <Stack
+        screenOptions={{
+          // The tabs are the top of this app: a back arrow only belongs on the screens opened above them.
+          header: ({ back, route }) => <Header back={Boolean(back) && route.name !== '(tabs)'} />,
+          contentStyle: { backgroundColor: colors.paper },
+        }}
+      />
     </NotificationsProvider>
   );
 }

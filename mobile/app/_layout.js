@@ -81,8 +81,9 @@ function RootStack() {
     <>
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#f3f3f9' } }}>
         <Stack.Screen name="index" />
+        {/* Open to everyone: a signed-in user reaches it from the home icon in the header. */}
+        <Stack.Screen name="landing" />
         <Stack.Protected guard={!user}>
-          <Stack.Screen name="landing" />
           <Stack.Screen name="login" />
         </Stack.Protected>
         <Stack.Protected guard={user?.role === 'CUSTOMER'}>

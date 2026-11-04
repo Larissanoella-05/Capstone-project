@@ -28,7 +28,7 @@ export default function Tracking() {
   const state = useApi(`/faults/${id}`, { interval: 4000 });
 
   return (
-    <Screen>
+    <Screen insetBottom>
       <Async state={state} label="Loading fault">
         {({ fault }) => {
           const { markers, lines } = faultMapParts(fault);

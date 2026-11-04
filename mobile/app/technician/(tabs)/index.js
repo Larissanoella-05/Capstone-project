@@ -1,12 +1,12 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Avatar, FaultIcon, Panel } from '../../src/components/Bits.js';
-import { PriorityPill, StatusPill } from '../../src/components/Pills.js';
-import { Screen } from '../../src/components/Shell.js';
-import { Async, EmptyState } from '../../src/components/States.js';
-import { useAuth } from '../../src/context/AuthContext.js';
-import { useApi } from '../../src/hooks/useApi.js';
+import { Avatar, FaultIcon, Panel } from '../../../src/components/Bits.js';
+import { PriorityPill, StatusPill } from '../../../src/components/Pills.js';
+import { Screen } from '../../../src/components/Shell.js';
+import { Async, EmptyState } from '../../../src/components/States.js';
+import { useAuth } from '../../../src/context/AuthContext.js';
+import { useApi } from '../../../src/hooks/useApi.js';
 import {
   CATEGORY_LABEL,
   firstNames,
@@ -14,9 +14,9 @@ import {
   isOpen,
   locationLine,
   timeAgo,
-} from '../../src/lib/format.js';
-import { pickActiveJob } from '../../src/lib/jobs.js';
-import { colors, fonts, radius } from '../../src/theme.js';
+} from '../../../src/lib/format.js';
+import { pickActiveJob } from '../../../src/lib/jobs.js';
+import { colors, fonts, radius } from '../../../src/theme.js';
 
 const isToday = (value) => value && new Date(value).toDateString() === new Date().toDateString();
 

@@ -1,14 +1,21 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Button, Eyebrow, FaultIcon, KeyRow, Panel, StageBar } from '../../src/components/Bits.js';
-import MapView from '../../src/components/MapView.js';
-import { StatusPill } from '../../src/components/Pills.js';
-import { Screen } from '../../src/components/Shell.js';
-import { Async, EmptyState } from '../../src/components/States.js';
-import { useAuth } from '../../src/context/AuthContext.js';
-import { useToast } from '../../src/context/ToastContext.js';
-import { useApi } from '../../src/hooks/useApi.js';
+import {
+  Button,
+  Eyebrow,
+  FaultIcon,
+  KeyRow,
+  Panel,
+  StageBar,
+} from '../../../src/components/Bits.js';
+import MapView from '../../../src/components/MapView.js';
+import { StatusPill } from '../../../src/components/Pills.js';
+import { Screen } from '../../../src/components/Shell.js';
+import { Async, EmptyState } from '../../../src/components/States.js';
+import { useAuth } from '../../../src/context/AuthContext.js';
+import { useToast } from '../../../src/context/ToastContext.js';
+import { useApi } from '../../../src/hooks/useApi.js';
 import {
   CATEGORY_LABEL,
   CUSTOMER_HEADLINE,
@@ -17,10 +24,10 @@ import {
   isOpen,
   locationLine,
   timeAgo,
-} from '../../src/lib/format.js';
-import { openLink } from '../../src/lib/links.js';
-import { faultMapParts } from '../../src/lib/mapParts.js';
-import { colors, fonts, radius, shadow } from '../../src/theme.js';
+} from '../../../src/lib/format.js';
+import { openLink } from '../../../src/lib/links.js';
+import { faultMapParts } from '../../../src/lib/mapParts.js';
+import { colors, fonts, radius, shadow } from '../../../src/theme.js';
 
 export default function CustomerDashboard() {
   const { user } = useAuth();

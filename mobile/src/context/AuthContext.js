@@ -45,13 +45,20 @@ export function AuthProvider({ children }) {
     return () => setUnauthorizedHandler(null);
   }, []);
 
-  const login = useCallback(async (email, password) => {
+  // `expectedRole` is the role picked on the sign-in screen. A different account is refused before
+  // anything is stored, so the user is never signed in to the wrong side of the app.
+  const login = useCallback(async (email, password, expectedRole) => {
     const data = await api('/auth/login', {
       method: 'POST',
       body: { email, password, client: 'mobile' },
     });
     if (data.user.role === 'COORDINATOR') {
       throw new Error('Coordinators use the web app.');
+    }
+    if (expectedRole && data.user.role !== expectedRole) {
+      throw new Error(
+        `This is a ${data.user.role.toLowerCase()} account. Choose ${data.user.role.toLowerCase()} above to sign in.`
+      );
     }
     await tokenStore.set(data.token);
     setUser(data.user);

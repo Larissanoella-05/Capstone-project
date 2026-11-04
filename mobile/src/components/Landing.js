@@ -1,54 +1,95 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import {
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
-} from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
+import { HOME_BY_ROLE, useAuth } from '../context/AuthContext.js';
 import { useToast } from '../context/ToastContext.js';
+import { coverFrame } from '../lib/focalImage.js';
+import Backdrop from './Backdrop.js';
+import { Brand } from './Brand.js';
 import { FAQ, FOOTER_COPY, HERO, HOTLINE, ROLES_COPY, STEP_CARDS } from '../lib/landingCopy.js';
 import { openLink } from '../lib/links.js';
 import { colors, fonts, radius, shadow } from '../theme.js';
 
+// Pixel size of each file and the point of the picture to keep in view: the web's `background-position`.
 const PHOTOS = {
-  silhouette: require('../../assets/landing/silhouette.jpg'),
-  poles: require('../../assets/landing/poles.jpg'),
-  panel: require('../../assets/landing/panel.jpg'),
-  tower: require('../../assets/landing/tower.jpg'),
+  silhouette: {
+    source: require('../../assets/landing/silhouette.jpg'),
+    width: 1920,
+    height: 1280,
+    focus: { x: 0.5, y: 0.4 },
+  },
+  poles: {
+    source: require('../../assets/landing/poles.jpg'),
+    width: 1920,
+    height: 1116,
+    focus: { x: 0.4, y: 0.4 },
+  },
+  panel: {
+    source: require('../../assets/landing/panel.jpg'),
+    width: 1100,
+    height: 1650,
+    focus: { x: 0.5, y: 0.38 },
+  },
+  tower: {
+    source: require('../../assets/landing/tower.jpg'),
+    width: 1920,
+    height: 1280,
+    focus: { x: 0.35, y: 0.4 },
+  },
 };
 
 // Coordinators only have the web dashboard, so their card says so instead of leading to a sign-in
 // that this app cannot use.
 const COORDINATOR_NOTE = 'On the web dashboard';
 const HEADER_HEIGHT = 64;
+// Tall enough for the headline, tagline and button below the bar, and short enough that the 3:2
+// photo is not cropped to a sliver on a tall phone.
+const HERO_HEIGHT = 500;
 
-/** A photo that fills its box, with the children on top (ImageBackground is deprecated). */
-function Photo({ source, style, children }) {
+/**
+ * A photo that fills its box around its focus point, with the children on top (ImageBackground is
+ * deprecated). It waits for the box to be measured, so a photo never flashes at the wrong crop.
+ */
+function Photo({ photo, style, children }) {
+  const [box, setBox] = useState(null);
+  const frame = box ? coverFrame(photo, box, photo.focus) : null;
   return (
-    <View style={[style, { overflow: 'hidden' }]}>
-      <Image source={source} resizeMode="cover" style={StyleSheet.absoluteFill} />
+    <View
+      style={[style, { overflow: 'hidden' }]}
+      onLayout={({ nativeEvent: { layout } }) =>
+        setBox({ width: layout.width, height: layout.height })
+      }
+    >
+      {frame ? (
+        <Image
+          source={photo.source}
+          accessibilityIgnoresInvertColors
+          style={{ position: 'absolute', ...frame }}
+        />
+      ) : null}
       {children}
     </View>
   );
 }
 
-/** The first screen for signed-out visitors: the web landing page, short and without the scroll animation. */
+/**
+ * The first screen for signed-out visitors: the web landing page, short and without the scroll animation.
+ * A signed-in user can open it from the header, and then its buttons lead to their own dashboard.
+ */
 export default function Landing() {
   const router = useRouter();
   const toast = useToast();
+  const { user } = useAuth();
   const insets = useSafeAreaInsets();
-  const { height } = useWindowDimensions();
   const scroll = useRef(null);
   const [offsets, setOffsets] = useState({});
 
-  const signIn = () => router.push('/login');
+  // Signed in, the app is already open underneath this screen: go back to it instead of stacking a copy.
+  const signIn = () => (user ? router.navigate(HOME_BY_ROLE[user.role]) : router.push('/login'));
+  const reportLabel = user ? 'Open my app' : HERO.report;
   const open = async (url, failure) => {
     if (!(await openLink(url))) toast(failure, 'error');
   };
@@ -74,33 +115,6 @@ export default function Landing() {
 
   return (
     <View style={styles.page}>
-      <View style={[styles.header, { paddingTop: insets.top, height: HEADER_HEIGHT + insets.top }]}>
-        <View style={styles.brand}>
-          <Feather name="zap" size={22} color={colors.accent} />
-          <Text style={styles.brandText}>UMURIRO</Text>
-        </View>
-        <View style={styles.headerActions}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`Call ${HOTLINE}`}
-            hitSlop={8}
-            onPress={call}
-            style={styles.iconButton}
-          >
-            <Feather name="phone" size={20} color={colors.accent} />
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={HERO.report}
-            onPress={signIn}
-            style={({ pressed }) => [styles.reportButton, pressed && { opacity: 0.85 }]}
-          >
-            <Text style={styles.reportText}>{HERO.report}</Text>
-            <Feather name="arrow-up-right" size={14} color={colors.onAccent} />
-          </Pressable>
-        </View>
-      </View>
-
       <ScrollView
         ref={scroll}
         showsVerticalScrollIndicator={false}
@@ -108,10 +122,39 @@ export default function Landing() {
         contentContainerStyle={{ paddingBottom: insets.bottom }}
       >
         <Photo
-          source={PHOTOS.silhouette}
-          style={[styles.hero, { minHeight: Math.max(520, height - HEADER_HEIGHT - insets.top) }]}
+          photo={PHOTOS.silhouette}
+          style={[
+            styles.hero,
+            { paddingTop: HEADER_HEIGHT + insets.top, minHeight: HERO_HEIGHT + insets.top },
+          ]}
         >
           <View style={styles.shade} />
+          {/* Like the web: the bar sits on the photo and scrolls away with it. */}
+          <View
+            style={[styles.header, { paddingTop: insets.top, height: HEADER_HEIGHT + insets.top }]}
+          >
+            <Brand onDark />
+            <View style={styles.headerActions}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Call ${HOTLINE}`}
+                hitSlop={8}
+                onPress={call}
+                style={styles.iconButton}
+              >
+                <Feather name="phone" size={20} color={colors.accent} />
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={reportLabel}
+                onPress={signIn}
+                style={({ pressed }) => [styles.reportButton, pressed && { opacity: 0.85 }]}
+              >
+                <Text style={styles.reportText}>{reportLabel}</Text>
+                <Feather name="arrow-up-right" size={14} color={colors.onAccent} />
+              </Pressable>
+            </View>
+          </View>
           <View style={styles.heroBody}>
             <Text accessibilityRole="header" style={styles.headline}>
               {HERO.headline.join('\n').toUpperCase()}
@@ -128,12 +171,13 @@ export default function Landing() {
                 pressed && { opacity: 0.85 },
               ]}
             >
-              <Text style={styles.reportText}>Sign in</Text>
+              <Text style={styles.reportText}>{user ? 'Open my app' : 'Sign in'}</Text>
             </Pressable>
           </View>
         </Photo>
 
         <View onLayout={measureLight} style={styles.light}>
+          <Backdrop />
           <View style={styles.stepGrid}>
             {STEP_CARDS.map((card) => (
               <View key={card.title} style={[styles.step, card.highlight && styles.stepOn]}>
@@ -167,12 +211,7 @@ export default function Landing() {
                   onPress={signIn}
                   style={[styles.role, item.highlight && styles.roleOn]}
                 >
-                  <Image
-                    source={PHOTOS[item.image]}
-                    resizeMode="cover"
-                    accessibilityIgnoresInvertColors
-                    style={styles.rolePhoto}
-                  />
+                  <Photo photo={PHOTOS[item.image]} style={styles.rolePhoto} />
                   <View style={styles.roleText}>
                     <Text style={styles.roleTitle}>{item.title}</Text>
                     <Text style={styles.roleBody}>{item.body}</Text>
@@ -197,10 +236,7 @@ export default function Landing() {
         </View>
 
         <View style={styles.footer}>
-          <View style={styles.brand}>
-            <Feather name="zap" size={24} color={colors.accent} />
-            <Text style={styles.brandText}>UMURIRO</Text>
-          </View>
+          <Brand iconSize={24} />
           <Text style={styles.footerBlurb}>{FOOTER_COPY.blurb}</Text>
 
           <FooterColumn title="Quick Links">
@@ -283,16 +319,17 @@ function FaqRow({ item, first }) {
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: colors.ink },
+  page: { flex: 1, backgroundColor: colors.paper },
   header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    backgroundColor: '#140b0c',
   },
-  brand: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  brandText: { fontFamily: fonts.black, fontSize: 20, color: colors.white },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   iconButton: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   reportButton: {
@@ -308,7 +345,7 @@ const styles = StyleSheet.create({
   heroButton: { minHeight: 52, alignSelf: 'stretch' },
   reportText: { fontFamily: fonts.bold, fontSize: 15, color: colors.onAccent },
   hero: { justifyContent: 'center', backgroundColor: colors.ink },
-  shade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.55)' },
+  shade: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(8,6,6,0.5)' },
   heroBody: { alignItems: 'center', gap: 20, paddingHorizontal: 24, paddingVertical: 48 },
   headline: {
     fontFamily: fonts.black,
@@ -324,7 +361,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: colors.white,
   },
-  light: { backgroundColor: colors.paper, padding: 16, paddingTop: 24 },
+  light: { backgroundColor: colors.paper, padding: 16, paddingTop: 24, overflow: 'hidden' },
   stepGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24 },
   step: {
     width: '48%',
@@ -341,7 +378,7 @@ const styles = StyleSheet.create({
   stepTitle: { fontFamily: fonts.black, fontSize: 15, lineHeight: 20, color: colors.ink },
   eyebrow: { fontFamily: fonts.bold, fontSize: 12, color: colors.accent },
   h2: { fontFamily: fonts.black, fontSize: 24, lineHeight: 30, color: colors.ink },
-  // The photo sits above the text and shows almost all of the picture (3:2 photos in a 16:10 frame).
+  // The photo sits above the text; 4:3 keeps most of the landscape photos in view (the panel photo is portrait).
   role: {
     overflow: 'hidden',
     borderRadius: radius,
@@ -350,7 +387,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   roleOn: { borderWidth: 2, borderColor: colors.accent },
-  rolePhoto: { width: '100%', aspectRatio: 16 / 10 },
+  rolePhoto: { width: '100%', aspectRatio: 4 / 3 },
   roleText: { gap: 2, padding: 14 },
   roleTitle: { fontFamily: fonts.black, fontSize: 18, color: colors.ink },
   roleBody: { fontFamily: fonts.regular, fontSize: 14, color: colors.muted },
@@ -378,16 +415,17 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     color: colors.muted,
   },
-  footer: { gap: 24, padding: 24, paddingTop: 32, backgroundColor: '#140b0c' },
-  footerBlurb: { fontFamily: fonts.regular, fontSize: 14, lineHeight: 22, color: '#c9c3c3' },
-  footerHeading: { fontFamily: fonts.black, fontSize: 16, color: colors.white, marginBottom: 4 },
+  // The footer colours are the web's `.lp-footer`: the paper background, ink headings, grey links.
+  footer: { gap: 24, padding: 24, paddingTop: 32, backgroundColor: colors.paper },
+  footerBlurb: { fontFamily: fonts.regular, fontSize: 14, lineHeight: 22, color: '#5b5b66' },
+  footerHeading: { fontFamily: fonts.heading, fontSize: 15, color: colors.ink, marginBottom: 4 },
   footerLink: { minHeight: 36, justifyContent: 'center' },
-  footerText: { fontFamily: fonts.regular, fontSize: 14, lineHeight: 22, color: '#c9c3c3' },
+  footerText: { fontFamily: fonts.regular, fontSize: 14, lineHeight: 22, color: '#5b5b66' },
   footerBase: {
     gap: 4,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.15)',
+    borderTopColor: '#dcdce6',
     paddingTop: 16,
   },
-  footerSmall: { fontFamily: fonts.regular, fontSize: 12, color: '#9a9494' },
+  footerSmall: { fontFamily: fonts.regular, fontSize: 12, color: '#777777' },
 });
