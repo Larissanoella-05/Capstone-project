@@ -26,7 +26,29 @@ cd frontend && npm test     # 27 tests
 
 **Why:** the core value of the system is the hand-off between three roles through one database. Only an end-to-end test proves the hand-off, the permissions and the notifications work together.
 
-**How:** the tests reset a **separate** test database with the seed data, start the Express app on a random port and call it over HTTP. See README §6 for the exact commands.
+**How:** the tests reset a **separate** test database with the seed data, start the Express app on a random port and call it over HTTP.
+
+**Running them** (in Git Bash, from the project folder):
+
+```bash
+# 1. Create the test database once (asks for the postgres password)
+psql -U postgres -h localhost -c "CREATE DATABASE umuriro_test;"
+
+# 2. Type the test connection URL without it showing on screen or in your shell history:
+#    postgresql://postgres:YOUR_PASSWORD@localhost:5432/umuriro_test?schema=public
+read -rsp "Test database URL: " TEST_DATABASE_URL && export TEST_DATABASE_URL && echo
+
+# 3. Create the tables in the TEST database (once, and after each new migration)
+cd backend
+DATABASE_URL="$TEST_DATABASE_URL" npx prisma migrate deploy
+
+# 4. Run them
+npm run test:integration
+
+# Load test (read-only), against an API started on the TEST database in a second window:
+#   cd backend && DATABASE_URL="$TEST_DATABASE_URL" PORT=4100 npm start
+API_URL=http://localhost:4100 npm run test:perf
+```
 
 **Database safety:** because the seed TRUNCATEs every table, `tests/integration/testDatabaseGuard.js` runs first and stops the run (nothing changed) unless:
 
