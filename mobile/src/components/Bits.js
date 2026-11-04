@@ -6,13 +6,16 @@ import {
   STATUS_TIME_FIELD,
   fmtTime,
 } from '../lib/format.js';
-import { colors, fonts, radius, shadow } from '../theme.js';
+import { colors, fonts, radius } from '../theme.js';
 
 // The five steps the segments and the timeline show. WORKING folds into ARRIVED, as on the web.
 const STEPS = ['REPORTED', 'ASSIGNED', 'ON_THE_WAY', 'ARRIVED', 'RESOLVED'];
 const stepIndex = (status) => STEPS.indexOf(status === 'WORKING' ? 'ARRIVED' : status);
 
-/** A white card with a 4 px radius and a soft shadow, like the web's `.panel`. */
+/**
+ * A white card with a 4 px radius, like the web's `.panel`. It has no overflow clipping and no elevation shadow:
+ * buttons inside an elevated, clipped card did not receive taps on Android (Open job, Track live).
+ */
 export function Panel({ children, style, ...rest }) {
   return (
     <View style={[styles.panel, style]} {...rest}>
@@ -272,8 +275,6 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
     borderRadius: radius,
     backgroundColor: colors.white,
-    overflow: 'hidden',
-    ...shadow,
   },
   panelHead: {
     borderBottomWidth: 1,

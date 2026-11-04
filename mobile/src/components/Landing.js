@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   Image,
   Pressable,
@@ -13,7 +13,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { useToast } from '../context/ToastContext.js';
-import { CTA, FAQ, HERO, HOTLINE, ROLES_COPY, STEP_CARDS } from '../lib/landingCopy.js';
+import { FAQ, FOOTER_COPY, HERO, HOTLINE, ROLES_COPY, STEP_CARDS } from '../lib/landingCopy.js';
 import { openLink } from '../lib/links.js';
 import { colors, fonts, radius, shadow } from '../theme.js';
 
@@ -45,10 +45,31 @@ export default function Landing() {
   const toast = useToast();
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
+  const scroll = useRef(null);
+  const [offsets, setOffsets] = useState({});
 
   const signIn = () => router.push('/login');
-  const call = async () => {
-    if (!(await openLink(`tel:${HOTLINE}`))) toast('This phone cannot make calls.', 'error');
+  const open = async (url, failure) => {
+    if (!(await openLink(url))) toast(failure, 'error');
+  };
+  const call = () => open(`tel:${HOTLINE}`, 'This phone cannot make calls.');
+  const goTo = (section) => scroll.current?.scrollTo({ y: offsets[section] ?? 0, animated: true });
+  // Offsets are inside the light section, which starts below the hero.
+  const measure = (section) => (event) => {
+    const { y } = event.nativeEvent.layout;
+    setOffsets((current) => ({ ...current, [section]: y }));
+  };
+  const measureLight = (event) => {
+    const { y } = event.nativeEvent.layout;
+    setOffsets((current) => ({ ...current, light: y }));
+  };
+  const goToSection = (section) => {
+    if (section === 'top') goTo('top');
+    else
+      scroll.current?.scrollTo({
+        y: (offsets.light ?? 0) + (offsets[section] ?? 0),
+        animated: true,
+      });
   };
 
   return (
@@ -68,11 +89,20 @@ export default function Landing() {
           >
             <Feather name="phone" size={20} color={colors.accent} />
           </Pressable>
-          <ReportButton compact onPress={signIn} />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={HERO.report}
+            onPress={signIn}
+            style={({ pressed }) => [styles.reportButton, pressed && { opacity: 0.85 }]}
+          >
+            <Text style={styles.reportText}>{HERO.report}</Text>
+            <Feather name="arrow-up-right" size={14} color={colors.onAccent} />
+          </Pressable>
         </View>
       </View>
 
       <ScrollView
+        ref={scroll}
         showsVerticalScrollIndicator={false}
         overScrollMode="never"
         contentContainerStyle={{ paddingBottom: insets.bottom }}
@@ -89,20 +119,21 @@ export default function Landing() {
               <Text style={{ color: colors.accent }}>{HERO.accentWord.toUpperCase()}</Text>
             </Text>
             <Text style={styles.tagline}>{HERO.tagline}</Text>
-            <View style={styles.heroButtons}>
-              <ReportButton label={HERO.report} onPress={signIn} />
-              <Pressable
-                accessibilityRole="button"
-                onPress={signIn}
-                style={({ pressed }) => [styles.outlineButton, pressed && { opacity: 0.8 }]}
-              >
-                <Text style={styles.outlineText}>Sign in</Text>
-              </Pressable>
-            </View>
+            <Pressable
+              accessibilityRole="button"
+              onPress={signIn}
+              style={({ pressed }) => [
+                styles.reportButton,
+                styles.heroButton,
+                pressed && { opacity: 0.85 },
+              ]}
+            >
+              <Text style={styles.reportText}>Sign in</Text>
+            </Pressable>
           </View>
         </Photo>
 
-        <View style={styles.light}>
+        <View onLayout={measureLight} style={styles.light}>
           <View style={styles.stepGrid}>
             {STEP_CARDS.map((card) => (
               <View key={card.title} style={[styles.step, card.highlight && styles.stepOn]}>
@@ -120,11 +151,11 @@ export default function Landing() {
             ))}
           </View>
 
-          <Text style={styles.eyebrow}>{ROLES_COPY.eyebrow}</Text>
-          <Text accessibilityRole="header" style={styles.h2}>
-            {ROLES_COPY.title}
-          </Text>
-          <View style={{ gap: 12 }}>
+          <View onLayout={measure('roles')} style={{ gap: 12 }}>
+            <Text style={styles.eyebrow}>{ROLES_COPY.eyebrow}</Text>
+            <Text accessibilityRole="header" style={styles.h2}>
+              {ROLES_COPY.title}
+            </Text>
             {ROLES_COPY.items.map((item) => {
               const mobile = item.title !== 'Service coordinator';
               return (
@@ -134,72 +165,101 @@ export default function Landing() {
                   accessibilityLabel={`${item.title}. ${item.body}. ${mobile ? item.go : COORDINATOR_NOTE}`}
                   disabled={!mobile}
                   onPress={signIn}
+                  style={[styles.role, item.highlight && styles.roleOn]}
                 >
-                  <Photo
+                  <Image
                     source={PHOTOS[item.image]}
-                    style={[styles.role, item.highlight && styles.roleOn]}
-                  >
-                    <View style={[styles.roleShade, { borderRadius: radius }]} />
+                    resizeMode="cover"
+                    accessibilityIgnoresInvertColors
+                    style={styles.rolePhoto}
+                  />
+                  <View style={styles.roleText}>
                     <Text style={styles.roleTitle}>{item.title}</Text>
                     <Text style={styles.roleBody}>{item.body}</Text>
                     <Text style={styles.roleGo}>{mobile ? `${item.go} ↗` : COORDINATOR_NOTE}</Text>
-                  </Photo>
+                  </View>
                 </Pressable>
               );
             })}
           </View>
 
-          <Text style={[styles.eyebrow, { marginTop: 32 }]}>{FAQ.eyebrow}</Text>
-          <Text accessibilityRole="header" style={styles.h2}>
-            {FAQ.title}
-          </Text>
-          <View style={styles.faq}>
-            {FAQ.items.map((item, index) => (
-              <FaqRow key={item.q} item={item} first={index === 0} />
-            ))}
+          <View onLayout={measure('faq')} style={{ marginTop: 20, gap: 12 }}>
+            <Text style={styles.eyebrow}>{FAQ.eyebrow}</Text>
+            <Text accessibilityRole="header" style={styles.h2}>
+              {FAQ.title}
+            </Text>
+            <View style={styles.faq}>
+              {FAQ.items.map((item, index) => (
+                <FaqRow key={item.q} item={item} first={index === 0} />
+              ))}
+            </View>
           </View>
         </View>
 
-        <View style={styles.cta}>
-          <Text accessibilityRole="header" style={styles.ctaTitle}>
-            {CTA.title.join('\n')}
-          </Text>
-          <Text style={styles.ctaBody}>{CTA.body}</Text>
-          <Pressable
-            accessibilityRole="button"
-            onPress={signIn}
-            style={({ pressed }) => [styles.whiteButton, pressed && { opacity: 0.85 }]}
-          >
-            <Text style={styles.whiteText}>{CTA.signIn}</Text>
-            <Feather name="arrow-up-right" size={18} color={colors.accent} />
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            onPress={call}
-            style={({ pressed }) => [styles.outlineButton, pressed && { opacity: 0.8 }]}
-          >
-            <Text style={styles.outlineText}>{CTA.call}</Text>
-          </Pressable>
+        <View style={styles.footer}>
+          <View style={styles.brand}>
+            <Feather name="zap" size={24} color={colors.accent} />
+            <Text style={styles.brandText}>UMURIRO</Text>
+          </View>
+          <Text style={styles.footerBlurb}>{FOOTER_COPY.blurb}</Text>
+
+          <FooterColumn title="Quick Links">
+            <FooterLink label="Home" onPress={() => goToSection('top')} />
+            <FooterLink label="Dashboards" onPress={() => goToSection('roles')} />
+            <FooterLink label="FAQ" onPress={() => goToSection('faq')} />
+          </FooterColumn>
+
+          <FooterColumn title="Services">
+            <FooterLink label="Report a fault" onPress={signIn} />
+            <FooterLink label="Technician jobs" onPress={signIn} />
+            <FooterLink label="Safety guidance" onPress={() => goToSection('faq')} />
+          </FooterColumn>
+
+          <FooterColumn title={FOOTER_COPY.contactTitle}>
+            {FOOTER_COPY.contact.map((line) =>
+              line.href ? (
+                <FooterLink
+                  key={line.label}
+                  label={line.label}
+                  onPress={() => open(line.href, 'This phone cannot open that link.')}
+                />
+              ) : (
+                <Text key={line.label} style={styles.footerText}>
+                  {line.label}
+                </Text>
+              )
+            )}
+          </FooterColumn>
+
+          <View style={styles.footerBase}>
+            <Text style={styles.footerSmall}>{FOOTER_COPY.copyright}</Text>
+            <Text style={styles.footerSmall}>{FOOTER_COPY.legal}</Text>
+          </View>
         </View>
       </ScrollView>
     </View>
   );
 }
 
-function ReportButton({ onPress, label = HERO.report, compact = false }) {
+function FooterColumn({ title, children }) {
+  return (
+    <View style={{ gap: 4 }}>
+      <Text accessibilityRole="header" style={styles.footerHeading}>
+        {title}
+      </Text>
+      {children}
+    </View>
+  );
+}
+
+function FooterLink({ label, onPress }) {
   return (
     <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityRole="link"
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.reportButton,
-        compact && styles.reportCompact,
-        pressed && { opacity: 0.85 },
-      ]}
+      style={({ pressed }) => [styles.footerLink, pressed && { opacity: 0.7 }]}
     >
-      <Text style={[styles.reportText, compact && { fontSize: 13 }]}>{label}</Text>
-      <Feather name="arrow-up-right" size={compact ? 14 : 16} color={colors.onAccent} />
+      <Text style={styles.footerText}>{label}</Text>
     </Pressable>
   );
 }
@@ -236,16 +296,16 @@ const styles = StyleSheet.create({
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   iconButton: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   reportButton: {
-    minHeight: 48,
+    minHeight: 44,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    paddingHorizontal: 22,
+    paddingHorizontal: 14,
     borderRadius: radius,
     backgroundColor: colors.accent,
   },
-  reportCompact: { minHeight: 44, paddingHorizontal: 14 },
+  heroButton: { minHeight: 52, alignSelf: 'stretch' },
   reportText: { fontFamily: fonts.bold, fontSize: 15, color: colors.onAccent },
   hero: { justifyContent: 'center', backgroundColor: colors.ink },
   shade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.55)' },
@@ -264,20 +324,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: colors.white,
   },
-  heroButtons: { gap: 12, alignItems: 'center', alignSelf: 'stretch' },
-  outlineButton: {
-    minHeight: 48,
-    alignSelf: 'stretch',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 22,
-    borderRadius: radius,
-    borderWidth: 1,
-    borderColor: colors.white,
-  },
-  outlineText: { fontFamily: fonts.bold, fontSize: 15, color: colors.white },
-  light: { backgroundColor: colors.paper, padding: 16, paddingTop: 24, gap: 12 },
-  stepGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 20 },
+  light: { backgroundColor: colors.paper, padding: 16, paddingTop: 24 },
+  stepGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24 },
   step: {
     width: '48%',
     flexGrow: 1,
@@ -293,12 +341,20 @@ const styles = StyleSheet.create({
   stepTitle: { fontFamily: fonts.black, fontSize: 15, lineHeight: 20, color: colors.ink },
   eyebrow: { fontFamily: fonts.bold, fontSize: 12, color: colors.accent },
   h2: { fontFamily: fonts.black, fontSize: 24, lineHeight: 30, color: colors.ink },
-  role: { minHeight: 150, justifyContent: 'flex-end', gap: 4, padding: 16, borderRadius: radius },
+  // The photo sits above the text and shows almost all of the picture (3:2 photos in a 16:10 frame).
+  role: {
+    overflow: 'hidden',
+    borderRadius: radius,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.white,
+  },
   roleOn: { borderWidth: 2, borderColor: colors.accent },
-  roleShade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
-  roleTitle: { fontFamily: fonts.black, fontSize: 20, color: colors.white },
-  roleBody: { fontFamily: fonts.regular, fontSize: 14, color: colors.white },
-  roleGo: { marginTop: 6, fontFamily: fonts.bold, fontSize: 13, color: colors.white },
+  rolePhoto: { width: '100%', aspectRatio: 16 / 10 },
+  roleText: { gap: 2, padding: 14 },
+  roleTitle: { fontFamily: fonts.black, fontSize: 18, color: colors.ink },
+  roleBody: { fontFamily: fonts.regular, fontSize: 14, color: colors.muted },
+  roleGo: { marginTop: 6, fontFamily: fonts.bold, fontSize: 13, color: colors.accent },
   faq: {
     borderRadius: radius,
     borderWidth: 1,
@@ -322,17 +378,16 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     color: colors.muted,
   },
-  cta: { gap: 16, padding: 24, paddingVertical: 40, backgroundColor: colors.accent },
-  ctaTitle: { fontFamily: fonts.black, fontSize: 28, lineHeight: 34, color: colors.white },
-  ctaBody: { fontFamily: fonts.regular, fontSize: 15, lineHeight: 22, color: colors.white },
-  whiteButton: {
-    minHeight: 52,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    borderRadius: radius,
-    backgroundColor: colors.white,
+  footer: { gap: 24, padding: 24, paddingTop: 32, backgroundColor: '#140b0c' },
+  footerBlurb: { fontFamily: fonts.regular, fontSize: 14, lineHeight: 22, color: '#c9c3c3' },
+  footerHeading: { fontFamily: fonts.black, fontSize: 16, color: colors.white, marginBottom: 4 },
+  footerLink: { minHeight: 36, justifyContent: 'center' },
+  footerText: { fontFamily: fonts.regular, fontSize: 14, lineHeight: 22, color: '#c9c3c3' },
+  footerBase: {
+    gap: 4,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.15)',
+    paddingTop: 16,
   },
-  whiteText: { fontFamily: fonts.bold, fontSize: 15, color: colors.accent },
+  footerSmall: { fontFamily: fonts.regular, fontSize: 12, color: '#9a9494' },
 });

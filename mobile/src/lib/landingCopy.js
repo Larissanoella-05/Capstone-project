@@ -3,6 +3,7 @@
 // Router links and the other web-only sections stay in landingContent.js.
 
 export const HOTLINE = '2727';
+const HOTLINE_HREF = `tel:${HOTLINE}`;
 
 export const HERO = {
   headline: ['Umuriro', 'restores'],
@@ -93,4 +94,18 @@ export const CTA = {
   body: 'No more guessing when the lights will return. Sign in to report a fault and follow the repair until power is back.',
   signIn: 'Sign in to report',
   call: `Call ${HOTLINE}`,
+};
+
+/** The footer text that is the same on the web and in the Android app. */
+export const FOOTER_COPY = {
+  blurb:
+    'We believe in a world powered by safe, reliable electricity. Umuriro is dedicated to getting faults reported, assigned and fixed faster.',
+  contactTitle: 'Electricity provider (REG)',
+  contact: [
+    { label: `Toll free: ${HOTLINE}`, href: HOTLINE_HREF },
+    { label: 'info@reg.rw', href: 'mailto:info@reg.rw' },
+    { label: 'KN82 ST3, Nyarugenge, Kigali' },
+  ],
+  copyright: '© 2026 Umuriro. All Rights Reserved.',
+  legal: 'Privacy Policy | Terms of Service',
 };

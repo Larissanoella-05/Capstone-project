@@ -29,13 +29,27 @@ describe('Landing', () => {
     ).toBeTruthy();
   });
 
-  it('opens the sign-in screen from every sign-in action', async () => {
+  it('opens the sign-in screen from the header, the hero and the footer', async () => {
     await render(<Landing />);
     await fireEvent.press(screen.getByText('Sign in'));
-    await fireEvent.press(screen.getByText('Sign in to report'));
     await fireEvent.press(screen.getAllByLabelText('Report a fault')[0]);
+    await fireEvent.press(screen.getByText('Technician jobs'));
     expect(mockPush).toHaveBeenCalledTimes(3);
     for (const call of mockPush.mock.calls) expect(call[0]).toBe('/login');
+  });
+
+  it('has one Report a fault button in the header and none in the hero', async () => {
+    await render(<Landing />);
+    expect(screen.getAllByLabelText('Report a fault')).toHaveLength(1);
+  });
+
+  it('ends with the footer instead of the Secure reliable power section', async () => {
+    await render(<Landing />);
+    expect(screen.queryByText(/Secure reliable power/)).toBeNull();
+    expect(screen.getByText('Quick Links')).toBeTruthy();
+    expect(screen.getByText('Electricity provider (REG)')).toBeTruthy();
+    expect(screen.getByText('Toll free: 2727')).toBeTruthy();
+    expect(screen.getByText('info@reg.rw')).toBeTruthy();
   });
 
   it('has no sign-in action on the coordinator card, which is web only', async () => {
