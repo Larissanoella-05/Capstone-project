@@ -8,8 +8,8 @@ Built as a final-year capstone for **Ndera Sector, Gasabo District, Kigali**.
 | **Live app**                | https://capstone-project-six-inky.vercel.app             |
 | **Live API (health check)** | https://capstone-project-as2y.onrender.com/api/health    |
 | **Repository**              | https://github.com/Larissanoella-05/Capstone-project.git |
-| **Walkthrough video**       | _TODO: add the video link_                               |
-| **Technical report (PDF)**  | _TODO: add the report link_                              |
+| **Walkthrough video**       |                                                          |
+| **Technical report (PDF)**  |                                                          |
 
 > The API runs on Render's free tier and falls asleep after about 15 minutes. If sign-in is slow, open the
 > health-check link first and give it up to a minute to wake up.
