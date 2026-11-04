@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import './landing.css';
-import LandingHeader from './LandingHeader.jsx';
 import Hero from './Hero.jsx';
-import StepCards from './StepCards.jsx';
 import About from './About.jsx';
 import Services from './Services.jsx';
 import Roles from './Roles.jsx';
@@ -11,7 +9,7 @@ import SafetyTips from './SafetyTips.jsx';
 import Cta from './Cta.jsx';
 import LandingFooter from './LandingFooter.jsx';
 
-const REVEAL_IDS = ['flow', 'about', 'services', 'roles', 'faq', 'blog', 'cta'];
+const REVEAL_IDS = ['about', 'services', 'roles', 'faq', 'blog', 'cta'];
 const REVEAL_AT = 0.85; // a section is "seen" once its top passes 85% of the viewport height
 
 /** Marks each section as seen once it scrolls into view, so its content can animate in. */
@@ -45,33 +43,14 @@ function useReveal() {
   return seen;
 }
 
-/** True when the visitor asked the OS for less motion. */
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(
-    () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  );
-
-  useEffect(() => {
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const onChange = (event) => setReduced(event.matches);
-    query.addEventListener('change', onChange);
-    return () => query.removeEventListener('change', onChange);
-  }, []);
-
-  return reduced;
-}
-
 /** The public page at "/" for signed-out visitors. Every action leads to sign-in. */
 export default function Landing() {
   const seen = useReveal();
-  const reducedMotion = usePrefersReducedMotion();
 
   return (
     <div className="landing">
-      <LandingHeader />
       <main>
-        <Hero reducedMotion={reducedMotion} />
-        <StepCards seen={seen.flow} />
+        <Hero />
         <About seen={seen.about} />
         <Services seen={seen.services} />
         <Roles seen={seen.roles} />
