@@ -9,10 +9,7 @@ export function signToken(user, { expiresIn = env.jwtExpiresIn } = {}) {
   });
 }
 
-/**
- * Reads the Bearer token, loads the user with their role profile and puts it on req.user.
- * This is the single place to swap in a stronger scheme (refresh tokens, SSO) later.
- */
+/** Reads the Bearer token and puts the user, with their role profile, on req.user. */
 export const requireAuth = asyncHandler(async (req, _res, next) => {
   const header = req.headers.authorization || '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : null;
@@ -35,7 +32,6 @@ export const requireAuth = asyncHandler(async (req, _res, next) => {
   next();
 });
 
-/** Allows the route only for the listed roles. */
 export const requireRole =
   (...roles) =>
   (req, _res, next) => {

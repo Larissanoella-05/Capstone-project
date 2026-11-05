@@ -1,4 +1,3 @@
-// Unit tests for the landing page copy and link data. Run with: npm test
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import * as content from './landingContent.js';

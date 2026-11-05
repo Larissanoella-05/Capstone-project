@@ -4,11 +4,7 @@ import { useApi } from '../hooks/useApi.js';
 
 const NotificationsContext = createContext(null);
 
-/**
- * One shared copy of the signed-in user's notifications for a role's tabs, so the Alerts badge, the header
- * bell and the Alerts screen read the same data and only one request polls. It also refreshes at once when a
- * push arrives while the app is open.
- */
+/** One shared copy of the user's notifications, so the badge, bell and Alerts screen read the same data and one request polls. */
 export function NotificationsProvider({ children }) {
   const state = useApi('/notifications', { interval: 6000 });
   const { reload } = state;

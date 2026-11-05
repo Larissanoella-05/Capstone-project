@@ -17,7 +17,6 @@
   --color-amber: #6b4a00;
   --color-blue: #10345f;
 
-  /* Names the pages already use, pointed at the new palette */
   --color-yellow: var(--color-accent);
   --color-volt: var(--color-accent);
   --color-volt-soft: var(--color-tint);
@@ -83,7 +82,6 @@
 }
 
 @layer components {
-  /* Small label above a value or a section */
   .eyebrow {
     font-size: 12px;
     font-weight: 600;
@@ -126,7 +124,6 @@
     cursor: not-allowed;
     opacity: 0.55;
   }
-  /* The dark button */
   .btn-ink {
     border-color: var(--color-ink);
     background: var(--color-ink);
@@ -135,7 +132,7 @@
   .btn-ink:hover:not(:disabled) {
     background: color-mix(in srgb, var(--color-ink) 85%, white);
   }
-  /* The main button: accent fill. btn-volt is the older name for it. */
+  /* Accent fill; btn-volt is the older name. */
   .btn-accent,
   .btn-volt {
     border-color: var(--color-accent);
@@ -146,7 +143,6 @@
   .btn-volt:hover:not(:disabled) {
     background: color-mix(in srgb, var(--color-accent) 90%, black);
   }
-  /* Cancel / destructive actions */
   .btn-danger {
     border-color: var(--color-red);
     color: var(--color-red);
@@ -224,7 +220,6 @@
     line-height: 16px;
     white-space: nowrap;
   }
-  /* Filter chip (All / Open / Resolved) */
   .chip {
     position: relative;
     cursor: pointer;

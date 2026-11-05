@@ -1,13 +1,11 @@
 // Validation for the three-step report flow: 1 type, 2 details, 3 review.
-// The Android app keeps a verbatim copy in mobile/src/lib/reportSteps.js (guarded by sharedWithMobile.test.js).
 
 export const STEP_NAMES = ['Type', 'Details', 'Review'];
 export const MAX_DESCRIPTION = 1000;
 const PHONE_PATTERN = /^[+\d][\d\s-]{7,}$/;
 
 /**
- * Errors for one step, keyed by field. An empty object means the step is valid.
- * The review step (3) checks the earlier steps again, so a report is only sent when all of it is valid.
+ * Errors keyed by field, empty if the step is valid; step 3 rechecks the earlier steps.
  * @param {number} step 1, 2 or 3
  * @param {{ category: string, description: string, contactPhone: string, hasLocation: boolean }} form
  * @returns {Record<string, string>}

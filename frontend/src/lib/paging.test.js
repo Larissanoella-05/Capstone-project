@@ -1,4 +1,3 @@
-// Unit tests for the paging helpers used by the coordinator fault list. Run with: npm test
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { PAGE_SIZE, pageSummary, pagedPath, showFirst } from './paging.js';

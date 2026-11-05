@@ -99,7 +99,6 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
 
-      {/* ---------- CUSTOMER ---------- */}
       <Route
         path="/customer"
         element={
@@ -124,7 +123,6 @@ export default function App() {
         />
       </Route>
 
-      {/* ---------- TECHNICIAN ---------- */}
       <Route
         path="/technician"
         element={
@@ -149,7 +147,6 @@ export default function App() {
         />
       </Route>
 
-      {/* ---------- COORDINATOR ---------- */}
       <Route
         path="/coordinator"
         element={

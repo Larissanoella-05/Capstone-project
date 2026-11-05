@@ -1,7 +1,6 @@
 import { CTA, HOTLINE_HREF, REPORT_LINK } from '../../lib/landingContent.js';
 import { ArrowUpRight, LoginLink } from './LandingBits.jsx';
 
-/** The red call-to-action block: sign in to report, or call the hotline. No form. */
 export default function Cta({ seen }) {
   return (
     <section id="cta" className={`lp-sec lp-alt lp-cta-sec ${seen ? 'lp-seen' : ''}`}>

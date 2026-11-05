@@ -21,8 +21,7 @@ function idParam(req) {
   return id;
 }
 
-// GET /api/faults?status=OPEN|ALL|<status>&priority=&search=&date=TODAY|WEEK&page=&pageSize=
-// Without page or pageSize the whole list is returned; with either it is paged (20 per page by default, 100 at most).
+// Paged only when page or pageSize is given (20 per page by default, 100 at most).
 router.get(
   '/',
   validate(listQuerySchema, 'query'),
@@ -31,7 +30,6 @@ router.get(
   })
 );
 
-// GET /api/faults/:id
 router.get(
   '/:id',
   asyncHandler(async (req, res) => {
@@ -39,7 +37,6 @@ router.get(
   })
 );
 
-// POST /api/faults  (customer)
 router.post(
   '/',
   requireRole('CUSTOMER'),
@@ -49,7 +46,6 @@ router.post(
   })
 );
 
-// PATCH /api/faults/:id  (coordinator: change priority)
 router.patch(
   '/:id',
   requireRole('COORDINATOR'),
@@ -59,7 +55,6 @@ router.patch(
   })
 );
 
-// PATCH /api/faults/:id/status  (technician: next stage, coordinator: cancel)
 router.patch(
   '/:id/status',
   requireRole('TECHNICIAN', 'COORDINATOR'),
@@ -69,7 +64,6 @@ router.patch(
   })
 );
 
-// POST /api/faults/:id/assign  (coordinator)
 router.post(
   '/:id/assign',
   requireRole('COORDINATOR'),

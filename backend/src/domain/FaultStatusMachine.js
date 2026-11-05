@@ -3,20 +3,12 @@ import { OPEN_STATUSES, STATUS_FLOW } from '../utils/constants.js';
 
 const humanise = (status) => status.replace(/_/g, ' ').toLowerCase();
 
-/**
- * The rules of the fault response workflow, kept in one place.
- *
- *   REPORTED → ASSIGNED → ON_THE_WAY → ARRIVED → WORKING → RESOLVED
- *                       (any open status) → CANCELLED  (coordinator only)
- *
- * The class holds no database code, so every rule can be unit tested on its own,
- * and the service layer only asks it questions ("may this user make this change?").
- */
+/** REPORTED → ASSIGNED → ON_THE_WAY → ARRIVED → WORKING → RESOLVED; a coordinator can cancel any open one. */
 export class FaultStatusMachine {
   /**
-   * @param {string[]} flow          ordered statuses a fault moves through
-   * @param {string[]} openStatuses  statuses that still need work
-   * @param {string[]} assignable    statuses in which a technician may be (re)assigned
+   * @param {string[]} flow
+   * @param {string[]} openStatuses
+   * @param {string[]} assignable
    */
   constructor(
     flow = STATUS_FLOW,
@@ -49,10 +41,7 @@ export class FaultStatusMachine {
     }
   }
 
-  /**
-   * Throws an HttpError explaining why the change is not allowed; returns nothing if it is.
-   * @param {{ role: string, from: string, to: string, resolutionNote?: string }} change
-   */
+  /** @param {{ role: string, from: string, to: string, resolutionNote?: string }} change */
   assertTransition({ role, from, to, resolutionNote }) {
     if (to === 'CANCELLED') {
       if (role !== 'COORDINATOR')
@@ -82,5 +71,4 @@ export class FaultStatusMachine {
   }
 }
 
-/** Shared instance used by the services. */
 export const faultStatusMachine = new FaultStatusMachine();

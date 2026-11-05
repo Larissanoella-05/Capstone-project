@@ -12,10 +12,7 @@ import { colors, fonts, radius } from '../theme.js';
 const STEPS = ['REPORTED', 'ASSIGNED', 'ON_THE_WAY', 'ARRIVED', 'RESOLVED'];
 const stepIndex = (status) => STEPS.indexOf(status === 'WORKING' ? 'ARRIVED' : status);
 
-/**
- * A white card with a 4 px radius, like the web's `.panel`. It has no overflow clipping and no elevation shadow:
- * buttons inside an elevated, clipped card did not receive taps on Android (Open job, Track live).
- */
+/** No overflow clipping or elevation shadow: buttons inside an elevated, clipped card did not receive taps on Android. */
 export function Panel({ children, style, ...rest }) {
   return (
     <View style={[styles.panel, style]} {...rest}>
@@ -24,7 +21,6 @@ export function Panel({ children, style, ...rest }) {
   );
 }
 
-/** The title strip at the top of a panel. */
 export function PanelHead({ children, style, textStyle }) {
   return (
     <View style={[styles.panelHead, style]}>
@@ -61,7 +57,6 @@ export function Button({ label, onPress, tone = 'volt', icon, disabled = false, 
   );
 }
 
-/** Filter chip (All / Open / Resolved). */
 export function Chip({ label, active, onPress }) {
   return (
     <Pressable
@@ -83,7 +78,6 @@ const CATEGORY_ICON = {
   OTHER: 'help-circle',
 };
 
-/** Square tint tile with the icon of a fault category, used in lists of faults. */
 export function FaultIcon({ category }) {
   return (
     <View style={styles.faultIcon}>
@@ -92,7 +86,6 @@ export function FaultIcon({ category }) {
   );
 }
 
-/** Round tile with the initials of a person, used in the greeting row. */
 export function Avatar({ name }) {
   const initials = (name ?? '')
     .split(/\s+/)
@@ -107,7 +100,6 @@ export function Avatar({ name }) {
   );
 }
 
-/** Five progress segments: done steps are the accent colour, the current step a lighter accent. */
 export function StageBar({ status }) {
   const current = stepIndex(status);
   const resolved = status === 'RESOLVED';
@@ -138,7 +130,6 @@ export function StageBar({ status }) {
   );
 }
 
-/** The response timeline; every role reads the same stored timestamps. */
 export function Timeline({ fault, audience = 'customer' }) {
   const current = stepIndex(fault.status);
   const resolved = fault.status === 'RESOLVED';
@@ -213,7 +204,6 @@ const MAP_LEGEND = {
   technician: ['Technician', { backgroundColor: colors.blue, borderRadius: radius }],
 };
 
-/** The small key under a map. */
 export function MapLegend({ items }) {
   return (
     <View style={styles.legend}>
@@ -231,12 +221,10 @@ export function MapLegend({ items }) {
   );
 }
 
-/** Small label used above headings and inside panels. */
 export function Eyebrow({ children, style }) {
   return <Text style={[styles.eyebrow, style]}>{children}</Text>;
 }
 
-/** Label on the left, value on the right, hairline underneath. */
 export function KeyRow({ label, children, mono = false, last = false }) {
   return (
     <View style={[styles.keyRow, !last && styles.hairline]}>
@@ -246,7 +234,6 @@ export function KeyRow({ label, children, mono = false, last = false }) {
   );
 }
 
-/** Label above value, used in the bordered detail grids. */
 export function Cell({ label, children, style }) {
   return (
     <View style={[styles.cell, style]}>
@@ -256,7 +243,6 @@ export function Cell({ label, children, style }) {
   );
 }
 
-/** Page title block with the small label above it. */
 export function PageHeading({ eyebrow, title, children }) {
   return (
     <View style={styles.heading}>

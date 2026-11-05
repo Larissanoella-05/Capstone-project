@@ -1,4 +1,3 @@
-// Unit tests for the distance label used on the analytics and fault pages. Run with: npm test
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { fmtMetres } from './distance.js';

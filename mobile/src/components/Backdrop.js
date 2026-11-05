@@ -40,11 +40,7 @@ function Pylon({ width, opacity = 0.3, style }) {
   );
 }
 
-/**
- * Faint circuit lines, a pylon and soft red and lavender glows behind a screen, like the web's `Backdrop`.
- * Put it first inside a relatively positioned frame; it sits behind the content and ignores touches.
- * `pylons` adds a big one in the middle and a small one on the left, for the roomy sign-in screen.
- */
+/** Put first inside a relatively positioned frame; it sits behind the content and ignores touches. `pylons` is for the sign-in screen. */
 export default function Backdrop({ pylons = false }) {
   return (
     <View pointerEvents="none" style={styles.fill} accessibilityElementsHidden>

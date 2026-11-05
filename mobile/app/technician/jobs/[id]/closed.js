@@ -13,7 +13,6 @@ import {
 } from '../../../../src/lib/format.js';
 import { colors, fonts, radius } from '../../../../src/theme.js';
 
-/** Shown after a technician resolves a job. */
 export default function JobClosed() {
   const { id } = useLocalSearchParams();
   const router = useRouter();

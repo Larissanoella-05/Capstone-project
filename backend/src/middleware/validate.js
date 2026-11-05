@@ -1,7 +1,6 @@
 import { badRequest } from '../utils/httpError.js';
 
 /**
- * Validates req.body (or req.query) against a zod schema and replaces it with the parsed value.
  * @param {import('zod').ZodTypeAny} schema
  * @param {'body' | 'query'} [source]
  */

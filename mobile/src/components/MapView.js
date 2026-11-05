@@ -3,8 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, fonts } from '../theme.js';
 
-// MapLibre is native code. An older development build does not contain it, and importing it then throws,
-// which would take down every screen that shows a map. Fall back to a placeholder instead.
+// MapLibre is native code; importing it in an older development build throws, so fall back to a placeholder.
 let MapLibre = null;
 try {
   MapLibre = require('@maplibre/maplibre-react-native');
@@ -42,13 +41,7 @@ const MARKER_STYLE = {
   },
 };
 
-/**
- * One reusable map for the customer and technician screens (MapLibre + OpenFreeMap, no API key).
- *
- * markers: [{ id, lat, lng, kind: 'site' | 'unassigned' | 'technician' | 'onsite', label }]
- * lines:   [[[lat, lng], [lat, lng]], …]  straight links between a technician and a fault
- * interactive: false gives a static preview (no zoom, drag or rotate)
- */
+/** markers `{ id, lat, lng, kind: 'site' | 'unassigned' | 'technician' | 'onsite', label }`; lines `[[lat, lng], [lat, lng]][]`. */
 export default function MapView(props) {
   if (!MapLibre) {
     return (
@@ -88,8 +81,7 @@ function MapLibreView({
     [lines]
   );
 
-  // Re-frame only when the set of markers changes, not on every position update,
-  // so the map does not jump while someone is looking at it.
+  // Re-frame only when the set of markers changes, so the map does not jump on position updates.
   useEffect(() => {
     const key = valid
       .map((m) => m.id)
@@ -118,8 +110,7 @@ function MapLibreView({
     }
   }, [valid]);
 
-  // Inside a scrolling page a map that pans on every touch traps the finger, so an interactive map stays
-  // locked (the page scrolls over it) until it is tapped once.
+  // An interactive map inside a scrolling page traps the finger, so it stays locked until tapped once.
   const [unlocked, setUnlocked] = useState(false);
   const gestures = interactive && unlocked;
 

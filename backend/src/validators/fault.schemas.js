@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-/** Request-body rules for the fault endpoints. Kept apart from the routes so they can be tested and reused. */
+/** Request-body rules for the fault endpoints. */
 
 export const CATEGORIES = /** @type {const} */ ([
   'POWER_OUTAGE',

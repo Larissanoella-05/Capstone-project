@@ -1,4 +1,3 @@
-// Unit tests for restoring a saved sign-in after a page reload. Run with: npm test
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { restoreSession } from './session.js';

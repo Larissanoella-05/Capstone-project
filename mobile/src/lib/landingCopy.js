@@ -1,6 +1,4 @@
-// Landing page copy with no links, shared with the Android app.
-// The Android app keeps a verbatim copy in mobile/src/lib/landingCopy.js (guarded by sharedWithMobile.test.js).
-// Router links and the other web-only sections stay in landingContent.js.
+// Landing copy with no links, shared with the Android app; router links stay in landingContent.js.
 
 export const HOTLINE = '2727';
 const HOTLINE_HREF = `tel:${HOTLINE}`;

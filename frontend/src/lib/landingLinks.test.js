@@ -1,4 +1,3 @@
-// Unit tests for the landing page routing helpers. Run with: npm test
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { homeDecision, loginLink, TARGETS } from './landingLinks.js';

@@ -1,14 +1,4 @@
-/**
- * Adds synthetic faults to the TEST database so the load test has a realistic amount of data.
- *
- *   npm run test:perf:seed           # 2,000 faults
- *   npm run test:perf:seed -- 5000   # a different number (up to 20,000)
- *
- * It runs the same safety checks as the integration tests: TEST_DATABASE_URL must be set, local, end in
- * "_test", differ from DATABASE_URL and hold only demo accounts. Rows it adds have references starting
- * "LT-", and running it again replaces them, so they never pile up. Running the integration tests
- * afterwards wipes them with everything else.
- */
+/** Adds synthetic faults (references "LT-…", replaced on each run) to the TEST database: `npm run test:perf:seed [count]`. */
 import { pathToFileURL } from 'node:url';
 import { PrismaClient } from '@prisma/client';
 import { assertSafeTestDatabase } from '../integration/testDatabaseGuard.js';

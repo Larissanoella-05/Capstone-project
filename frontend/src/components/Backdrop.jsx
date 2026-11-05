@@ -1,8 +1,4 @@
-/**
- * Faint circuit lines, a pylon and a soft glow behind a screen. Place it first inside a
- * `relative` frame and give the content `relative` too, so the content paints above it.
- * The styles are `.app-bg` in index.css.
- */
+/** Place first inside a `relative` frame and give the content `relative` too, so it paints above; styles are `.app-bg`. */
 export default function Backdrop() {
   return (
     <div className="app-bg" aria-hidden="true">

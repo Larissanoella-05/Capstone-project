@@ -12,7 +12,7 @@ const LINKS = [
   { to: '/coordinator/analytics', label: 'Analytics', icon: ChartColumn },
 ];
 
-/** Desktop frame for the service coordinator. The sidebar stacks on top on a narrow screen. */
+/** The sidebar stacks on top on a narrow screen. */
 export default function CoordinatorShell() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -42,7 +42,6 @@ export default function CoordinatorShell() {
   );
 }
 
-/** Title block used at the top of every coordinator page. */
 export function CoordinatorHeading({ eyebrow, title, children, actions }) {
   return (
     <div className="flex flex-wrap items-end justify-between gap-4">

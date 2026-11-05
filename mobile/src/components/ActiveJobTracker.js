@@ -10,11 +10,7 @@ import { TRACKED_STATUSES, shouldPostLocation } from '../lib/location.js';
 
 const MIN_MS = 15000;
 
-/**
- * Renders nothing. While the technician's active job is on the way, arrived or working and the app is in
- * the foreground, it watches the phone's position and posts it so the customer and coordinator maps follow.
- * Foreground only: no background permission, so updates stop when the phone locks or the app closes.
- */
+/** Renders nothing; while the active job is on the way, arrived or working it posts the phone's position, foreground only. */
 export default function ActiveJobTracker() {
   const toast = useToast();
   const { setStatus } = useTracking();
@@ -74,8 +70,7 @@ export default function ActiveJobTracker() {
         post(fix);
         return;
       }
-      // Too soon. Android delivers on distance, so there may be no further fix for a while: keep this one
-      // and give it a single retry once the time limit has passed.
+      // Too soon: keep this fix and retry once, since Android delivers on distance and may send no further fix.
       pending = fix;
       if (!timer && lastPosted) {
         timer = setTimeout(

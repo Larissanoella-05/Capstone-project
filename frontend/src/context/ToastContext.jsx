@@ -2,7 +2,6 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 
 const ToastContext = createContext(() => {});
 
-/** One short confirmation or error message at the bottom of the screen. */
 export function ToastProvider({ children }) {
   const [toast, setToast] = useState(null);
 

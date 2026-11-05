@@ -1,15 +1,10 @@
 import { env } from '../config/env.js';
 
 // An SMS is a courtesy on top of the in-app notification row: nothing in here ever throws to the caller.
-// The proposal asks for an SMS when a report is received and when a technician is assigned (FR9).
 
-/** The notification types that are also sent by SMS. */
 export const SMS_NOTIFICATION_TYPES = new Set(['FAULT_SUBMITTED', 'TECHNICIAN_ASSIGNED']);
 
-/**
- * What the service needs from a gateway. Providers are interchangeable, so a real gateway can replace
- * the logging one without touching the workflow code.
- */
+/** What the service needs from a gateway; providers are interchangeable. */
 export class SmsProvider {
   /** @param {{ to: string, text: string }} _message */
   async send(_message) {
@@ -17,14 +12,14 @@ export class SmsProvider {
   }
 }
 
-/** Default provider: writes the message to the log and sends nothing. Used for the pilot and for tests. */
+/** Default provider: logs the message and sends nothing. */
 export class LogSmsProvider extends SmsProvider {
   async send({ to, text }) {
     console.log(`[sms] to ${to}: ${text}`);
   }
 }
 
-/** Placeholder for Africa's Talking, the gateway named in the proposal. It needs an account, so it is not wired up yet. */
+/** Placeholder for Africa's Talking; it needs an account, so it is not wired up yet. */
 export class AfricasTalkingSmsProvider extends SmsProvider {
   /** @param {{ to: string, text: string }} _message */
   async send(_message) {
@@ -57,7 +52,7 @@ export function setSmsProvider(replacement) {
 
 const inFlight = new Set();
 
-/** Resolves when every SMS started so far has finished (used by tests, which cannot await a background send). */
+/** Resolves when every SMS started so far has finished; tests cannot await a background send. */
 export function whenSmsIdle() {
   return Promise.allSettled([...inFlight]);
 }
@@ -75,8 +70,7 @@ async function send(notifications, phone) {
 }
 
 /**
- * Sends the customer an SMS for the notification rows just created, if they are of a type that is sent by SMS.
- * Call it AFTER the database transaction commits, and do not await it: the response must not wait for the gateway.
+ * Call AFTER the transaction commits and do not await it: the response must not wait for the gateway.
  * @param {{ type: string, message: string }[]} notifications
  * @param {string | null | undefined} phone the customer's phone number
  */

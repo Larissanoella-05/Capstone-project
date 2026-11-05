@@ -3,13 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 import { api } from '../lib/api.js';
 
-/**
- * Loads data from the API and, when `interval` is set, keeps it fresh by polling.
- * Polling runs only while the app is in the foreground and this screen is focused (tab screens stay
- * mounted when hidden), and it reloads once when either comes back.
- *
- * Returns { data, error, loading, reload }.
- */
+/** Polls only while the app is foregrounded and the screen focused (tab screens stay mounted when hidden); returns { data, error, loading, reload }. */
 export function useApi(path, { interval = 0 } = {}) {
   const [state, setState] = useState({
     data: null,
@@ -46,8 +40,7 @@ export function useApi(path, { interval = 0 } = {}) {
           setState({ data, error: null, loading: false, offline: false });
       } catch (error) {
         if (activePath.current !== path) return;
-        // On a background refresh keep showing the last good data instead of an error screen,
-        // but remember that the connection is down so the screen can say so.
+        // On a background refresh keep the last good data, but remember the connection is down so the screen can say so.
         setState((current) => ({
           data: silent ? current.data : null,
           error: silent && current.data ? null : error,
@@ -59,7 +52,6 @@ export function useApi(path, { interval = 0 } = {}) {
     [path]
   );
 
-  // First load, and again whenever the path changes.
   useEffect(() => {
     activePath.current = path;
     if (!path) {

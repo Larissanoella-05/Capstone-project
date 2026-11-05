@@ -1,5 +1,3 @@
-// Routing helpers for the public landing page at "/".
-
 /** Where the signed-in user for the "/" route should go: 'wait', a role home path, or 'landing'. */
 export function homeDecision(user, loading, homeByRole) {
   if (loading) return 'wait';

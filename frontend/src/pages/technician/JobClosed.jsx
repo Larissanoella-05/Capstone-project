@@ -6,7 +6,6 @@ import { KeyRow } from '../../components/Bits.jsx';
 import { Card } from '../../components/Card.jsx';
 import { Async } from '../../components/States.jsx';
 
-/** Shown after a technician resolves a job. */
 export default function JobClosed() {
   const { id } = useParams();
   const state = useApi(`/faults/${id}`);

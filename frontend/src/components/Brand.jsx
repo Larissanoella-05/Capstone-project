@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Bell, LogOut, X, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-/** The square bolt mark. `inverse` is the accent-on-white variant used on dark backgrounds. */
+/** `inverse` is the accent-on-white variant for dark backgrounds. */
 export function LogoMark({ inverse = false }) {
   return (
     <div
@@ -23,7 +23,7 @@ function wasDismissed() {
   }
 }
 
-/** Black strip that reminds everyone this is a pilot and not the real fault line. Dismissible for the visit. */
+/** Pilot notice, dismissible for the visit. */
 export function PilotBanner() {
   const [hidden, setHidden] = useState(wasDismissed);
   if (hidden) return null;
@@ -58,7 +58,6 @@ export function PilotBanner() {
   );
 }
 
-/** Top bar for the customer and technician: logo, wordmark, alerts bell and sign out. */
 export function AppHeader({ homeTo, notificationsTo, unread = 0, onSignOut }) {
   return (
     <header className="flex items-center justify-between border-b border-line bg-white/90 px-5 py-3">

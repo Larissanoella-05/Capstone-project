@@ -14,12 +14,12 @@ export function setExpoClient(client) {
 const RECEIPT_DELAY_MS = 15 * 60 * 1000;
 const inFlight = new Set();
 
-/** Resolves when every push started so far has finished (used by tests, which cannot await a background send). */
+/** Resolves when every push started so far has finished; tests cannot await a background send. */
 export function whenPushIdle() {
   return Promise.allSettled([...inFlight]);
 }
 
-/** Registers a phone's token for the signed-in user. If the token was another user's, it moves (shared phone). */
+/** A token that was another user's moves to the signed-in user (shared phone). */
 export async function registerDevice(user, { token, platform = 'android' }) {
   await prisma.deviceToken.upsert({
     where: { token },
@@ -112,10 +112,7 @@ async function send(notifications) {
   }
 }
 
-/**
- * Pushes the notification rows just created for an event to their recipients' phones.
- * Call it AFTER the database transaction commits, and do not await it: the response must not wait for Expo.
- */
+/** Call AFTER the transaction commits and do not await it: the response must not wait for Expo. */
 export function sendPushForNotifications(notifications) {
   const task = send(notifications).finally(() => inFlight.delete(task));
   inFlight.add(task);

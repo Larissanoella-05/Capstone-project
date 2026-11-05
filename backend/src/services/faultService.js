@@ -13,11 +13,7 @@ import { sendSmsForNotifications } from './smsService.js';
 const STALE_UPDATE_MESSAGE =
   'This fault was just updated by someone else. Refresh to see the latest status.';
 
-/**
- * Updates a fault only if it is still in the state we checked (optimistic concurrency).
- * Two people tapping a button at the same moment can no longer both succeed:
- * the second update matches zero rows, the transaction rolls back and the user gets a 409.
- */
+/** Updates only if the fault is still in the state we checked; a stale update rolls back with a 409. */
 async function guardedUpdate(tx, id, expected, data) {
   const { count } = await tx.faultReport.updateMany({ where: { id, ...expected }, data });
   if (count === 0) throw conflict(STALE_UPDATE_MESSAGE);
@@ -39,10 +35,7 @@ const faultInclude = /** @satisfies {import('@prisma/client').Prisma.FaultReport
   },
 });
 
-/**
- * The faults the user may see, newest first. Without `page` or `pageSize` in the query this is the whole
- * list; with either it is one page, and the totals say how many pages there are.
- */
+/** The faults the user may see, newest first; paged only when the query asks for it. */
 export async function listFaults(user, query = {}) {
   const where = buildFaultFilter(user, query);
   const paging = pagingFor(query);
@@ -85,7 +78,6 @@ export async function getFault(user, id) {
   return serializeFault(await loadFault(user, id));
 }
 
-/** Customer submits a fault. It is linked to their registered service location. */
 export async function createFault(user, body) {
   const customer = user.customer;
 
@@ -142,7 +134,6 @@ export async function createFault(user, body) {
   return getFault(user, id);
 }
 
-/** Coordinator assigns (or reassigns) a technician to a fault. */
 export async function assignTechnician(user, id, technicianId) {
   const fault = await loadFault(user, id);
   faultStatusMachine.assertAssignable(fault.status);
@@ -199,11 +190,7 @@ export async function assignTechnician(user, id, technicianId) {
   return getFault(user, id);
 }
 
-/**
- * Moves a fault to a new status.
- * - The assigned technician moves it one step forward at a time.
- * - A coordinator can cancel an open report.
- */
+/** The assigned technician moves it one step forward; a coordinator can cancel an open report. */
 export async function changeStatus(user, id, body) {
   const fault = await loadFault(user, id);
   const next = body.status;
@@ -273,7 +260,7 @@ export async function changeStatus(user, id, body) {
   return getFault(user, id);
 }
 
-/** Coordinator edits a fault. Only the priority is editable in this prototype. */
+/** Only the priority is editable in this prototype. */
 export async function updateFault(user, id, body) {
   await loadFault(user, id);
   await prisma.faultReport.update({ where: { id }, data: { priority: body.priority } });

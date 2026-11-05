@@ -2,7 +2,6 @@
 export const STEPPER_STEPS = ['REPORTED', 'ASSIGNED', 'ON_THE_WAY', 'ARRIVED', 'RESOLVED'];
 
 /**
- * Where a fault is on the five steps.
  * `current` is the step index, or -1 for a cancelled or unknown status.
  * @param {string} status
  */

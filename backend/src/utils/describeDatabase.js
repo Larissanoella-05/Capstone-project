@@ -1,6 +1,5 @@
 /**
- * Where a database URL points, safe to print in logs: host, port and database name only.
- * The user name and password are never included.
+ * Host, port and database name only, safe to print in logs.
  * @param {string} url a postgresql:// connection URL
  */
 export function describeDatabase(url) {

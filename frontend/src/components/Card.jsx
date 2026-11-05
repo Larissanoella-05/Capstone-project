@@ -1,4 +1,3 @@
-/** White card: 4px radius, 1px border, soft shadow. */
 export function Card({ className = '', children, ...rest }) {
   return (
     <div className={`panel ${className}`} {...rest}>
@@ -7,7 +6,6 @@ export function Card({ className = '', children, ...rest }) {
   );
 }
 
-/** Accent header block with the current status, then white details underneath. */
 export function StatusCard({ eyebrow, title, updated, children, className = '' }) {
   return (
     <Card className={className}>

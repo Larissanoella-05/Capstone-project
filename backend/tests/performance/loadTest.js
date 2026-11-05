@@ -1,13 +1,4 @@
-/**
- * Simple load test for the read endpoints the three dashboards poll every few seconds.
- * Read-only: it signs in as the demo coordinator and only sends GET requests.
- *
- *   npm run test:perf                                   # local API on :4000
- *   API_URL=https://your-api.example.com npm run test:perf
- *   REQUESTS=400 CONCURRENCY=20 npm run test:perf
- *
- * Prints, per endpoint: requests, errors, response size (KB), throughput and latency percentiles (ms).
- */
+/** Read-only load test of the endpoints the dashboards poll; run `npm run test:perf` (env: API_URL, REQUESTS, CONCURRENCY). */
 import { performance } from 'node:perf_hooks';
 import { pathToFileURL } from 'node:url';
 

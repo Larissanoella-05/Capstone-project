@@ -43,7 +43,6 @@ function useReveal() {
   return seen;
 }
 
-/** The public page at "/" for signed-out visitors. Every action leads to sign-in. */
 export default function Landing() {
   const seen = useReveal();
 

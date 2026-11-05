@@ -1,5 +1,4 @@
-// Scroll-driven hero maths for the landing page. Pure, so it can be unit tested.
-// Ported from the design: progress 0..1 runs through the red mask opening, "POWER", then the headline.
+// Progress 0..1 runs through the red mask opening, "POWER", then the headline.
 
 export const HEADER_HEIGHT = 64;
 // The mask artwork is drawn in a 1440x780 box with the hole at (1210, 390), radius 46.

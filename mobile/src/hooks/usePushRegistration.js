@@ -13,11 +13,7 @@ async function registerWithServer(token) {
   }
 }
 
-/**
- * Once someone is signed in, registers this phone for pushes (and again if Expo changes the token).
- * Signing in as another user on the same phone registers the token for them: the server moves it.
- * Sign-out unregisters it (see AuthContext.logout).
- */
+/** Registers this phone for pushes after sign-in, and again if Expo changes the token; sign-out unregisters it. */
 export function usePushRegistration(user) {
   const userId = user?.id;
 

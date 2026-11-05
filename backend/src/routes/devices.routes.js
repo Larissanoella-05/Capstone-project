@@ -8,7 +8,6 @@ import { registerDeviceSchema, removeDeviceSchema } from '../validators/device.s
 const router = Router();
 router.use(requireAuth);
 
-// POST /api/devices  (a signed-in phone registers its push token)
 router.post(
   '/',
   validate(registerDeviceSchema),
@@ -18,7 +17,6 @@ router.post(
   })
 );
 
-// DELETE /api/devices  (sign-out: stop pushes to this phone)
 router.delete(
   '/',
   validate(removeDeviceSchema),

@@ -7,10 +7,7 @@ export function scopeFor(user) {
   return {}; // coordinators see everything
 }
 
-/**
- * Builds the database filter for the fault list: the signed-in user's scope plus the optional
- * status, priority, date and search filters from the query string.
- */
+/** The fault list filter: the user's scope plus the optional status, priority, date and search filters. */
 export function buildFaultFilter(user, query = {}) {
   /** @type {import('@prisma/client').Prisma.FaultReportWhereInput} */
   const where = { ...scopeFor(user) };
@@ -51,7 +48,6 @@ export function buildFaultFilter(user, query = {}) {
 const DEFAULT_PAGE_SIZE = 20;
 
 /**
- * Reads the optional paging values (already validated) from the query.
  * @param {{ page?: number, pageSize?: number, [filter: string]: unknown }} query
  * @returns {{ paged: false } | { paged: true, page: number, pageSize: number, skip: number, take: number }}
  */
@@ -64,7 +60,7 @@ export function pagingFor({ page, pageSize } = {}) {
 
 /**
  * The totals sent with a list. A list that was not paged only gets its total.
- * @param {number} total number of faults matching the filters
+ * @param {number} total
  * @param {ReturnType<typeof pagingFor>} paging
  */
 export function pageMeta(total, paging) {

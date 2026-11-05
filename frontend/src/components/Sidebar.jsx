@@ -2,10 +2,7 @@ import { LogOut } from 'lucide-react';
 import { Link, matchPath, useLocation } from 'react-router-dom';
 import { LogoMark } from './Brand.jsx';
 
-/**
- * White sidebar: logo, role label, items with an icon and a tinted active item with a red bar, and the user card.
- * An item is `{ to, label, icon?, end?, isActive?, badge? }`. `isActive(pathname)` overrides the default path match.
- */
+/** An item is `{ to, label, icon?, end?, isActive?, badge? }`; `isActive(pathname)` overrides the default path match. */
 export default function Sidebar({ homeTo, roleLabel, items, userName, onSignOut, className = '' }) {
   const { pathname } = useLocation();
 

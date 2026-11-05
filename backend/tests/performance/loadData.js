@@ -1,7 +1,4 @@
-/**
- * Builds synthetic fault reports for load testing. Pure: no database, no clock, no Math.random,
- * so the same inputs always give the same faults and the logic can be unit tested.
- */
+/** Builds synthetic faults for load testing; pure and deterministic (no database, clock or Math.random). */
 import { DEFAULT_PRIORITY } from '../../src/utils/constants.js';
 
 /** @typedef {import('@prisma/client').FaultStatus} FaultStatus */
