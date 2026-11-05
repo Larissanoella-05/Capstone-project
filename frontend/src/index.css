@@ -3,6 +3,7 @@
 /* Design tokens from the Umuriro design artifact (red accent, Plus Jakarta Sans + Inter, 4px radius) */
 @theme {
   --color-ink: #0b0b0c;
+  --color-night: #151111;
   --color-paper: #f3f3f9;
   --color-white: #ffffff;
   --color-accent: #e30613;
