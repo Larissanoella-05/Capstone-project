@@ -46,7 +46,6 @@ export function EmptyState({ title, children, action }) {
   );
 }
 
-/** Inline message under a form. */
 export function FormError({ children }) {
   if (!children) return null;
   return (
@@ -60,10 +59,7 @@ export function FormError({ children }) {
   );
 }
 
-/**
- * "There is a problem" box at the top of a form. Focus moves to it when it appears, and each
- * entry links to its field. `items` come from `errorSummary` in lib/formErrors.js.
- */
+/** Focus moves here when it appears; `items` come from `errorSummary` in lib/formErrors.js. */
 export function ErrorSummary({ items }) {
   const ref = useRef(null);
   const count = items.length;

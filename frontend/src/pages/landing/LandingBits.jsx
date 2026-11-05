@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 
-/** The lightning bolt from the design's logo lockup. */
 export function Bolt({ size = 30, ...rest }) {
   return (
     <svg
@@ -67,7 +66,6 @@ export function PhoneIcon({ size = 18 }) {
   );
 }
 
-/** A router link built from a `loginLink(...)` value. */
 export function LoginLink({ link, children, ...rest }) {
   return (
     <Link to={link.to} state={link.state} {...rest}>
@@ -76,7 +74,6 @@ export function LoginLink({ link, children, ...rest }) {
   );
 }
 
-/** A line icon drawn from one path in a square viewBox. */
 export function PathIcon({ path, size = 22, viewBox = 22, stroke = '#555', strokeWidth = 1.6 }) {
   return (
     <svg

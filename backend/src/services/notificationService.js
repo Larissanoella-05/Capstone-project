@@ -1,13 +1,9 @@
-/**
- * Creates in-app notifications. Always called inside the same database
- * transaction as the event that caused it, so the two cannot drift apart.
- */
+/** Always called inside the transaction of the event it describes, so the two cannot drift apart. */
 export function notify(tx, { userId, faultId, type, title, message }) {
   return tx.notification.create({ data: { userId, faultId, type, title, message } });
 }
 
 /**
- * The message a customer receives when their fault enters a status.
  * @param {string} status
  * @param {{ reference: string, technicianName?: string }} details
  */

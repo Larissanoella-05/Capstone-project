@@ -13,8 +13,7 @@ function Header({ back }) {
   return <AppHeader base="/technician" unread={unread} back={back} />;
 }
 
-// The job screens live in this stack, above the tabs. A tab hidden from the tab bar is redirected
-// to the first tab when it gets focus, so it cannot hold a detail screen.
+// The job screens sit above the tabs: a hidden tab is redirected to the first tab on focus, so it cannot hold a detail screen.
 export default function TechnicianLayout() {
   return (
     <NotificationsProvider>

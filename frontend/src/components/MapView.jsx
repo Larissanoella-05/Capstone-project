@@ -16,14 +16,7 @@ function iconFor(kind, selected) {
   });
 }
 
-/**
- * One reusable map for all three roles (Leaflet + OpenStreetMap, no API key).
- *
- * markers: [{ id, lat, lng, kind: 'site' | 'unassigned' | 'technician' | 'onsite', label, onClick }]
- * lines:   [[[lat, lng], [lat, lng]], …]  straight links between a technician and a fault
- * selectedId: marker to highlight
- * interactive: false gives a static preview (no zoom or drag)
- */
+/** markers `{ id, lat, lng, kind: 'site' | 'unassigned' | 'technician' | 'onsite', label, onClick }`; lines `[[lat, lng], [lat, lng]][]`. */
 export default function MapView({
   markers = [],
   lines = [],
@@ -37,7 +30,6 @@ export default function MapView({
   const layerRef = useRef(null);
   const fittedKeyRef = useRef('');
 
-  // Create the map once.
   useEffect(() => {
     const map = L.map(containerRef.current, {
       center: NDERA_CENTRE,
@@ -69,7 +61,6 @@ export default function MapView({
     };
   }, [interactive]);
 
-  // Redraw markers and lines whenever the data changes.
   useEffect(() => {
     const map = mapRef.current;
     const layer = layerRef.current;
@@ -101,8 +92,7 @@ export default function MapView({
       if (marker.onClick) leafletMarker.on('click', marker.onClick);
     });
 
-    // Re-frame only when the set of markers changes, not on every position update,
-    // so the map does not jump while someone is looking at it.
+    // Re-frame only when the set of markers changes, so the map does not jump on position updates.
     const key = valid
       .map((marker) => marker.id)
       .sort()
@@ -152,7 +142,6 @@ export function technicianMarker(technician, { onSite = false } = {}) {
   };
 }
 
-/** Marker and link line for a fault and its technician, depending on the stage. */
 export function faultMapParts(fault) {
   const markers = [faultMarker(fault)];
   const lines = [];

@@ -1,12 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../lib/api.js';
 
-/**
- * Loads data from the API and, when `interval` is set, keeps it fresh by polling.
- * Polling is how the three roles see each other's changes without a page reload.
- *
- * Returns { data, error, loading, fetchedAt, reload }. `fetchedAt` is when the last answer arrived.
- */
+/** Loads data and, when `interval` is set, polls so the roles see each other's changes; returns { data, error, loading, fetchedAt, reload }. */
 export function useApi(path, { interval = 0 } = {}) {
   const [state, setState] = useState({
     data: null,

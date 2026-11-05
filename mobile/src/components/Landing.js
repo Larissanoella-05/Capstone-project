@@ -41,18 +41,13 @@ const PHOTOS = {
   },
 };
 
-// Coordinators only have the web dashboard, so their card says so instead of leading to a sign-in
-// that this app cannot use.
+// Coordinators only have the web dashboard, so their card says so instead of leading to a sign-in.
 const COORDINATOR_NOTE = 'On the web dashboard';
 const HEADER_HEIGHT = 64;
-// Tall enough for the headline, tagline and button below the bar, and short enough that the 3:2
-// photo is not cropped to a sliver on a tall phone.
+// Tall enough for the headline and button, short enough that the 3:2 photo is not cropped to a sliver.
 const HERO_HEIGHT = 500;
 
-/**
- * A photo that fills its box around its focus point, with the children on top (ImageBackground is
- * deprecated). It waits for the box to be measured, so a photo never flashes at the wrong crop.
- */
+/** Replaces the deprecated ImageBackground; it waits for the box to be measured, so a photo never flashes at the wrong crop. */
 function Photo({ photo, style, children }) {
   const [box, setBox] = useState(null);
   const frame = box ? coverFrame(photo, box, photo.focus) : null;
@@ -75,10 +70,7 @@ function Photo({ photo, style, children }) {
   );
 }
 
-/**
- * The first screen for signed-out visitors: the web landing page, short and without the scroll animation.
- * A signed-in user can open it from the header, and then its buttons lead to their own dashboard.
- */
+/** A signed-in user can open it from the header, and then its buttons lead to their own dashboard. */
 export default function Landing() {
   const router = useRouter();
   const toast = useToast();

@@ -8,7 +8,6 @@ import {
 
 const OUTLINE = { bg: '#ffffff', fg: '#0b0b0c' };
 
-/** The small rounded-rectangle tag used for statuses, priorities and availability. */
 export function StatusTag({ tone = OUTLINE, children }) {
   return (
     <span className="pill" style={{ backgroundColor: tone.bg, color: tone.fg }}>
@@ -17,10 +16,7 @@ export function StatusTag({ tone = OUTLINE, children }) {
   );
 }
 
-/**
- * `audience="coordinator"` shows a reported fault as "Unassigned" in the accent colour,
- * which is what it means to the person who has to assign it.
- */
+/** `audience="coordinator"` shows a reported fault as "Unassigned" in the accent colour. */
 export function StatusPill({ status, audience }) {
   const unassigned = status === 'REPORTED' && audience === 'coordinator';
   const label = unassigned ? 'Unassigned' : (STATUS_LABEL[status] ?? status);

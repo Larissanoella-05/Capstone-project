@@ -2,7 +2,6 @@ import { COORDINATOR_LINK, HERO, HERO_HEADLINE, REPORT_LINK } from '../../lib/la
 import { ArrowUpRight, LoginLink } from './LandingBits.jsx';
 import LandingHeader from './LandingHeader.jsx';
 
-/** A still photo with the nav on top of it, the headline on the right and the lineworker on the left. */
 export default function Hero() {
   return (
     <section id="top" className="lp-hero">

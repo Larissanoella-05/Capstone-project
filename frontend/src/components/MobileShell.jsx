@@ -6,11 +6,7 @@ import { AppHeader, PilotBanner } from './Brand.jsx';
 import BottomNav from './BottomNav.jsx';
 import Sidebar from './Sidebar.jsx';
 
-/**
- * Frame for the customer and the technician. It fills the screen like the coordinator's frame:
- * on a phone it is a header on top with a bottom nav; from `md` up the tabs move to a
- * sidebar and the content uses the full width.
- */
+/** On a phone: header on top with a bottom nav; from `md` up the tabs move to a sidebar. */
 export default function MobileShell({ base, tabs, roleLabel }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -32,7 +28,6 @@ export default function MobileShell({ base, tabs, roleLabel }) {
   return (
     <div className="relative flex min-h-dvh flex-col bg-paper md:flex-row">
       <Backdrop />
-      {/* Sidebar: tablet and desktop */}
       <Sidebar
         homeTo={base}
         roleLabel={roleLabel}
@@ -45,7 +40,6 @@ export default function MobileShell({ base, tabs, roleLabel }) {
       <div className="relative z-[1] flex min-w-0 flex-1 flex-col">
         <PilotBanner />
 
-        {/* Header: phone only */}
         <div className="md:hidden">
           <AppHeader
             homeTo={base}

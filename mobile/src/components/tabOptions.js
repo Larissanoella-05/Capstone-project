@@ -21,7 +21,6 @@ export const tabScreenOptions = {
   },
 };
 
-/** A tab label in the small bold style of the web tab bar. */
 export const tabLabel = (title) =>
   function TabLabel({ color }) {
     return <Text style={{ color, fontFamily: fonts.semibold, fontSize: 11 }}>{title}</Text>;

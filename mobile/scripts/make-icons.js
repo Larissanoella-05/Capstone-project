@@ -1,9 +1,4 @@
-// Draws the Umuriro app icons from the same bolt as frontend/public/favicon.svg (a yellow bolt on near-black).
-// No dependencies: it rasterises the polygon with 4x4 supersampling and writes PNG files itself.
-//
-//   node scripts/make-icons.js
-//
-// Output goes to assets/. Re-run it after changing the colours or proportions below.
+// Draws the app icons into assets/ from the bolt in frontend/public/favicon.svg, with no dependencies; re-run with `node scripts/make-icons.js` after changing the colours or proportions.
 
 const fs = require('fs');
 const path = require('path');

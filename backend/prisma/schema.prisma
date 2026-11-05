@@ -1,5 +1,3 @@
-// Umuriro Response — data model
-// React frontend -> Express API -> PostgreSQL (through Prisma)
 
 generator client {
   provider = "prisma-client-js"
@@ -58,7 +56,7 @@ enum NotificationType {
   JOB_ASSIGNED
 }
 
-/// Login account shared by the three roles. The role decides which profile exists.
+/// One account for all three roles; the role decides which profile exists.
 model User {
   id           Int      @id @default(autoincrement())
   name         String
@@ -76,7 +74,7 @@ model User {
   deviceTokens  DeviceToken[]
 }
 
-/// An Expo push token for one phone. A token belongs to one user at a time: signing in on a shared phone moves it.
+/// A token belongs to one user at a time: signing in on a shared phone moves it.
 model DeviceToken {
   id        Int      @id @default(autoincrement())
   userId    Int
@@ -118,7 +116,6 @@ model ServiceCoordinator {
   assignments FaultReport[]
 }
 
-/// The customer's registered premises: the meter and where it is.
 model ServiceLocation {
   id          Int      @id @default(autoincrement())
   customerId  Int
@@ -143,7 +140,7 @@ model FaultReport {
   category    FaultCategory
   description String?
   contactPhone String?
-  /// Optional photo stored as a data URL (prototype only; move to object storage later)
+  /// Stored as a data URL (prototype only)
   photo       String?
   priority    Priority      @default(MEDIUM)
   status      FaultStatus   @default(REPORTED)
@@ -162,17 +159,16 @@ model FaultReport {
   assignedAt  DateTime?
   onTheWayAt  DateTime?
   arrivedAt   DateTime?
-  /// Metres between the technician's last recorded position and the registered service point when the status became ARRIVED; null if no position was known
+  /// Metres from the technician's last position to the service point at ARRIVED; null if unknown
   arrivalDistanceM Int?
   workingAt   DateTime?
   resolvedAt  DateTime?
   cancelledAt DateTime?
 
-  // Recorded by the technician when the fault is resolved
   outcome               Outcome?
   resolutionNote        String?
   workCompleted         String?
-  /// Number of times the technician had to contact the customer for directions
+  /// Times the technician contacted the customer for directions
   clarificationContacts Int      @default(0)
 
   updatedAt DateTime @updatedAt

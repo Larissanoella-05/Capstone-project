@@ -1,10 +1,6 @@
 import { Link } from 'react-router-dom';
 
-/**
- * Tab bar for the phone layout. Each tab is `{ to, label, icon, isActive }`.
- * The active tab is accent coloured with a bar above it, the others are mute.
- * A numeric badge marks `unreadPath` when `unread` is above 0.
- */
+/** Tabs are `{ to, label, icon, isActive }`; a numeric badge marks `unreadPath` when `unread` is above 0. */
 export default function BottomNav({ tabs, pathname, unreadPath, unread = 0 }) {
   return (
     <nav

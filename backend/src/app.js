@@ -13,7 +13,6 @@ import { errorHandler, notFoundHandler } from './middleware/error.js';
 export function createApp() {
   const app = express();
 
-  // 1. Settings that apply to every request
   app.use(
     cors({
       origin(origin, callback) {
@@ -25,7 +24,6 @@ export function createApp() {
   app.use(express.json({ limit: '2mb' }));
   if (env.nodeEnv !== 'test') app.use(morgan('dev')); // keep automated test output readable
 
-  // 2. Routes
   app.use('/api/auth', authRoutes);
   app.use('/api/faults', faultRoutes);
   app.use('/api/technicians', technicianRoutes);
@@ -33,7 +31,7 @@ export function createApp() {
   app.use('/api/devices', deviceRoutes);
   app.use('/api', miscRoutes);
 
-  // 3. Nothing matched: 404, then any error that happened above
+  // The 404 and error handlers go last
   app.use(notFoundHandler);
   app.use(errorHandler);
 

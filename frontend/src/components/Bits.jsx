@@ -15,7 +15,6 @@ const CATEGORY_ICON = {
   OTHER: CircleHelp,
 };
 
-/** Square tint tile with the icon of a fault category, used in lists of faults. */
 export function FaultIcon({ category }) {
   const Icon = CATEGORY_ICON[category] ?? Zap;
   return (
@@ -25,7 +24,6 @@ export function FaultIcon({ category }) {
   );
 }
 
-/** Round tile with the initials of a person, used in the greeting row. */
 export function Avatar({ name }) {
   const initials = (name ?? '')
     .split(/\s+/)
@@ -43,7 +41,6 @@ export function Avatar({ name }) {
   );
 }
 
-/** Label on the left, value on the right, hairline underneath. */
 export function KeyRow({ label, children, mono = false, last = false }) {
   return (
     <div className={`flex justify-between gap-4 py-2.5 ${last ? '' : 'border-b border-line'}`}>
@@ -55,7 +52,6 @@ export function KeyRow({ label, children, mono = false, last = false }) {
   );
 }
 
-/** Label above value, used in the bordered detail grids. */
 export function Cell({ label, children, className = '' }) {
   return (
     <div className={`p-3 ${className}`}>
@@ -65,7 +61,6 @@ export function Cell({ label, children, className = '' }) {
   );
 }
 
-/** Page title block with the small label above it. */
 export function PageHeading({ eyebrow, title, action, children }) {
   return (
     <div>
@@ -109,11 +104,7 @@ export function Stepper({ status }) {
   );
 }
 
-/**
- * The response timeline. Times come from the timestamp stored for each stage,
- * so every role reads the same history. Done = accent circle with a check, current = accent ring, to do = outlined.
- * `plain` lists the five status names without times, for "what happens next".
- */
+/** Times come from each stage's stored timestamp; `plain` lists the five status names without times. */
 export function VerticalTimeline({ fault, audience = 'customer', plain = false }) {
   const { current, resolved } = stepperState(fault.status);
   const labels = audience === 'customer' && !plain ? CUSTOMER_TIMELINE_LABEL : STATUS_LABEL;
@@ -175,7 +166,6 @@ export function VerticalTimeline({ fault, audience = 'customer', plain = false }
   );
 }
 
-/** The small key under a map. */
 export function MapLegend({ items }) {
   const swatch = {
     unassigned: 'rounded-full border border-white bg-accent shadow-sm',

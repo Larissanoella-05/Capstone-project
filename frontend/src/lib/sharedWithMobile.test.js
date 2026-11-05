@@ -1,14 +1,11 @@
-// Guards the verbatim copies of format.js, statusTone.js, reportSteps.js and landingCopy.js used by the Android app, and that
-// their labels still cover the enums the API uses. If this fails, copy the frontend/src/lib file over its
-// mobile/src/lib twin.
+// Guards the verbatim mobile copies of the shared lib files; if it fails, copy the frontend file over its mobile twin.
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as format from './format.js';
 import * as backend from '../../../backend/src/utils/constants.js';
 
-// Git stores both copies with the same line endings, but on Windows a checkout may turn one into CRLF.
-// Compare the text without line-ending differences, so only a real change in content fails.
+// Compared without line endings, because a Windows checkout may turn one copy into CRLF.
 const read = (relative) =>
   readFileSync(new URL(relative, import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 

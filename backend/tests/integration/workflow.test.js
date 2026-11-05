@@ -1,11 +1,4 @@
-/**
- * Integration tests: the real Express app, over HTTP, against a real PostgreSQL database.
- *
- * They RESET the database with the seed data, so they REFUSE to run unless TEST_DATABASE_URL
- * points at a separate, local test database holding only demo data (see testDatabaseGuard.js):
- *
- *   TEST_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/umuriro_test?schema=public" npm run test:integration
- */
+/** The real app over HTTP against PostgreSQL; refuses to run unless TEST_DATABASE_URL is a local test database. */
 import { after, before, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
@@ -52,10 +45,7 @@ async function reportFault(category = 'POWER_OUTAGE', description = 'Integration
   return res.body.fault;
 }
 
-/**
- * Assigns the recommended technician (or, once every technician is busy, the top-ranked
- * on-duty one) and returns that technician's token key.
- */
+/** Assigns the recommended technician (or the top-ranked on-duty one when all are busy); returns their token key. */
 async function assignBest(faultId) {
   const ranked = await call('GET', `/technicians?faultId=${faultId}`, { token: tokens.grace });
   const list = ranked.body.technicians;
@@ -72,10 +62,7 @@ async function assignBest(faultId) {
 const setStatus = (faultId, token, body) =>
   call('PATCH', `/faults/${faultId}/status`, { token, body });
 
-/**
- * The analytics worked out the long way, in JavaScript, from every row. This is how the API did it before
- * the averaging moved into SQL; it stays here as the reference the database's answers must match.
- */
+/** The analytics worked out in JavaScript from every row: the reference the SQL answers must match. */
 function referenceAnalytics(rows) {
   const minutes = (from, to) => (from && to ? (to.getTime() - from.getTime()) / 60000 : null);
   const average = (values) => {
@@ -144,7 +131,6 @@ function referenceAnalytics(rows) {
 
 describe('API integration', { concurrency: false }, () => {
   before(async () => {
-    // Fails the run, before anything is written, unless TEST_DB is a separate local demo-only database.
     // Must run before DATABASE_URL is overwritten below, so it can compare against the real one.
     await assertSafeTestDatabase(TEST_DB);
 
@@ -778,11 +764,9 @@ describe('API integration', { concurrency: false }, () => {
       const fault = await reportFault('OTHER', 'Concurrency check');
       const techKey = await assignBest(fault.id);
 
-      // Five identical requests at once (an impatient user tapping repeatedly). Five, not two,
-      // so that the requests reliably overlap and the race is actually exercised.
+      // Five identical requests, enough to overlap reliably and exercise the race.
       const taps = 5;
-      // Warm-up: open enough HTTP and database connections first. Otherwise the first request runs on a
-      // warm connection and finishes before the others have even connected, and the race never happens.
+      // Warm-up: open the connections first, or the first request finishes before the others connect.
       await Promise.all(
         Array.from({ length: taps }, () =>
           call('GET', `/faults/${fault.id}`, { token: tokens[techKey] })

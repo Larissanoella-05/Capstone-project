@@ -1,20 +1,4 @@
-/**
- * Safety checks that run BEFORE the integration tests wipe and reseed a database.
- *
- * The integration tests run prisma/seed.js, which TRUNCATEs every table. These checks make sure
- * that can only ever happen to a dedicated, local, synthetic-data test database:
- *
- *   1. TEST_DATABASE_URL must be set explicitly (no fallback to DATABASE_URL).
- *   2. Its database name must end in "_test".
- *   3. It must not point at the same server + database as the development DATABASE_URL
- *      (read from backend/.env and from the shell).
- *   4. It must be on this machine (localhost) unless ALLOW_REMOTE_TEST_DATABASE=true,
- *      so a hosted database (e.g. production on Neon) can never be wiped by mistake.
- *   5. After connecting, the server must confirm it really is that database (current_database()),
- *      and any existing users must all be synthetic demo accounts (@demo.rw).
- *
- * If any check fails, the tests stop with an explanation and nothing is changed.
- */
+/** Runs before the integration tests TRUNCATE tables, so only a dedicated local test database is ever wiped. */
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';

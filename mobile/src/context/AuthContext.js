@@ -28,8 +28,7 @@ export function AuthProvider({ children }) {
         if (data.user.role === 'COORDINATOR') await tokenStore.clear();
         else setUser(data.user);
       } catch {
-        // A rejected token is already cleared by the API wrapper. A network failure leaves the
-        // user on the login screen with the saved token, so the next start can try again.
+        // A rejected token is already cleared; after a network failure the saved token stays so the next start can retry.
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -45,8 +44,7 @@ export function AuthProvider({ children }) {
     return () => setUnauthorizedHandler(null);
   }, []);
 
-  // `expectedRole` is the role picked on the sign-in screen. A different account is refused before
-  // anything is stored, so the user is never signed in to the wrong side of the app.
+  // `expectedRole` is the role picked on sign-in; a different account is refused before anything is stored.
   const login = useCallback(async (email, password, expectedRole) => {
     const data = await api('/auth/login', {
       method: 'POST',

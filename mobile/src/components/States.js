@@ -12,7 +12,6 @@ export function Loading({ label = 'Loading' }) {
   );
 }
 
-/** A square outlined button, used by the retry actions. */
 export function OutlineButton({ label, onPress, style }) {
   return (
     <Pressable
@@ -65,7 +64,6 @@ export function EmptyState({ title, children, action }) {
   );
 }
 
-/** Inline message under a form. */
 export function FormError({ children }) {
   if (!children) return null;
   return (

@@ -1,9 +1,7 @@
 import { prisma } from '../lib/prisma.js';
 import { ACTIVE_JOB_STATUSES, OPEN_STATUSES, STATUS_FLOW } from '../utils/constants.js';
 
-// The averages are worked out by PostgreSQL, so the API reads a few numbers instead of every fault.
-// Intervals are minutes between two stage times. A pair is left out if either time is missing or the
-// second is earlier than the first (a clock error), exactly as the figures have always been counted.
+// Intervals are minutes between two stage times; a pair is skipped if either is missing or out of order.
 
 /** @typedef {{ responseMinutes: number | null }} OverviewRow */
 /**
@@ -25,7 +23,6 @@ function startOfDay(date = new Date()) {
   return start;
 }
 
-/** Numbers for the coordinator dashboard tiles. */
 export async function getOverview() {
   const [byStatus, technicians, resolvedToday, [timed]] = await Promise.all([
     prisma.faultReport.groupBy({ by: ['status'], _count: { _all: true } }),
@@ -63,7 +60,7 @@ export async function getOverview() {
   };
 }
 
-/** Response-performance report, calculated from the time stored at each status change. Cancelled faults are left out. */
+/** Response-performance report from the stored stage times; cancelled faults are left out. */
 export async function getAnalytics() {
   const weekStart = startOfDay(new Date(Date.now() - 6 * 24 * 60 * 60 * 1000));
 

@@ -11,8 +11,7 @@ function Header({ back }) {
   return <AppHeader base="/customer" unread={unread} back={back} />;
 }
 
-// The fault screens live in this stack, above the tabs. A tab hidden from the tab bar is redirected
-// to the first tab when it gets focus, so it cannot hold a detail screen.
+// The fault screens sit above the tabs: a hidden tab is redirected to the first tab on focus, so it cannot hold a detail screen.
 export default function CustomerLayout() {
   return (
     <NotificationsProvider>

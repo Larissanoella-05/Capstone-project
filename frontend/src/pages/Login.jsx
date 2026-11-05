@@ -30,7 +30,6 @@ const ROLES = [
   },
 ];
 
-/** The pilot area card. It sits under the form on a phone and under the headline on a wide screen. */
 function PilotArea({ className = '' }) {
   return (
     <div className={`panel flex-col gap-2 px-[18px] py-4 ${className}`}>

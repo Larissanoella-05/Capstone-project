@@ -1,5 +1,4 @@
-// Chip colours for statuses, priorities and availability, from the Umuriro design artifact.
-// The Android app keeps a verbatim copy in mobile/src/lib/statusTone.js (guarded by sharedWithMobile.test.js).
+// Chip colours for statuses, priorities and availability.
 
 /** Each tone is a background and a text colour. */
 const GREEN = { bg: '#e3f3e8', fg: '#17623a' };

@@ -15,10 +15,7 @@ import { colors, fonts, radius } from '../theme.js';
 import Backdrop from './Backdrop.js';
 import { Brand, PilotBanner } from './Brand.js';
 
-/**
- * Pilot strip, brand, landing page, alerts bell and sign-out: the top bar of both role layouts.
- * `back` adds a back arrow, for the detail screens that open above the tabs.
- */
+/** `back` adds a back arrow, for the detail screens that open above the tabs. */
 export function AppHeader({ base, unread = 0, back = false }) {
   const { logout } = useAuth();
   const router = useRouter();
@@ -84,11 +81,7 @@ export function AppHeader({ base, unread = 0, back = false }) {
   );
 }
 
-/**
- * Scrolling page body with the standard phone padding, on the paper background with the circuit art.
- * `footer` is a sticky action bar that stays above the tab bar while the page scrolls.
- * `insetBottom` is for detail screens, which have no tab bar to keep clear of the gesture bar.
- */
+/** `footer` is a sticky action bar above the tab bar; `insetBottom` is for detail screens, which have no tab bar. */
 export function Screen({ children, footer, insetBottom = false }) {
   const insets = useSafeAreaInsets();
   const bottom = insetBottom ? insets.bottom : 0;

@@ -22,7 +22,6 @@ function publicUser(user) {
   };
 }
 
-// POST /api/auth/login
 router.post(
   '/login',
   validate(loginSchema),
@@ -42,7 +41,6 @@ router.post(
   })
 );
 
-// GET /api/auth/me
 router.get('/me', requireAuth, (req, res) => {
   res.json({ user: publicUser(req.user) });
 });

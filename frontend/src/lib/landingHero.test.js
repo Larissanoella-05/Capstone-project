@@ -1,4 +1,3 @@
-// Unit tests for the landing hero scroll maths. Run with: npm test
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { clamp, heroFrame, progressFor, smoothstep } from './landingHero.js';

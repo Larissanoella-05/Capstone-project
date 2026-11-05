@@ -1,7 +1,6 @@
 import { FOOTER } from '../../lib/landingContent.js';
 import { Bolt, LoginLink } from './LandingBits.jsx';
 
-/** A footer link: an in-page anchor, or a router link to sign-in. */
 function FooterLink({ item }) {
   if (item.link) {
     return (

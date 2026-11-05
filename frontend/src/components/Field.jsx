@@ -1,7 +1,4 @@
-/**
- * A form control with its small label above, then an error message, or else a help line, below.
- * Pass the control as children. The message ids are `${id}-error` and `${id}-help`, for aria-describedby.
- */
+/** Pass the control as children; the message ids are `${id}-error` and `${id}-help`, for aria-describedby. */
 export function Field({ id, label, hint, error, help, children }) {
   return (
     <div className="flex flex-col gap-1.5">
@@ -25,7 +22,6 @@ export function Field({ id, label, hint, error, help, children }) {
   );
 }
 
-/** One radio card in a group. The selected card has an accent border and a tint. */
 export function CategoryOption({ name, value, label, hint, checked, onChange }) {
   return (
     <label

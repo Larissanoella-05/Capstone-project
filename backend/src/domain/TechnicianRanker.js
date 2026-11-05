@@ -1,15 +1,4 @@
-/**
- * Orders technicians for a fault so the coordinator sees the best choice first.
- *
- * Ranking keys, compared in order (a multi-key sort, O(n log n)):
- *   1. Availability  AVAILABLE before ON_JOB before OFF_DUTY
- *   2. Distance      closer to the service location first (unknown position last)
- *   3. Workload      fewer active jobs first
- *   4. Name          alphabetical, so the order is stable and predictable
- *
- * The first technician who is AVAILABLE is marked `recommended`.
- * Without a target location (no fault given) the list is sorted by name only.
- */
+/** Sorts by availability, distance (unknown last), workload, then name; the first AVAILABLE one is `recommended`. */
 export class TechnicianRanker {
   static AVAILABILITY_ORDER = Object.freeze({ AVAILABLE: 0, ON_JOB: 1, OFF_DUTY: 2 });
 

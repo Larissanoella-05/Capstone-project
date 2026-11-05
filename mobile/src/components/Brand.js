@@ -2,7 +2,6 @@ import { Feather } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 import { colors, fonts, radius } from '../theme.js';
 
-/** The brand as the landing page's nav shows it: the accent bolt and the UMURIRO wordmark. */
 export function Brand({ onDark = false, iconSize = 22 }) {
   return (
     <View style={styles.brand}>
@@ -12,7 +11,6 @@ export function Brand({ onDark = false, iconSize = 22 }) {
   );
 }
 
-/** Black strip that reminds everyone this is a pilot and not the real fault line. */
 export function PilotBanner() {
   return (
     <View style={styles.banner}>

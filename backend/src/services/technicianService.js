@@ -48,7 +48,7 @@ function serializeTechnician(technician, target) {
 }
 
 /**
- * All technicians. With a faultId they are sorted by distance to that fault.
+ * With a faultId the technicians are sorted by distance to that fault.
  * @param {{ faultId?: number }} [options]
  */
 export async function listTechnicians({ faultId } = {}) {

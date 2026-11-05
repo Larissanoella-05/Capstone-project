@@ -44,7 +44,7 @@
   font-family: var(--hd);
 }
 
-/* ---------- photos: shown as they are (the tower and silhouette files are black and white); flat dark colour until they load ---------- */
+/* ---------- photos: shown as they are; flat dark colour until they load ---------- */
 .landing .lp-img {
   background-color: #1b1b1f;
   background-repeat: no-repeat;

@@ -8,7 +8,6 @@ import { locationSchema } from '../validators/technician.schemas.js';
 const router = Router();
 router.use(requireAuth);
 
-// GET /api/technicians?faultId=12  (coordinator)
 router.get(
   '/',
   requireRole('COORDINATOR'),
@@ -20,7 +19,6 @@ router.get(
   })
 );
 
-// POST /api/technicians/me/location  (technician updates their own position)
 router.post(
   '/me/location',
   requireRole('TECHNICIAN'),
@@ -30,7 +28,6 @@ router.post(
   })
 );
 
-// GET /api/technicians/:id  (coordinator, or the technician themselves)
 router.get(
   '/:id',
   requireRole('COORDINATOR', 'TECHNICIAN'),

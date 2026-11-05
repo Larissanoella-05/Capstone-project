@@ -1,11 +1,4 @@
-/**
- * Sample data for the Ndera Sector pilot (Gasabo District, Kigali).
- * Names, phone numbers, meter numbers and coordinates are invented for the demo.
- * Coordinates are approximate points inside the real cells of Ndera Sector.
- *
- * Run with:  npm run db:seed
- * Running it again wipes the tables and starts from the same state.
- */
+/** Sample data for the Ndera Sector pilot, all invented; `npm run db:seed` wipes the tables first. */
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
@@ -129,8 +122,7 @@ const technicians = [
   },
 ];
 
-// Resolved history: spread over the last week so the analytics page has real intervals to measure.
-// steps = minutes from report to [assigned, on the way, arrived, working, resolved]
+// Resolved history over the last week; steps = minutes from report to [assigned, on the way, arrived, working, resolved]
 /**
  * @type {{
  *   customer: string, technician: string,

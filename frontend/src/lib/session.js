@@ -1,7 +1,5 @@
 /**
- * Looks up the signed-in user for the token saved in this tab, after a page reload.
- * Returns null when there is no token or it cannot be used. Only a token the server rejected (401) is
- * forgotten; if the server was just unreachable or slow, the token stays so a reload can try again.
+ * Restores the user for the saved token; only a 401 forgets it, so an unreachable server can be retried on reload.
  * @param {{ api: (path: string) => Promise<{ user: object }>, tokenStore: { get: () => string | null, clear: () => void } }} deps
  */
 export async function restoreSession({ api, tokenStore }) {

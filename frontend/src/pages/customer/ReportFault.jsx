@@ -330,7 +330,6 @@ export default function ReportFault() {
   );
 }
 
-/** Label above, value below, hairline underneath. */
 function ReviewRow({ label, children, last = false }) {
   return (
     <div className={`py-2.5 ${last ? '' : 'border-b border-line'}`}>

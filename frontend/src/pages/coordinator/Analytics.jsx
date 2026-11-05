@@ -63,7 +63,7 @@ export default function Analytics() {
 
       <Async state={state} label="Calculating the report">
         {({ analytics }) => {
-          // An API from before arrival distance was added has no arrivalDistance; show dashes instead of crashing.
+          // Older API responses have no arrivalDistance; show dashes instead of crashing.
           const { averages, clarification, arrivalDistance = {} } = analytics;
           const distribution = analytics.statusDistribution.map((row) => ({
             name: STATUS_LABEL[row.status],

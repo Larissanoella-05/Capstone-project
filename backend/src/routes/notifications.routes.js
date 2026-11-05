@@ -6,7 +6,6 @@ import { asyncHandler, badRequest, notFound } from '../utils/httpError.js';
 const router = Router();
 router.use(requireAuth);
 
-// GET /api/notifications
 router.get(
   '/',
   asyncHandler(async (req, res) => {
@@ -32,7 +31,6 @@ router.get(
   })
 );
 
-// PATCH /api/notifications/read-all
 router.patch(
   '/read-all',
   asyncHandler(async (req, res) => {
@@ -44,7 +42,6 @@ router.patch(
   })
 );
 
-// PATCH /api/notifications/:id/read
 router.patch(
   '/:id/read',
   asyncHandler(async (req, res) => {

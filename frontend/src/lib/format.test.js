@@ -1,4 +1,3 @@
-// Unit tests for the shared labels and formatting helpers. Run with: npm test
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {

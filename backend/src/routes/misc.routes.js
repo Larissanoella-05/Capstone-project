@@ -6,7 +6,7 @@ import { getAnalytics, getOverview } from '../services/statsService.js';
 
 const router = Router();
 
-// GET /api/health  (used by the hosting platform and the deployment check)
+// Used by the hosting platform and the deployment check
 router.get(
   '/health',
   asyncHandler(async (_req, res) => {
@@ -15,7 +15,6 @@ router.get(
   })
 );
 
-// GET /api/service-locations  (customer's registered premises)
 router.get(
   '/service-locations',
   requireAuth,
@@ -29,7 +28,6 @@ router.get(
   })
 );
 
-// GET /api/stats/overview  (coordinator dashboard tiles)
 router.get(
   '/stats/overview',
   requireAuth,
@@ -39,7 +37,6 @@ router.get(
   })
 );
 
-// GET /api/stats/analytics  (coordinator analytics page)
 router.get(
   '/stats/analytics',
   requireAuth,
