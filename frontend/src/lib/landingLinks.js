@@ -10,6 +10,13 @@ export function loginLink(target) {
   return { to: '/login', state: { from: target } };
 }
 
+/** Where a user who has just signed in goes: the page they were heading to if it is in their own area, else their home. */
+export function postLoginPath(from, role, homeByRole) {
+  const home = homeByRole[role];
+  const inOwnArea = typeof from === 'string' && (from === home || from.startsWith(`${home}/`));
+  return inOwnArea ? from : home;
+}
+
 export const TARGETS = {
   customerReport: '/customer/report',
   customer: '/customer',
