@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation } from 'react-router-dom';
 import { HOME_BY_ROLE, useAuth } from '../context/AuthContext.jsx';
 import { LogoMark, PilotBanner } from '../components/Brand.jsx';
 import { Field } from '../components/Field.jsx';
 import { FormError } from '../components/States.jsx';
 import { isDemoLogin } from '../lib/demo.js';
+import { postLoginPath } from '../lib/landingLinks.js';
 
 const DEMO = isDemoLogin(import.meta.env.VITE_DEMO_LOGIN);
 const DEMO_PASSWORD = 'demo1234';
@@ -31,7 +32,6 @@ const ROLES = [
 
 export default function Login() {
   const { user, login } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
 
   const [role, setRole] = useState(ROLES[0]);
@@ -42,7 +42,9 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  if (user) return <Navigate to={HOME_BY_ROLE[user.role]} replace />;
+  if (user) {
+    return <Navigate to={postLoginPath(location.state?.from, user.role, HOME_BY_ROLE)} replace />;
+  }
 
   function chooseRole(next) {
     setRole(next);
@@ -65,10 +67,7 @@ export default function Login() {
 
     setSubmitting(true);
     try {
-      const signedIn = await login(email.trim(), password);
-      const wanted = location.state?.from;
-      const home = HOME_BY_ROLE[signedIn.role];
-      navigate(wanted && wanted.startsWith(home) ? wanted : home, { replace: true });
+      await login(email.trim(), password);
     } catch (error) {
       setFormError(error.message);
     } finally {
