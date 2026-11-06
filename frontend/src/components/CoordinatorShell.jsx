@@ -2,6 +2,7 @@ import { ChartColumn, ClipboardList, LayoutDashboard, Radio } from 'lucide-react
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import Backdrop from './Backdrop.jsx';
+import NewReportAlert from './NewReportAlert.jsx';
 import { PilotBanner } from './Brand.jsx';
 import Sidebar from './Sidebar.jsx';
 
@@ -35,6 +36,7 @@ export default function CoordinatorShell() {
           }}
         />
         <main className="relative z-[1] flex w-full min-w-0 max-w-[1400px] flex-col gap-5 px-4 pb-12 pt-6 md:px-8 md:py-7">
+          <NewReportAlert />
           <Outlet />
         </main>
       </div>
