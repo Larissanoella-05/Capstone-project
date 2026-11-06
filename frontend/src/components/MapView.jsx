@@ -150,7 +150,8 @@ export function faultMapParts(fault) {
   const technician = showTechnician ? technicianMarker(fault.technician, { onSite }) : null;
   if (technician) {
     markers.push(technician);
-    if (!onSite)
+    // A guest who only described the place has no point to draw a line to.
+    if (!onSite && Number.isFinite(markers[0].lat))
       lines.push([
         [technician.lat, technician.lng],
         [markers[0].lat, markers[0].lng],

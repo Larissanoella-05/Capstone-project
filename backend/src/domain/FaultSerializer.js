@@ -1,8 +1,29 @@
 import { distanceKm } from '../utils/geo.js';
+import { faultPoint } from './faultPoint.js';
 
-/** Turns a database row into the JSON shape shared by all three roles. */
+/**
+ * A guest report has no registered service location, so the clients get one built from the report's own
+ * place. That keeps the shape every screen already reads.
+ */
+function guestLocation(fault) {
+  return {
+    id: null,
+    meterNumber: fault.claimedMeter ?? null,
+    village: null,
+    cell: fault.cell ?? 'Unknown',
+    sector: 'Ndera',
+    district: 'Gasabo',
+    landmark: fault.placeText ?? null,
+    latitude: fault.latitude ?? null,
+    longitude: fault.longitude ?? null,
+  };
+}
+
+/** Turns a database row into the JSON shared by all three roles. */
 export function serializeFault(fault) {
-  const loc = fault.serviceLocation;
+  const isGuest = fault.customerId === null;
+  const loc = fault.serviceLocation ?? (isGuest ? guestLocation(fault) : null);
+  const point = faultPoint(fault);
   const techLocation = fault.technician?.locations?.[0] ?? null;
 
   return {
@@ -14,6 +35,9 @@ export function serializeFault(fault) {
     photo: fault.photo ?? null,
     priority: fault.priority,
     status: fault.status,
+    isGuest,
+    accuracyM: fault.accuracyM ?? null,
+    locationSource: fault.locationSource ?? null,
     reportedAt: fault.reportedAt,
     assignedAt: fault.assignedAt,
     onTheWayAt: fault.onTheWayAt,
@@ -57,7 +81,7 @@ export function serializeFault(fault) {
                 recordedAt: techLocation.recordedAt,
               }
             : null,
-          distanceKm: techLocation && loc ? distanceKm(techLocation, loc) : null,
+          distanceKm: techLocation && point ? distanceKm(techLocation, point) : null,
         }
       : null,
     history: (fault.history ?? []).map((entry) => ({
@@ -67,5 +91,32 @@ export function serializeFault(fault) {
       createdAt: entry.createdAt,
       changedBy: entry.changedBy?.name ?? null,
     })),
+  };
+}
+
+/**
+ * What the holder of a tracking link may see: the same shape the tracking screen reads, with the phone
+ * numbers, the meter number, the technician's surname and staff number, and the names and notes in the
+ * history removed.
+ */
+export function serializePublicFault(fault) {
+  const full = serializeFault(fault);
+  return {
+    ...full,
+    contactPhone: null,
+    customer: null,
+    serviceLocation: full.serviceLocation && {
+      ...full.serviceLocation,
+      id: null,
+      meterNumber: null,
+    },
+    technician: full.technician && {
+      ...full.technician,
+      id: null,
+      name: full.technician.name.split(' ')[0],
+      phone: null,
+      staffNumber: null,
+    },
+    history: full.history.map((entry) => ({ ...entry, note: null, changedBy: null })),
   };
 }

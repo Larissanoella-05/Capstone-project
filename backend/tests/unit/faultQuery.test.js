@@ -57,8 +57,20 @@ describe('buildFaultFilter', () => {
 
   it('searches reference, description, place, customer and technician names', () => {
     const { OR } = buildFaultFilter(coordinator, { search: 'kibenga' });
-    assert.equal(OR.length, 6);
+    assert.equal(OR.length, 9);
     assert.deepEqual(OR[0], { reference: { contains: 'kibenga', mode: 'insensitive' } });
+  });
+
+  it('also searches the cell, place and phone number of a guest report', () => {
+    const { OR } = buildFaultFilter(coordinator, { search: '0788' });
+    const contains = { contains: '0788', mode: 'insensitive' };
+    assert.ok(OR.some((clause) => JSON.stringify(clause) === JSON.stringify({ cell: contains })));
+    assert.ok(
+      OR.some((clause) => JSON.stringify(clause) === JSON.stringify({ placeText: contains }))
+    );
+    assert.ok(
+      OR.some((clause) => JSON.stringify(clause) === JSON.stringify({ contactPhone: contains }))
+    );
   });
 
   it('also matches a category whose label contains the search text', () => {

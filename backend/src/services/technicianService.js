@@ -3,6 +3,7 @@ import { badRequest, notFound } from '../utils/httpError.js';
 import { distanceKm } from '../utils/geo.js';
 import { ACTIVE_JOB_STATUSES } from '../utils/constants.js';
 import { technicianRanker } from '../domain/TechnicianRanker.js';
+import { faultCell, faultPoint } from '../domain/faultPoint.js';
 
 const technicianInclude = /** @satisfies {import('@prisma/client').Prisma.TechnicianInclude} */ ({
   user: { select: { id: true, name: true, phone: true, email: true } },
@@ -13,6 +14,7 @@ const technicianInclude = /** @satisfies {import('@prisma/client').Prisma.Techni
       id: true,
       reference: true,
       status: true,
+      cell: true,
       serviceLocation: { select: { cell: true } },
     },
     orderBy: { assignedAt: 'asc' },
@@ -33,7 +35,7 @@ function serializeTechnician(technician, target) {
       id: job.id,
       reference: job.reference,
       status: job.status,
-      cell: job.serviceLocation.cell,
+      cell: faultCell(job),
     })),
     location: location
       ? {
@@ -56,10 +58,14 @@ export async function listTechnicians({ faultId } = {}) {
   if (faultId) {
     const fault = await prisma.faultReport.findUnique({
       where: { id: faultId },
-      select: { serviceLocation: { select: { latitude: true, longitude: true } } },
+      select: {
+        latitude: true,
+        longitude: true,
+        serviceLocation: { select: { latitude: true, longitude: true } },
+      },
     });
     if (!fault) throw notFound('That fault report does not exist.');
-    target = fault.serviceLocation;
+    target = faultPoint(fault);
   }
 
   const technicians = await prisma.technician.findMany({ include: technicianInclude });

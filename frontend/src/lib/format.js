@@ -78,7 +78,17 @@ export const isOpen = (fault) => OPEN_STATUSES.includes(fault.status);
 
 export function locationLine(location) {
   if (!location) return '—';
+  // A guest report has no cell until one is known; the place they described is shown as the landmark.
+  if (location.cell === 'Unknown') return `${location.sector} Sector`;
   return `${location.cell} Cell, ${location.sector} Sector`;
+}
+
+/** "-1.9495, 30.1710", or a note when a guest report has no coordinates because the place was only described. */
+export function coordinatesText(location) {
+  if (!Number.isFinite(location?.latitude) || !Number.isFinite(location?.longitude)) {
+    return 'Not given, place described only';
+  }
+  return `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`;
 }
 
 export function fmtTime(value) {

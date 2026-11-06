@@ -18,6 +18,17 @@ export const env = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '12h',
   jwtExpiresInMobile: process.env.JWT_EXPIRES_IN_MOBILE || '30d',
   smsProvider: process.env.SMS_PROVIDER || 'log',
+  /** Only read when SMS_PROVIDER=smsgate: the phone that sends the texts, local or through the cloud relay. */
+  smsGateway: {
+    url: (process.env.SMS_GATEWAY_URL || 'https://api.sms-gate.app/3rdparty/v1').replace(
+      /\/+$/,
+      ''
+    ),
+    user: process.env.SMS_GATEWAY_USER || '',
+    password: process.env.SMS_GATEWAY_PASSWORD || '',
+  },
+  /** Where the web app lives; the tracking link in a guest's SMS starts with this. */
+  publicWebUrl: (process.env.PUBLIC_WEB_URL || 'http://localhost:5173').replace(/\/+$/, ''),
   expoAccessToken: process.env.EXPO_ACCESS_TOKEN || undefined,
   corsOrigins: (process.env.CORS_ORIGIN || 'http://localhost:5173')
     .split(',')

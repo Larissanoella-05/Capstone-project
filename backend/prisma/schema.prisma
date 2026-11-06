@@ -46,6 +46,11 @@ enum Outcome {
   REFERRED
 }
 
+enum LocationSource {
+  GPS
+  TYPED
+}
+
 enum NotificationType {
   FAULT_SUBMITTED
   TECHNICIAN_ASSIGNED
@@ -145,10 +150,25 @@ model FaultReport {
   priority    Priority      @default(MEDIUM)
   status      FaultStatus   @default(REPORTED)
 
-  customerId        Int
-  customer          Customer            @relation(fields: [customerId], references: [id])
-  serviceLocationId Int
-  serviceLocation   ServiceLocation     @relation(fields: [serviceLocationId], references: [id])
+  /// Null for a guest report (made without an account)
+  customerId        Int?
+  customer          Customer?           @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  /// Null for a guest report; its own place is in the columns below
+  serviceLocationId Int?
+  serviceLocation   ServiceLocation?    @relation(fields: [serviceLocationId], references: [id], onDelete: Restrict)
+
+  /// Guest reports only: where the reporter said the fault is
+  latitude       Float?
+  longitude      Float?
+  /// Metres of uncertainty the phone reported for the point
+  accuracyM      Int?
+  locationSource LocationSource?
+  cell           String?
+  placeText      String?
+  /// A meter number the guest typed; never checked against any record
+  claimedMeter   String?
+  /// Unguessable key of the tracking link; null for registered reports
+  trackingToken  String?         @unique
   technicianId      Int?
   technician        Technician?         @relation(fields: [technicianId], references: [id])
   assignedById      Int?

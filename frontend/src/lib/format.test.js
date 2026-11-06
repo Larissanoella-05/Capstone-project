@@ -8,6 +8,7 @@ import {
   fmtKm,
   fmtMinutes,
   isOpen,
+  coordinatesText,
   locationLine,
   minutesBetween,
   timeAgo,
@@ -64,5 +65,24 @@ describe('format helpers', () => {
   it('builds a readable location line', () => {
     assert.equal(locationLine({ cell: 'Kibenga', sector: 'Ndera' }), 'Kibenga Cell, Ndera Sector');
     assert.equal(locationLine(null), '—');
+  });
+
+  it('writes coordinates to four decimals, or says none were given for a guest report', () => {
+    assert.equal(
+      coordinatesText({ latitude: -1.94953217, longitude: 30.1711234 }),
+      '-1.9495, 30.1711'
+    );
+    for (const location of [
+      { latitude: null, longitude: null },
+      { latitude: -1.9, longitude: null },
+      null,
+      undefined,
+    ]) {
+      assert.equal(coordinatesText(location), 'Not given, place described only');
+    }
+  });
+
+  it('shows only the sector while a guest report has no cell yet', () => {
+    assert.equal(locationLine({ cell: 'Unknown', sector: 'Ndera' }), 'Ndera Sector');
   });
 });

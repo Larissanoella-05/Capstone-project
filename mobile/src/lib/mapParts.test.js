@@ -48,6 +48,16 @@ describe('faultMapParts', () => {
     expect(faultMapParts(fault('CANCELLED')).markers).toHaveLength(1);
   });
 
+  it('draws no fault marker or line for a report that has no point, but still shows the technician', () => {
+    const noPoint = {
+      ...fault('ON_THE_WAY'),
+      serviceLocation: { latitude: null, longitude: null, cell: 'Unknown' },
+    };
+    const { markers, lines } = faultMapParts(noPoint);
+    expect(markers.map((m) => m.kind)).toEqual(['technician']);
+    expect(lines).toEqual([]);
+  });
+
   it('skips a technician with no known position', () => {
     const { markers, lines } = faultMapParts(
       fault('ON_THE_WAY', { id: 7, name: 'Jean Claude', location: null })

@@ -17,6 +17,9 @@ export function postLoginPath(from, role, homeByRole) {
   return inOwnArea ? from : home;
 }
 
+/** Reporting needs no account, so these actions go straight to the report form. */
+export const guestReportLink = { to: '/report' };
+
 export const TARGETS = {
   customerReport: '/customer/report',
   customer: '/customer',

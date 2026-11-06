@@ -18,6 +18,7 @@ import {
   STAGES,
   STATUS_LABEL,
   STATUS_TIME_FIELD,
+  coordinatesText,
   fmtDateTime,
   fmtKm,
   fmtTime,
@@ -129,7 +130,7 @@ export default function JobDetails() {
                       .join('. ')}
                   </Text>
                   <Text style={[styles.mono, { marginTop: 8 }]}>
-                    {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+                    {coordinatesText(location)}
                     {approaching && Number.isFinite(fault.technician?.distanceKm)
                       ? ` · ${fmtKm(fault.technician.distanceKm)} away`
                       : ''}

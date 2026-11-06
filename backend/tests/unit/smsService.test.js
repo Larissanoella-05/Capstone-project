@@ -1,10 +1,15 @@
 import { afterEach, beforeEach, describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
+import { createServer } from 'node:http';
 import {
   AfricasTalkingSmsProvider,
   LogSmsProvider,
   SMS_NOTIFICATION_TYPES,
+  SmsGateProvider,
   createSmsProvider,
+  isSmsSimulated,
+  sendGuestSms,
   sendSmsForNotifications,
   setSmsProvider,
   whenSmsIdle,
@@ -122,6 +127,68 @@ describe('smsService', () => {
   });
 });
 
+describe('sendGuestSms', () => {
+  const guestTypes = [
+    'FAULT_SUBMITTED',
+    'TECHNICIAN_ASSIGNED',
+    'TECHNICIAN_ON_THE_WAY',
+    'TECHNICIAN_ARRIVED',
+    'FAULT_RESOLVED',
+    'FAULT_CANCELLED',
+  ];
+
+  it('sends a text for every stage a guest is followed through', async () => {
+    const provider = fakeProvider();
+    setSmsProvider(provider);
+    await sendGuestSms(
+      guestTypes.map((type) => notice(type)),
+      '+250788123456'
+    );
+    assert.equal(provider.sent.length, 6);
+    assert.ok(provider.sent.every((message) => message.to === '+250788123456'));
+  });
+
+  it('sends nothing for types that are only for staff or the in-app feed', async () => {
+    const provider = fakeProvider();
+    setSmsProvider(provider);
+    await sendGuestSms([notice('JOB_ASSIGNED')], '+250788123456');
+    assert.equal(provider.sent.length, 0);
+  });
+
+  it('sends nothing without a phone number', async () => {
+    const provider = fakeProvider();
+    setSmsProvider(provider);
+    await sendGuestSms([notice('FAULT_SUBMITTED')], null);
+    assert.equal(provider.sent.length, 0);
+  });
+
+  it('never throws to the caller when the gateway fails', async () => {
+    setSmsProvider(fakeProvider(new Error('gateway down')));
+    await assert.doesNotReject(sendGuestSms([notice('FAULT_SUBMITTED')], '+250788123456'));
+  });
+
+  it('is waited for by whenSmsIdle, like the other sends', async () => {
+    const provider = fakeProvider();
+    setSmsProvider(provider);
+    sendGuestSms([notice('FAULT_SUBMITTED')], '+250788123456'); // not awaited, as in the service
+    await whenSmsIdle();
+    assert.equal(provider.sent.length, 1);
+  });
+
+  it('leaves registered customers with the two texts they have today', () => {
+    assert.equal(SMS_NOTIFICATION_TYPES.size, 2);
+  });
+});
+
+describe('isSmsSimulated', () => {
+  it('is true while the log provider is in use and false once a gateway is set', () => {
+    setSmsProvider(new LogSmsProvider());
+    assert.equal(isSmsSimulated(), true);
+    setSmsProvider(fakeProvider());
+    assert.equal(isSmsSimulated(), false);
+  });
+});
+
 describe('SMS providers', () => {
   it('the default provider logs the message and sends nothing', async () => {
     await new LogSmsProvider().send({ to: '+250788000001', text: 'Hello' });
@@ -143,5 +210,83 @@ describe('SMS providers', () => {
 
   it('createSmsProvider rejects an unknown name', () => {
     assert.throws(() => createSmsProvider('carrier-pigeon'), /SMS_PROVIDER/);
+  });
+});
+
+describe('SmsGateProvider', () => {
+  /** @type {import('node:http').Server} */
+  let server;
+  /** @type {{ method?: string, url?: string, authorization?: string, body?: any }[]} */
+  let requests;
+  let status;
+  let baseUrl;
+
+  beforeEach(async () => {
+    requests = [];
+    status = 202;
+    server = createServer((req, res) => {
+      let raw = '';
+      req.on('data', (chunk) => (raw += chunk));
+      req.on('end', () => {
+        requests.push({
+          method: req.method,
+          url: req.url,
+          authorization: req.headers.authorization,
+          body: JSON.parse(raw),
+        });
+        res.writeHead(status).end('{}');
+      });
+    });
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve(undefined)));
+    baseUrl = `http://127.0.0.1:${/** @type {any} */ (server.address()).port}`;
+  });
+
+  afterEach(async () => {
+    await new Promise((resolve) => server.close(() => resolve(undefined)));
+  });
+
+  // Made up for each run, so no password is written in the file.
+  const login = { user: 'phone', password: randomUUID() };
+  const provider = () => new SmsGateProvider({ url: baseUrl, ...login });
+
+  it('posts the text to the phone with basic auth and the number in +250 form', async () => {
+    await provider().send({ to: '+250788123456', text: 'Report received' });
+
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0].method, 'POST');
+    assert.equal(requests[0].url, '/message');
+    assert.equal(
+      requests[0].authorization,
+      `Basic ${Buffer.from(`${login.user}:${login.password}`).toString('base64')}`
+    );
+    assert.deepEqual(requests[0].body, {
+      textMessage: { text: 'Report received' },
+      phoneNumbers: ['+250788123456'],
+    });
+  });
+
+  it('throws when the gateway refuses, so the caller can log it', async () => {
+    status = 401;
+    await assert.rejects(provider().send({ to: '+250788123456', text: 'Hi' }), /401/);
+  });
+
+  it('throws when the gateway cannot be reached', async () => {
+    const down = new SmsGateProvider({ url: 'http://127.0.0.1:1', user: 'a', password: 'b' });
+    await assert.rejects(down.send({ to: '+250788123456', text: 'Hi' }));
+  });
+
+  it('refuses to start without the gateway login', () => {
+    assert.throws(
+      () => new SmsGateProvider({ url: baseUrl, user: '', password: '' }),
+      /SMS_GATEWAY_USER/
+    );
+  });
+
+  it('is not the simulated provider, and a failure stays out of the caller’s way', async () => {
+    status = 500;
+    setSmsProvider(provider());
+    assert.equal(isSmsSimulated(), false);
+    await assert.doesNotReject(sendGuestSms([notice('FAULT_SUBMITTED')], '+250788123456'));
+    assert.equal(requests.length, 1);
   });
 });
