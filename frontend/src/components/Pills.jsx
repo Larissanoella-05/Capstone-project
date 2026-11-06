@@ -46,3 +46,8 @@ export function AvailabilityPill({ availability }) {
   const key = AVAILABILITY_LABEL[availability] ? availability : 'OFF_DUTY';
   return <StatusTag tone={AVAILABILITY_TONE[key]}>{AVAILABILITY_LABEL[key]}</StatusTag>;
 }
+
+/** Marks a report that came in without an account. */
+export function GuestTag() {
+  return <StatusTag>Guest</StatusTag>;
+}

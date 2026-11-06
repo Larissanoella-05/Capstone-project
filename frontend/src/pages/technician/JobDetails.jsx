@@ -19,7 +19,7 @@ import {
 import { Stepper } from '../../components/Bits.jsx';
 import MapView, { faultMapParts } from '../../components/MapView.jsx';
 import { PriorityPill, StatusPill } from '../../components/Pills.jsx';
-import { placeLabel, reporterName, reporterPhone } from '../../lib/guestReport.js';
+import { placeLabel, reporterName, reporterPhone, telHref } from '../../lib/guestReport.js';
 import { Async, FormError } from '../../components/States.jsx';
 
 // What the main button does at each stage.
@@ -178,10 +178,7 @@ export default function JobDetails() {
                       Navigate
                     </a>
                     {customerPhone ? (
-                      <a
-                        href={`tel:${customerPhone.replace(/\s/g, '')}`}
-                        className="btn btn-outline"
-                      >
+                      <a href={telHref(customerPhone)} className="btn btn-outline">
                         <Phone size={16} aria-hidden="true" />
                         Call customer
                       </a>
@@ -309,10 +306,7 @@ export default function JobDetails() {
                       )}
                     </div>
                     {customerPhone && (
-                      <a
-                        href={`tel:${customerPhone.replace(/\s/g, '')}`}
-                        className="btn btn-outline"
-                      >
+                      <a href={telHref(customerPhone)} className="btn btn-outline">
                         <Phone size={16} aria-hidden="true" />
                         Call
                       </a>

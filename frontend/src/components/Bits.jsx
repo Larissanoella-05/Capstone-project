@@ -1,10 +1,11 @@
-import { Cable, Check, CircleHelp, Gauge, Zap, ZapOff } from 'lucide-react';
+import { Cable, Check, CircleHelp, Gauge, Phone, Zap, ZapOff } from 'lucide-react';
 import {
   CUSTOMER_TIMELINE_LABEL,
   STATUS_LABEL,
   STATUS_TIME_FIELD,
   fmtTime,
 } from '../lib/format.js';
+import { telHref } from '../lib/guestReport.js';
 import { STEPPER_STEPS, stepperState } from '../lib/stepper.js';
 
 const CATEGORY_ICON = {
@@ -193,5 +194,20 @@ export function MapLegend({ items }) {
         </span>
       ))}
     </div>
+  );
+}
+
+/** A phone number that dials when tapped; a dash when there is none. */
+export function CallLink({ phone }) {
+  const href = telHref(phone);
+  if (!href) return phone || '—';
+  return (
+    <a
+      href={href}
+      className="inline-flex min-h-11 items-center gap-1.5 font-semibold text-accent underline underline-offset-2"
+    >
+      <Phone size={14} aria-hidden="true" />
+      {phone}
+    </a>
   );
 }

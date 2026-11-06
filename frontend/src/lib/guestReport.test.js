@@ -14,6 +14,7 @@ import {
   rememberReport,
   reporterName,
   reporterPhone,
+  telHref,
   trackingPath,
   validateGuestForm,
 } from './guestReport.js';
@@ -248,5 +249,19 @@ describe('placeLabel', () => {
     assert.equal(placeLabel({ cell: 'Unknown', landmark: null, sector: 'Ndera' }), 'Ndera Sector');
     assert.equal(placeLabel({ cell: 'Unknown', landmark: '  ', sector: 'Ndera' }), 'Ndera Sector');
     assert.equal(placeLabel(null), '—');
+  });
+});
+
+describe('telHref', () => {
+  it('makes a dialable link from the usual ways of writing a number', () => {
+    assert.equal(telHref('+250788123456'), 'tel:+250788123456');
+    assert.equal(telHref('+250 788 123 456'), 'tel:+250788123456');
+    assert.equal(telHref('078-812-3456'), 'tel:0788123456');
+  });
+
+  it('gives null when there is no number to dial', () => {
+    for (const value of ['', '   ', null, undefined, 'n/a', '12', '+25078812345678901']) {
+      assert.equal(telHref(value), null, String(value));
+    }
   });
 });
