@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
 import { createServer } from 'node:http';
 import {
   AfricasTalkingSmsProvider,
@@ -244,7 +245,9 @@ describe('SmsGateProvider', () => {
     await new Promise((resolve) => server.close(() => resolve(undefined)));
   });
 
-  const provider = () => new SmsGateProvider({ url: baseUrl, user: 'phone', password: 's3cret' });
+  // Made up for each run, so no password is written in the file.
+  const login = { user: 'phone', password: randomUUID() };
+  const provider = () => new SmsGateProvider({ url: baseUrl, ...login });
 
   it('posts the text to the phone with basic auth and the number in +250 form', async () => {
     await provider().send({ to: '+250788123456', text: 'Report received' });
@@ -254,7 +257,7 @@ describe('SmsGateProvider', () => {
     assert.equal(requests[0].url, '/message');
     assert.equal(
       requests[0].authorization,
-      `Basic ${Buffer.from('phone:s3cret').toString('base64')}`
+      `Basic ${Buffer.from(`${login.user}:${login.password}`).toString('base64')}`
     );
     assert.deepEqual(requests[0].body, {
       textMessage: { text: 'Report received' },
