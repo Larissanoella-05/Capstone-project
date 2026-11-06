@@ -5,7 +5,7 @@ import { distanceMetres } from '../utils/geo.js';
 import { ACTIVE_JOB_STATUSES, DEFAULT_PRIORITY, STATUS_TIMESTAMP } from '../utils/constants.js';
 import { faultStatusMachine } from '../domain/FaultStatusMachine.js';
 import { serializeFault, serializePublicFault } from '../domain/FaultSerializer.js';
-import { faultCell, faultPoint } from '../domain/faultPoint.js';
+import { faultPlace, faultPoint } from '../domain/faultPoint.js';
 import { newTrackingToken, trackingLinkExpired } from '../domain/trackingLink.js';
 import { buildFaultFilter, pageMeta, pagingFor } from './faultQuery.js';
 import { customerMessageFor, notify } from './notificationService.js';
@@ -261,7 +261,7 @@ export async function assignTechnician(user, id, technicianId) {
       faultId: id,
       type: 'JOB_ASSIGNED',
       title: 'New job assigned',
-      message: `Fault #${fault.reference} at ${faultCell(fault)} Cell has been assigned to you.`,
+      message: `Fault #${fault.reference} at ${faultPlace(fault)} has been assigned to you.`,
     });
     return toCustomer ? [toCustomer, toTechnician] : [toTechnician];
   });
@@ -317,7 +317,7 @@ export async function changeStatus(user, id, body) {
             faultId: id,
             latitude: last.latitude,
             longitude: last.longitude,
-            label: `On the way to ${faultCell(fault)}`,
+            label: `On the way to ${faultPlace(fault)}`,
           },
         });
       }
@@ -331,7 +331,7 @@ export async function changeStatus(user, id, body) {
           faultId: id,
           latitude: point.latitude,
           longitude: point.longitude,
-          label: `On site, ${faultCell(fault)}`,
+          label: `On site, ${faultPlace(fault)}`,
         },
       });
     }

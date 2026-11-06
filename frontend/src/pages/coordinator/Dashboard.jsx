@@ -1,7 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi.js';
 import { fmtDate } from '../../lib/format.js';
+import { placeLabel } from '../../lib/guestReport.js';
+import { isLate, waitingMinutes, waitingText, workQueue } from '../../lib/workQueue.js';
 import { MapLegend } from '../../components/Bits.jsx';
 import { CoordinatorHeading } from '../../components/CoordinatorShell.jsx';
 import MapView, { faultMarker } from '../../components/MapView.jsx';
@@ -29,6 +31,18 @@ function Tile({ label, value, note, unit, highlight = false }) {
   );
 }
 
+function WaitingCell({ minutes }) {
+  if (minutes === null) return <td className="px-3 py-3 text-muted">—</td>;
+  return (
+    <td
+      className={`relative whitespace-nowrap px-3 py-3 font-mono text-xs ${isLate(minutes) ? 'font-bold text-accent' : ''}`}
+    >
+      {waitingText(minutes)}
+      {isLate(minutes) && <span className="sr-only"> (late)</span>}
+    </td>
+  );
+}
+
 export default function CoordinatorDashboard() {
   const navigate = useNavigate();
   const overview = useApi('/stats/overview', { interval: 5000 });
@@ -36,7 +50,14 @@ export default function CoordinatorDashboard() {
   const technicians = useApi('/technicians', { interval: 5000 });
   const [selectedId, setSelectedId] = useState(null);
 
-  const open = useMemo(() => faults.data?.faults ?? [], [faults.data]);
+  // The waiting times move on even when the data has not changed.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const open = useMemo(() => workQueue([...(faults.data?.faults ?? [])]), [faults.data]);
   const stats = overview.data?.overview;
 
   const markers = useMemo(() => {
@@ -106,7 +127,7 @@ export default function CoordinatorDashboard() {
           </div>
 
           <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
-            <section className="panel">
+            <section className="panel min-w-0">
               <div className="panel-head">
                 <span>Live response map</span>
                 <Link to="/coordinator/monitoring">Open monitoring</Link>
@@ -120,7 +141,7 @@ export default function CoordinatorDashboard() {
               <MapLegend items={['unassigned', 'site', 'onsite', 'technician']} />
             </section>
 
-            <section className="panel self-start">
+            <section className="panel min-w-0 self-start">
               <div className="panel-head">
                 <h2 className="m-0 text-sm">Open faults · {open.length}</h2>
                 <Link to="/coordinator/faults">Manage all</Link>
@@ -136,7 +157,7 @@ export default function CoordinatorDashboard() {
                   <table className="w-full border-collapse text-left text-sm">
                     <thead>
                       <tr className="eyebrow bg-paper">
-                        {['Fault', 'Location', 'Priority', 'Status', 'Technician'].map(
+                        {['Fault', 'Location', 'Priority', 'Status', 'Waiting', 'Technician'].map(
                           (heading) => (
                             <th
                               key={heading}
@@ -171,14 +192,29 @@ export default function CoordinatorDashboard() {
                               {fault.reference}
                             </Link>
                           </td>
-                          <td className="px-3 py-3 font-semibold">{fault.serviceLocation.cell}</td>
+                          <td className="px-3 py-3 font-semibold">
+                            {placeLabel(fault.serviceLocation)}
+                          </td>
                           <td className="px-3 py-3">
                             <PriorityPill priority={fault.priority} />
                           </td>
                           <td className="px-3 py-3">
                             <StatusPill status={fault.status} audience="coordinator" />
                           </td>
-                          <td className="px-3 py-3">{fault.technician?.name ?? '—'}</td>
+                          <WaitingCell minutes={waitingMinutes(fault, now)} />
+                          <td className="px-3 py-2">
+                            {fault.status === 'REPORTED' ? (
+                              <Link
+                                to={`/coordinator/faults/${fault.id}/assign`}
+                                className="btn btn-volt min-h-11 px-3 text-xs"
+                                onClick={(event) => event.stopPropagation()}
+                              >
+                                Assign
+                              </Link>
+                            ) : (
+                              (fault.technician?.name ?? '—')
+                            )}
+                          </td>
                         </tr>
                       ))}
                     </tbody>

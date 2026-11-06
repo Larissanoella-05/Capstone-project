@@ -11,7 +11,7 @@ import {
 } from '../../lib/format.js';
 import { CoordinatorHeading } from '../../components/CoordinatorShell.jsx';
 import { PriorityPill, StatusPill } from '../../components/Pills.jsx';
-import { reporterName } from '../../lib/guestReport.js';
+import { placeLabel, reporterName } from '../../lib/guestReport.js';
 import { Async, EmptyState } from '../../components/States.jsx';
 import { pagedPath, pageSummary } from '../../lib/paging.js';
 
@@ -177,7 +177,7 @@ export default function Faults() {
                       <td className="px-3 py-3 font-mono text-xs font-medium">{fault.reference}</td>
                       <td className="px-3 py-3 font-bold">{CATEGORY_LABEL[fault.category]}</td>
                       <td className="px-3 py-3">{reporterName(fault)}</td>
-                      <td className="px-3 py-3">{fault.serviceLocation.cell}</td>
+                      <td className="px-3 py-3">{placeLabel(fault.serviceLocation)}</td>
                       <td className="px-3 py-3">
                         <PriorityPill priority={fault.priority} />
                       </td>
