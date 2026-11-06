@@ -10,6 +10,7 @@ import {
   STAGES,
   STATUS_LABEL,
   STATUS_TIME_FIELD,
+  coordinatesText,
   fmtDateTime,
   fmtKm,
   fmtTime,
@@ -18,6 +19,7 @@ import {
 import { Stepper } from '../../components/Bits.jsx';
 import MapView, { faultMapParts } from '../../components/MapView.jsx';
 import { PriorityPill, StatusPill } from '../../components/Pills.jsx';
+import { reporterName, reporterPhone } from '../../lib/guestReport.js';
 import { Async, FormError } from '../../components/States.jsx';
 
 // What the main button does at each stage.
@@ -62,7 +64,7 @@ export default function JobDetails() {
         const next = NEXT_ACTION[fault.status];
         const stageIndex = STAGES.indexOf(fault.status);
         const canMove = ['ASSIGNED', 'ON_THE_WAY'].includes(fault.status);
-        const customerPhone = fault.contactPhone || fault.customer.phone;
+        const customerPhone = reporterPhone(fault);
 
         const advance = () =>
           run(
@@ -159,7 +161,7 @@ export default function JobDetails() {
                         .join('. ')}
                     </div>
                     <div className="mt-2 font-mono text-xs">
-                      {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+                      {coordinatesText(location)}
                       {canMove && fault.technician?.distanceKm !== null
                         ? ` · ${fmtKm(fault.technician.distanceKm)} away`
                         : ''}
@@ -301,8 +303,10 @@ export default function JobDetails() {
                   <div className="panel-head">Customer</div>
                   <div className="flex items-center justify-between gap-3 p-4">
                     <div>
-                      <div className="text-base font-bold">{fault.customer.name}</div>
-                      <div className="font-mono text-xs">Meter {location.meterNumber}</div>
+                      <div className="text-base font-bold">{reporterName(fault)}</div>
+                      {location.meterNumber && (
+                        <div className="font-mono text-xs">Meter {location.meterNumber}</div>
+                      )}
                     </div>
                     {customerPhone && (
                       <a

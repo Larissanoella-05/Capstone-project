@@ -1,8 +1,39 @@
 // Copy and link data for the public landing page. Kept out of the components so a test can scan it.
-import { loginLink, TARGETS } from './landingLinks.js';
-import { CTA, FAQ, FOOTER_COPY, HERO, HOTLINE, ROLES_COPY } from './landingCopy.js';
+import { guestReportLink, loginLink, TARGETS } from './landingLinks.js';
+import {
+  CTA as CTA_COPY,
+  FAQ as FAQ_COPY,
+  FOOTER_COPY,
+  HERO,
+  HOTLINE,
+  ROLES_COPY,
+} from './landingCopy.js';
 
-export { CTA, FAQ, HERO, HOTLINE };
+export { HERO, HOTLINE };
+
+// The web app takes reports without an account. The Android app still asks for sign-in, so the shared
+// landingCopy.js keeps that wording and these web answers replace it here.
+const WEB_ANSWERS = {
+  'How do I report a fault?':
+    'Open the report page, pick the type of fault, share your location or describe the place, add your phone number and send. You get a reference and a link to follow progress.',
+  'Do I need an account?':
+    'No. You can report a fault and follow it with the link you are given. Sign in only if you have an account and want your reports kept in one list.',
+  'How do I know it is fixed?':
+    'Your tracking page changes to resolved and shows what the technician did. Customers with an account also get a notification in the app.',
+};
+
+export const FAQ = {
+  ...FAQ_COPY,
+  items: FAQ_COPY.items.map((item) =>
+    WEB_ANSWERS[item.q] ? { ...item, a: WEB_ANSWERS[item.q] } : item
+  ),
+};
+
+export const CTA = {
+  ...CTA_COPY,
+  body: 'No more guessing when the lights will return. Report a fault and follow the repair until power is back.',
+  signIn: 'Report a fault',
+};
 
 /** The web hero headline. The Android landing screen keeps its own wording in landingCopy.js. */
 export const HERO_HEADLINE = 'Power out? Report it, and watch it get fixed.';
@@ -20,12 +51,12 @@ export const NAV_ITEMS = [
 ];
 
 export const DASHBOARD_MENU = [
-  { label: 'Customer · Report a fault', link: loginLink(TARGETS.customerReport) },
+  { label: 'Customer · Report a fault', link: guestReportLink },
   { label: 'Coordinator · Assign & monitor', link: loginLink(TARGETS.coordinator) },
   { label: 'Technician · My jobs', link: loginLink(TARGETS.technician) },
 ];
 
-export const REPORT_LINK = loginLink(TARGETS.customerReport);
+export const REPORT_LINK = guestReportLink;
 export const COORDINATOR_LINK = loginLink(TARGETS.coordinator);
 
 export const ABOUT = {
@@ -72,7 +103,7 @@ export const SERVICES = {
       body: 'Tripping breakers, faulty meters and board issues.',
       image: 'multimeter',
     },
-  ].map((item) => ({ ...item, link: loginLink(TARGETS.customerReport) })),
+  ].map((item) => ({ ...item, link: guestReportLink })),
 };
 
 export const SAFETY_TIPS = {
@@ -108,7 +139,7 @@ export const FOOTER = {
     { label: 'FAQ', href: '#faq' },
   ],
   services: [
-    { label: 'Report a fault', link: loginLink(TARGETS.customerReport) },
+    { label: 'Report a fault', link: guestReportLink },
     { label: 'Fault coordination', link: loginLink(TARGETS.coordinator) },
     { label: 'Technician jobs', link: loginLink(TARGETS.technician) },
     { label: 'Safety guidance', href: '#faq' },

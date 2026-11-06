@@ -8,6 +8,7 @@ import { CATEGORY_LABEL, firstNames, fmtDateTime, fmtKm, locationLine } from '..
 import { Cell, KeyRow, MapLegend } from '../../components/Bits.jsx';
 import MapView, { faultMarker } from '../../components/MapView.jsx';
 import { AvailabilityPill, PriorityPill } from '../../components/Pills.jsx';
+import { reporterName } from '../../lib/guestReport.js';
 import { EmptyState, ErrorState, FormError, Loading } from '../../components/States.jsx';
 
 export default function Assign() {
@@ -122,10 +123,10 @@ export default function Assign() {
                   <PriorityPill priority={fault.priority} />
                 </KeyRow>
                 <KeyRow label="Reported">{fmtDateTime(fault.reportedAt)}</KeyRow>
-                <KeyRow label="Customer">{fault.customer.name}</KeyRow>
+                <KeyRow label="Customer">{reporterName(fault)}</KeyRow>
                 <KeyRow label="Location">{locationLine(fault.serviceLocation)}</KeyRow>
                 <KeyRow label="Meter number" mono>
-                  {fault.serviceLocation.meterNumber}
+                  {fault.serviceLocation.meterNumber ?? '—'}
                 </KeyRow>
                 <KeyRow label="Landmark note" last>
                   {fault.serviceLocation.landmark || '—'}

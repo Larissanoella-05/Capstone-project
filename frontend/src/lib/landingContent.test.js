@@ -41,6 +41,14 @@ describe('landing content copy', () => {
     }
   });
 
+  it('tells web visitors they can report without an account', () => {
+    const answer = (question) => content.FAQ.items.find((item) => item.q === question).a;
+    assert.match(answer('Do I need an account?'), /^No\./);
+    assert.doesNotMatch(answer('How do I report a fault?'), /sign in/i);
+    assert.doesNotMatch(content.CTA.body, /sign in/i);
+    assert.doesNotMatch(content.CTA.signIn, /sign in/i);
+  });
+
   it('has three safety tips without dates, authors or Learn more', () => {
     assert.equal(content.SAFETY_TIPS.items.length, 3);
     for (const tip of content.SAFETY_TIPS.items) {
@@ -53,19 +61,19 @@ describe('landing content copy', () => {
 });
 
 describe('landing content links', () => {
-  it('sends every router link to /login with a from target', () => {
+  it('sends every router link to the report form or to /login with a from target', () => {
     const found = links({ ...content });
     assert.ok(found.length >= 10);
     for (const link of found) {
+      if (link.to === '/report') continue; // reporting needs no account
       assert.equal(link.to, '/login');
       assert.match(link.state.from, /^\/(customer|coordinator|technician)/);
     }
   });
 
-  it('uses the customer report as the target for Report and the service cards', () => {
-    assert.equal(content.REPORT_LINK.state.from, '/customer/report');
-    for (const item of content.SERVICES.items)
-      assert.equal(item.link.state.from, '/customer/report');
+  it('sends Report and the service cards straight to the report form, with no sign-in', () => {
+    assert.deepEqual(content.REPORT_LINK, { to: '/report' });
+    for (const item of content.SERVICES.items) assert.deepEqual(item.link, { to: '/report' });
   });
 
   it('gives coordinators and technicians their own home', () => {

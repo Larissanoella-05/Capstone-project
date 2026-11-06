@@ -8,10 +8,13 @@ import technicianRoutes from './routes/technicians.routes.js';
 import notificationRoutes from './routes/notifications.routes.js';
 import deviceRoutes from './routes/devices.routes.js';
 import miscRoutes from './routes/misc.routes.js';
+import publicRoutes from './routes/public.routes.js';
 import { errorHandler, notFoundHandler } from './middleware/error.js';
 
 export function createApp() {
   const app = express();
+  // Behind the hosting proxy, req.ip is the visitor's address, which the guest rate limit counts by.
+  app.set('trust proxy', 1);
 
   app.use(
     cors({
@@ -24,6 +27,7 @@ export function createApp() {
   app.use(express.json({ limit: '2mb' }));
   if (env.nodeEnv !== 'test') app.use(morgan('dev')); // keep automated test output readable
 
+  app.use('/api/public', publicRoutes);
   app.use('/api/auth', authRoutes);
   app.use('/api/faults', faultRoutes);
   app.use('/api/technicians', technicianRoutes);

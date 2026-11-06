@@ -27,7 +27,10 @@ export function technicianMarker(technician, { onSite = false } = {}) {
 
 /** Markers and the link line for a fault and its technician, depending on the stage. */
 export function faultMapParts(fault) {
-  const markers = [faultMarker(fault)];
+  // A guest who only described the place has no point, so there is nothing to draw for the fault.
+  const site = faultMarker(fault);
+  const hasSite = Number.isFinite(site.lat) && Number.isFinite(site.lng);
+  const markers = hasSite ? [site] : [];
   const lines = [];
   const onSite = ON_SITE_STATUSES.includes(fault.status);
   const technician = SITE_STATUSES.includes(fault.status)
@@ -35,10 +38,10 @@ export function faultMapParts(fault) {
     : null;
   if (technician) {
     markers.push(technician);
-    if (!onSite)
+    if (!onSite && hasSite)
       lines.push([
         [technician.lat, technician.lng],
-        [markers[0].lat, markers[0].lng],
+        [site.lat, site.lng],
       ]);
   }
   return { markers, lines };

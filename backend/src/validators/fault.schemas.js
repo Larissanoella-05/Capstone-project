@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { normaliseRwandanPhone } from '../utils/phone.js';
 
 /** Request-body rules for the fault endpoints. */
 
@@ -45,6 +46,57 @@ export const createSchema = z.object({
     .optional()
     .nullable(),
 });
+
+const PHONE_MESSAGE = 'Enter a Rwandan mobile number, for example 078 123 4567.';
+const METER_MESSAGE = 'A meter number has 11 or 13 digits. Leave it empty if you do not know it.';
+const WHERE_MESSAGE = 'Tell us where the fault is: use your location or describe the place.';
+
+/** A report made without an account. Only the fields below are read; anything else is dropped. */
+export const guestCreateSchema = z
+  .object({
+    category: z.enum(CATEGORIES, { errorMap: () => ({ message: 'Choose a fault category.' }) }),
+    contactPhone: z
+      .string({ required_error: PHONE_MESSAGE, invalid_type_error: PHONE_MESSAGE })
+      .transform((value, ctx) => {
+        const phone = normaliseRwandanPhone(value);
+        if (!phone) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: PHONE_MESSAGE });
+          return z.NEVER;
+        }
+        return phone;
+      }),
+    latitude: z.number().min(-90, WHERE_MESSAGE).max(90, WHERE_MESSAGE).optional(),
+    longitude: z.number().min(-180, WHERE_MESSAGE).max(180, WHERE_MESSAGE).optional(),
+    accuracyM: z.number().int().min(0).max(1_000_000).optional(),
+    placeText: optionalText(300),
+    claimedMeter: z
+      .string()
+      .optional()
+      .transform((value) => value?.replace(/\s/g, '') || undefined)
+      .refine((value) => value === undefined || /^(\d{11}|\d{13})$/.test(value), METER_MESSAGE),
+    description: optionalText(1000),
+    photo: createSchema.shape.photo,
+    // A hidden field that people leave empty and simple bots fill in.
+    website: z.string().max(0, 'Leave this field empty.').optional(),
+  })
+  .superRefine((value, ctx) => {
+    const hasLatitude = value.latitude !== undefined;
+    const hasLongitude = value.longitude !== undefined;
+    if (hasLatitude !== hasLongitude) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: WHERE_MESSAGE, path: ['latitude'] });
+    } else if (!hasLatitude && !value.placeText) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: WHERE_MESSAGE, path: ['placeText'] });
+    }
+  })
+  .transform((value) => {
+    const { website: _website, ...rest } = value;
+    return {
+      ...rest,
+      locationSource: /** @type {'GPS' | 'TYPED'} */ (
+        value.latitude === undefined ? 'TYPED' : 'GPS'
+      ),
+    };
+  });
 
 export const updateSchema = z.object({
   priority: z.enum(PRIORITIES, { errorMap: () => ({ message: 'Choose a valid priority.' }) }),

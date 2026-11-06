@@ -10,6 +10,7 @@ import {
   OUTCOME_LABEL,
   PRIORITIES,
   PRIORITY_LABEL,
+  coordinatesText,
   fmtDateTime,
   fmtMinutes,
   isOpen,
@@ -19,6 +20,7 @@ import {
 import { KeyRow, MapLegend, VerticalTimeline } from '../../components/Bits.jsx';
 import MapView, { faultMapParts } from '../../components/MapView.jsx';
 import { PriorityPill, StatusPill } from '../../components/Pills.jsx';
+import { accuracyText, reporterName, reporterPhone } from '../../lib/guestReport.js';
 import { Async, FormError } from '../../components/States.jsx';
 
 export default function FaultDetails() {
@@ -110,22 +112,35 @@ export default function FaultDetails() {
                 </section>
 
                 <section className="panel">
-                  <h2 className="panel-head m-0">Customer and service location</h2>
+                  <h2 className="panel-head m-0">
+                    {fault.isGuest
+                      ? 'Guest reporter and location'
+                      : 'Customer and service location'}
+                  </h2>
                   <div className="px-4 py-1">
-                    <KeyRow label="Customer">{fault.customer.name}</KeyRow>
+                    <KeyRow label="Customer">
+                      {reporterName(fault)}
+                      {fault.isGuest && <> · unverified, no account</>}
+                    </KeyRow>
                     <KeyRow label="Phone" mono>
-                      {fault.contactPhone || fault.customer.phone || '—'}
+                      {reporterPhone(fault) || '—'}
                     </KeyRow>
                     <KeyRow label="Location">
                       {location.village ? `${location.village} village, ` : ''}
                       {locationLine(location)}
                     </KeyRow>
                     <KeyRow label="District">{location.district}</KeyRow>
-                    <KeyRow label="Meter number" mono>
-                      {location.meterNumber}
+                    <KeyRow
+                      label={fault.isGuest ? 'Meter number (typed, not checked)' : 'Meter number'}
+                      mono
+                    >
+                      {location.meterNumber ?? '—'}
                     </KeyRow>
                     <KeyRow label="Coordinates" mono>
-                      {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+                      {coordinatesText(location)}
+                      {fault.isGuest &&
+                        Number.isFinite(fault.accuracyM) &&
+                        ` · ${accuracyText(fault.accuracyM)}`}
                     </KeyRow>
                     <KeyRow label="Landmark note" last>
                       {location.landmark || '—'}

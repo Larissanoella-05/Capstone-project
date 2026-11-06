@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { HOME_BY_ROLE, useAuth } from './context/AuthContext.jsx';
 import MobileShell from './components/MobileShell.jsx';
 import CoordinatorShell from './components/CoordinatorShell.jsx';
+import PublicShell from './components/PublicShell.jsx';
 import { Loading } from './components/States.jsx';
 
 import { homeDecision } from './lib/landingLinks.js';
@@ -11,6 +12,10 @@ import Landing from './pages/landing/Landing.jsx';
 import Login from './pages/Login.jsx';
 import NotFound from './pages/NotFound.jsx';
 import Notifications from './pages/Notifications.jsx';
+
+import GuestReport from './pages/public/GuestReport.jsx';
+import GuestSubmitted from './pages/public/GuestSubmitted.jsx';
+import GuestTracking from './pages/public/GuestTracking.jsx';
 
 import CustomerDashboard from './pages/customer/Dashboard.jsx';
 import ReportFault from './pages/customer/ReportFault.jsx';
@@ -98,6 +103,13 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
+
+      {/* No account needed: report a fault and follow it by its link. */}
+      <Route element={<PublicShell />}>
+        <Route path="/report" element={<GuestReport />} />
+        <Route path="/report/sent/:token" element={<GuestSubmitted />} />
+        <Route path="/track/:token" element={<GuestTracking />} />
+      </Route>
 
       <Route
         path="/customer"

@@ -5,6 +5,8 @@ import {
   LogSmsProvider,
   SMS_NOTIFICATION_TYPES,
   createSmsProvider,
+  isSmsSimulated,
+  sendGuestSms,
   sendSmsForNotifications,
   setSmsProvider,
   whenSmsIdle,
@@ -119,6 +121,68 @@ describe('smsService', () => {
     sendSmsForNotifications([notice('FAULT_SUBMITTED')], '+250788000001'); // not awaited, as in the service
     await whenSmsIdle();
     assert.equal(provider.sent.length, 1);
+  });
+});
+
+describe('sendGuestSms', () => {
+  const guestTypes = [
+    'FAULT_SUBMITTED',
+    'TECHNICIAN_ASSIGNED',
+    'TECHNICIAN_ON_THE_WAY',
+    'TECHNICIAN_ARRIVED',
+    'FAULT_RESOLVED',
+    'FAULT_CANCELLED',
+  ];
+
+  it('sends a text for every stage a guest is followed through', async () => {
+    const provider = fakeProvider();
+    setSmsProvider(provider);
+    await sendGuestSms(
+      guestTypes.map((type) => notice(type)),
+      '+250788123456'
+    );
+    assert.equal(provider.sent.length, 6);
+    assert.ok(provider.sent.every((message) => message.to === '+250788123456'));
+  });
+
+  it('sends nothing for types that are only for staff or the in-app feed', async () => {
+    const provider = fakeProvider();
+    setSmsProvider(provider);
+    await sendGuestSms([notice('JOB_ASSIGNED')], '+250788123456');
+    assert.equal(provider.sent.length, 0);
+  });
+
+  it('sends nothing without a phone number', async () => {
+    const provider = fakeProvider();
+    setSmsProvider(provider);
+    await sendGuestSms([notice('FAULT_SUBMITTED')], null);
+    assert.equal(provider.sent.length, 0);
+  });
+
+  it('never throws to the caller when the gateway fails', async () => {
+    setSmsProvider(fakeProvider(new Error('gateway down')));
+    await assert.doesNotReject(sendGuestSms([notice('FAULT_SUBMITTED')], '+250788123456'));
+  });
+
+  it('is waited for by whenSmsIdle, like the other sends', async () => {
+    const provider = fakeProvider();
+    setSmsProvider(provider);
+    sendGuestSms([notice('FAULT_SUBMITTED')], '+250788123456'); // not awaited, as in the service
+    await whenSmsIdle();
+    assert.equal(provider.sent.length, 1);
+  });
+
+  it('leaves registered customers with the two texts they have today', () => {
+    assert.equal(SMS_NOTIFICATION_TYPES.size, 2);
+  });
+});
+
+describe('isSmsSimulated', () => {
+  it('is true while the log provider is in use and false once a gateway is set', () => {
+    setSmsProvider(new LogSmsProvider());
+    assert.equal(isSmsSimulated(), true);
+    setSmsProvider(fakeProvider());
+    assert.equal(isSmsSimulated(), false);
   });
 });
 
