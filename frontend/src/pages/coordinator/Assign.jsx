@@ -5,10 +5,10 @@ import { useApi } from '../../hooks/useApi.js';
 import { api } from '../../lib/api.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import { CATEGORY_LABEL, firstNames, fmtDateTime, fmtKm, locationLine } from '../../lib/format.js';
-import { Cell, KeyRow, MapLegend } from '../../components/Bits.jsx';
+import { CallLink, Cell, KeyRow, MapLegend } from '../../components/Bits.jsx';
 import MapView, { faultMarker } from '../../components/MapView.jsx';
 import { AvailabilityPill, PriorityPill } from '../../components/Pills.jsx';
-import { reporterName } from '../../lib/guestReport.js';
+import { reporterName, reporterPhone } from '../../lib/guestReport.js';
 import { EmptyState, ErrorState, FormError, Loading } from '../../components/States.jsx';
 
 export default function Assign() {
@@ -124,6 +124,9 @@ export default function Assign() {
                 </KeyRow>
                 <KeyRow label="Reported">{fmtDateTime(fault.reportedAt)}</KeyRow>
                 <KeyRow label="Customer">{reporterName(fault)}</KeyRow>
+                <KeyRow label="Phone" mono>
+                  <CallLink phone={reporterPhone(fault)} />
+                </KeyRow>
                 <KeyRow label="Location">{locationLine(fault.serviceLocation)}</KeyRow>
                 <KeyRow label="Meter number" mono>
                   {fault.serviceLocation.meterNumber ?? '—'}

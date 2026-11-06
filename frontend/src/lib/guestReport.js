@@ -135,3 +135,9 @@ export function placeLabel(location) {
   if (location.cell && location.cell !== 'Unknown') return location.cell;
   return location.landmark?.trim() || `${location.sector ?? 'Ndera'} Sector`;
 }
+
+/** A `tel:` link for a phone number, or null when there is nothing a phone could dial. */
+export function telHref(phone) {
+  const dialable = String(phone ?? '').replace(/[\s\-().]/g, '');
+  return /^\+?\d{6,15}$/.test(dialable) ? `tel:${dialable}` : null;
+}

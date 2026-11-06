@@ -10,8 +10,8 @@ import {
   fmtDateTime,
 } from '../../lib/format.js';
 import { CoordinatorHeading } from '../../components/CoordinatorShell.jsx';
-import { PriorityPill, StatusPill } from '../../components/Pills.jsx';
-import { placeLabel, reporterName } from '../../lib/guestReport.js';
+import { GuestTag, PriorityPill, StatusPill } from '../../components/Pills.jsx';
+import { placeLabel, reporterName, reporterPhone } from '../../lib/guestReport.js';
 import { Async, EmptyState } from '../../components/States.jsx';
 import { pagedPath, pageSummary } from '../../lib/paging.js';
 
@@ -73,7 +73,7 @@ export default function Faults() {
             type="search"
             maxLength={100}
             className="field"
-            placeholder="Fault ID, category, cell, customer or technician"
+            placeholder="Fault ID, place, name, phone or technician"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
@@ -176,7 +176,16 @@ export default function Faults() {
                     >
                       <td className="px-3 py-3 font-mono text-xs font-medium">{fault.reference}</td>
                       <td className="px-3 py-3 font-bold">{CATEGORY_LABEL[fault.category]}</td>
-                      <td className="px-3 py-3">{reporterName(fault)}</td>
+                      <td className="px-3 py-3">
+                        {fault.isGuest ? (
+                          <div className="flex flex-col items-start gap-1">
+                            <GuestTag />
+                            <span className="font-mono text-xs">{reporterPhone(fault)}</span>
+                          </div>
+                        ) : (
+                          reporterName(fault)
+                        )}
+                      </td>
                       <td className="px-3 py-3">{placeLabel(fault.serviceLocation)}</td>
                       <td className="px-3 py-3">
                         <PriorityPill priority={fault.priority} />

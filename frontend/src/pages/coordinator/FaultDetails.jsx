@@ -17,7 +17,7 @@ import {
   locationLine,
   minutesBetween,
 } from '../../lib/format.js';
-import { KeyRow, MapLegend, VerticalTimeline } from '../../components/Bits.jsx';
+import { CallLink, KeyRow, MapLegend, VerticalTimeline } from '../../components/Bits.jsx';
 import MapView, { faultMapParts } from '../../components/MapView.jsx';
 import { PriorityPill, StatusPill } from '../../components/Pills.jsx';
 import { accuracyText, reporterName, reporterPhone } from '../../lib/guestReport.js';
@@ -123,7 +123,7 @@ export default function FaultDetails() {
                       {fault.isGuest && <> · unverified, no account</>}
                     </KeyRow>
                     <KeyRow label="Phone" mono>
-                      {reporterPhone(fault) || '—'}
+                      <CallLink phone={reporterPhone(fault)} />
                     </KeyRow>
                     <KeyRow label="Location">
                       {location.village ? `${location.village} village, ` : ''}
