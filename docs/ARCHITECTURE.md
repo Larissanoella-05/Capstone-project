@@ -173,6 +173,6 @@ Details of the manual and automated test plan are in `TESTING.md`.
 
 ## Known limits and scope decisions
 
-Technician positions are simulated on web, photos live in the database, updates are polled, and there is no SMS.
+Technician positions are simulated on web, photos live in the database, updates are polled, and SMS is only logged unless an Android phone is connected as the gateway (`docs/SMS_GATEWAY.md`).
 Details and justification are in `SCOPE_ALIGNMENT.md`. Type-checking covers the backend only. Frontend and
 mobile are linted but not type-checked.

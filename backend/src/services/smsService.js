@@ -28,9 +28,41 @@ export class AfricasTalkingSmsProvider extends SmsProvider {
   }
 }
 
+const GATEWAY_TIMEOUT_MS = 10_000;
+
+/**
+ * Sends through an Android phone running SMS Gateway for Android (local server or its cloud relay),
+ * so the text goes out on the phone's own SIM and needs no registered sender ID.
+ */
+export class SmsGateProvider extends SmsProvider {
+  /** @param {{ url: string, user: string, password: string }} [config] */
+  constructor(config = env.smsGateway) {
+    super();
+    if (!config.user || !config.password) {
+      throw new Error(
+        'SMS_PROVIDER=smsgate needs SMS_GATEWAY_USER and SMS_GATEWAY_PASSWORD (the login the phone app shows).'
+      );
+    }
+    this.url = config.url;
+    this.authorization = `Basic ${Buffer.from(`${config.user}:${config.password}`).toString('base64')}`;
+  }
+
+  /** @param {{ to: string, text: string }} message */
+  async send({ to, text }) {
+    const response = await fetch(`${this.url}/message`, {
+      method: 'POST',
+      headers: { Authorization: this.authorization, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ textMessage: { text }, phoneNumbers: [to] }),
+      signal: AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
+    });
+    if (!response.ok) throw new Error(`The SMS gateway answered ${response.status}.`);
+  }
+}
+
 const PROVIDERS = {
   log: LogSmsProvider,
   africastalking: AfricasTalkingSmsProvider,
+  smsgate: SmsGateProvider,
 };
 
 /** @param {string} name one of the keys of PROVIDERS */
