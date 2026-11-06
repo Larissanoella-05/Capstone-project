@@ -24,3 +24,14 @@ export function faultPoint(fault) {
 export function faultCell(fault) {
   return fault.serviceLocation?.cell ?? fault.cell ?? 'Unknown';
 }
+
+/**
+ * The place as a short phrase for messages and labels: "Kibenga Cell", or what a guest wrote while the cell is
+ * not known, or the sector.
+ * @param {{ serviceLocation?: { cell: string } | null, cell?: string | null, placeText?: string | null }} fault
+ */
+export function faultPlace(fault) {
+  const cell = faultCell(fault);
+  if (cell !== 'Unknown') return `${cell} Cell`;
+  return fault.placeText?.trim() || 'Ndera Sector';
+}

@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { faultCell, faultPoint } from '../../src/domain/faultPoint.js';
+import { faultCell, faultPlace, faultPoint } from '../../src/domain/faultPoint.js';
 
 describe('faultCell', () => {
   it('prefers the registered location, then the cell on the report, then Unknown', () => {
@@ -37,5 +37,27 @@ describe('faultPoint', () => {
 
   it('is null for a half-filled pair of coordinates', () => {
     assert.equal(faultPoint({ serviceLocation: null, latitude: -1.9, longitude: null }), null);
+  });
+});
+
+describe('faultPlace', () => {
+  it('says "Kibenga Cell" when the cell is known', () => {
+    assert.equal(faultPlace({ serviceLocation: { cell: 'Kibenga' } }), 'Kibenga Cell');
+    assert.equal(
+      faultPlace({ serviceLocation: null, cell: 'Kibenga', placeText: 'Near the shop' }),
+      'Kibenga Cell'
+    );
+  });
+
+  it('uses what a guest wrote while the cell is unknown, then the sector', () => {
+    assert.equal(
+      faultPlace({ serviceLocation: null, cell: null, placeText: ' Near the shop ' }),
+      'Near the shop'
+    );
+    assert.equal(
+      faultPlace({ serviceLocation: null, cell: null, placeText: '  ' }),
+      'Ndera Sector'
+    );
+    assert.equal(faultPlace({ serviceLocation: null, cell: null }), 'Ndera Sector');
   });
 });

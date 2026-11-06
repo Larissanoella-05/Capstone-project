@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
+import { placeLabel } from '../lib/guestReport.js';
 
 // Centre of the pilot area: Ndera Sector, Gasabo District, Kigali.
 const NDERA_CENTRE = [-1.9495, 30.171];
@@ -126,7 +127,7 @@ export function faultMarker(fault, onClick) {
     lat: fault.serviceLocation.latitude,
     lng: fault.serviceLocation.longitude,
     kind: fault.status === 'REPORTED' ? 'unassigned' : 'site',
-    label: `${fault.reference} · ${fault.serviceLocation.cell}`,
+    label: `${fault.reference} · ${placeLabel(fault.serviceLocation)}`,
     onClick,
   };
 }

@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi.js';
 import { CATEGORY_LABEL, fmtKm, locationLine, timeAgo } from '../../lib/format.js';
+import { placeLabel } from '../../lib/guestReport.js';
 import { KeyRow, MapLegend } from '../../components/Bits.jsx';
 import { CoordinatorHeading } from '../../components/CoordinatorShell.jsx';
 import MapView, { faultMarker } from '../../components/MapView.jsx';
@@ -162,7 +163,7 @@ export default function Monitoring() {
                   >
                     <span>
                       <span className="block font-mono text-xs">
-                        {fault.reference} · {fault.serviceLocation.cell}
+                        {fault.reference} · {placeLabel(fault.serviceLocation)}
                       </span>
                       <span className="block text-sm font-bold">
                         {fault.technician?.name ?? 'No technician'}

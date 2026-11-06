@@ -8,6 +8,7 @@ import {
   locationErrorMessage,
   normalisePhone,
   parseSavedReports,
+  placeLabel,
   photoProblem,
   pointFromPosition,
   rememberReport,
@@ -225,5 +226,27 @@ describe('reporterName and reporterPhone', () => {
 
   it('give an empty phone when there is none', () => {
     assert.equal(reporterPhone({ customer: null, contactPhone: null }), '');
+  });
+});
+
+describe('placeLabel', () => {
+  it('shows the cell when it is known', () => {
+    assert.equal(
+      placeLabel({ cell: 'Kibenga', landmark: 'Near the shop', sector: 'Ndera' }),
+      'Kibenga'
+    );
+  });
+
+  it('shows what the guest wrote while the cell is unknown', () => {
+    assert.equal(
+      placeLabel({ cell: 'Unknown', landmark: ' Behind the church ', sector: 'Ndera' }),
+      'Behind the church'
+    );
+  });
+
+  it('falls back to the sector when the guest wrote nothing, or there is no location', () => {
+    assert.equal(placeLabel({ cell: 'Unknown', landmark: null, sector: 'Ndera' }), 'Ndera Sector');
+    assert.equal(placeLabel({ cell: 'Unknown', landmark: '  ', sector: 'Ndera' }), 'Ndera Sector');
+    assert.equal(placeLabel(null), '—');
   });
 });

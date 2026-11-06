@@ -19,7 +19,7 @@ import {
 import { Stepper } from '../../components/Bits.jsx';
 import MapView, { faultMapParts } from '../../components/MapView.jsx';
 import { PriorityPill, StatusPill } from '../../components/Pills.jsx';
-import { reporterName, reporterPhone } from '../../lib/guestReport.js';
+import { placeLabel, reporterName, reporterPhone } from '../../lib/guestReport.js';
 import { Async, FormError } from '../../components/States.jsx';
 
 // What the main button does at each stage.
@@ -89,7 +89,7 @@ export default function JobDetails() {
                   latitude: from.latitude + (location.latitude - from.latitude) * 0.3,
                   longitude: from.longitude + (location.longitude - from.longitude) * 0.3,
                   faultId: fault.id,
-                  label: `On the way to ${location.cell}`,
+                  label: `On the way to ${placeLabel(location)}`,
                 },
               });
             },

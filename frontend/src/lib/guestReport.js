@@ -128,3 +128,10 @@ export const SAVED_REPORTS_KEY = 'umuriro.guestReports';
 /** Staff screens: a guest report has no customer, so say so instead of reading a missing name. */
 export const reporterName = (fault) => fault.customer?.name ?? 'Guest reporter';
 export const reporterPhone = (fault) => fault.contactPhone || fault.customer?.phone || '';
+
+/** The short place shown in lists and on the map: the cell, or what the guest wrote while the cell is unknown. */
+export function placeLabel(location) {
+  if (!location) return '—';
+  if (location.cell && location.cell !== 'Unknown') return location.cell;
+  return location.landmark?.trim() || `${location.sector ?? 'Ndera'} Sector`;
+}
