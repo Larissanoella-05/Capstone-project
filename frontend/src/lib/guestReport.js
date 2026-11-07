@@ -1,6 +1,5 @@
 // Rules and helpers for reporting a fault without an account.
 
-export const MAX_PHOTO_BYTES = 1024 * 1024; // 1 MB, the same limit the API enforces
 const MAX_DESCRIPTION = 1000;
 const MAX_PLACE = 300;
 const MAX_SAVED = 10;
@@ -95,13 +94,6 @@ export function locationErrorMessage(code) {
     return 'Finding your location took too long. Try again, or describe the place below.';
   }
   return 'Your location could not be used. Describe the place below.';
-}
-
-/** Why a chosen file cannot be the photo, or null if it can. */
-export function photoProblem(file) {
-  if (!file.type.startsWith('image/')) return 'Choose an image file for the photo.';
-  if (file.size > MAX_PHOTO_BYTES) return 'Choose a photo smaller than 1 MB.';
-  return null;
 }
 
 /** Newest first, no repeats, at most ten. */

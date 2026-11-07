@@ -4,13 +4,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api.js';
 import { CATEGORIES } from '../../lib/format.js';
 import { errorSummary } from '../../lib/formErrors.js';
+import { photoProblem, photoToDataUrl } from '../../lib/photo.js';
 import {
   SAVED_REPORTS_KEY,
   accuracyText,
   buildGuestPayload,
   locationErrorMessage,
   parseSavedReports,
-  photoProblem,
   pointFromPosition,
   rememberReport,
   trackingPath,
@@ -32,15 +32,6 @@ const FIELDS = [
 ];
 
 const LOCATION_OPTIONS = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
-
-function readAsDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error('The photo could not be read.'));
-    reader.readAsDataURL(file);
-  });
-}
 
 /** Reports kept in this browser, so "my reports on this phone" works without an account. */
 function loadSaved() {
@@ -131,7 +122,7 @@ export default function GuestReport() {
       return;
     }
     try {
-      setPhoto({ name: file.name, dataUrl: await readAsDataUrl(file) });
+      setPhoto({ name: file.name, dataUrl: await photoToDataUrl(file) });
       clearError('photo');
     } catch (error) {
       setErrors((current) => ({ ...current, photo: error.message }));
