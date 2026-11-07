@@ -12,7 +12,8 @@
     "test:all": "npm test && npm run test:integration",
     "test:perf": "node tests/performance/loadTest.js",
     "test:perf:seed": "node tests/performance/seedLoadData.js",
-    "typecheck": "tsc -p jsconfig.json"
+    "typecheck": "tsc -p jsconfig.json",
+    "postinstall": "prisma generate"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
