@@ -6,12 +6,11 @@ import { useApi } from '../../hooks/useApi.js';
 import { api } from '../../lib/api.js';
 import { CATEGORY_LABEL, CATEGORIES, locationLine } from '../../lib/format.js';
 import { errorSummary } from '../../lib/formErrors.js';
+import { photoProblem, photoToDataUrl } from '../../lib/photo.js';
 import { STEP_NAMES, validateStep } from '../../lib/reportSteps.js';
 import { Card } from '../../components/Card.jsx';
 import { CategoryOption, Field } from '../../components/Field.jsx';
 import { ErrorSummary, FormError } from '../../components/States.jsx';
-
-const MAX_PHOTO_BYTES = 1024 * 1024; // 1 MB
 
 // The fields in page order, for the "There is a problem" summary.
 const FIELDS = [
@@ -20,15 +19,6 @@ const FIELDS = [
   { key: 'photo', id: 'photo-input' },
   { key: 'contactPhone', id: 'contact-phone' },
 ];
-
-function readAsDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error('The photo could not be read.'));
-    reader.readAsDataURL(file);
-  });
-}
 
 /** The step a validation error belongs to, so a failed send can jump back to it. */
 function stepOfFirstError(errors) {
@@ -58,19 +48,13 @@ export default function ReportFault() {
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      setErrors((current) => ({ ...current, photo: 'Choose an image file for the photo.' }));
-      return;
-    }
-    if (file.size > MAX_PHOTO_BYTES) {
-      setErrors((current) => ({
-        ...current,
-        photo: 'Choose a photo smaller than 1 MB.',
-      }));
+    const problem = photoProblem(file);
+    if (problem) {
+      setErrors((current) => ({ ...current, photo: problem }));
       return;
     }
     try {
-      setPhoto({ name: file.name, dataUrl: await readAsDataUrl(file) });
+      setPhoto({ name: file.name, dataUrl: await photoToDataUrl(file) });
       setErrors((current) => ({ ...current, photo: undefined }));
     } catch (error) {
       setErrors((current) => ({ ...current, photo: error.message }));
