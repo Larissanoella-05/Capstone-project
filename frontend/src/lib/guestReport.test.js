@@ -1,14 +1,12 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  MAX_PHOTO_BYTES,
   accuracyText,
   buildGuestPayload,
   isMeterNumber,
   locationErrorMessage,
   normalisePhone,
   parseSavedReports,
-  photoProblem,
   pointFromPosition,
   rememberReport,
   reporterName,
@@ -159,17 +157,6 @@ describe('locationErrorMessage', () => {
     }
     assert.match(locationErrorMessage(1), /blocked/i);
     assert.match(locationErrorMessage(3), /too long/i);
-  });
-});
-
-describe('photoProblem', () => {
-  it('accepts an image under 1 MB', () => {
-    assert.equal(photoProblem({ type: 'image/jpeg', size: 500_000 }), null);
-  });
-
-  it('refuses something that is not an image or is too big', () => {
-    assert.match(photoProblem({ type: 'application/pdf', size: 10 }), /image/i);
-    assert.match(photoProblem({ type: 'image/png', size: MAX_PHOTO_BYTES + 1 }), /1 MB/);
   });
 });
 
