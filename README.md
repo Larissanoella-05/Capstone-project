@@ -28,12 +28,16 @@ Umuriro Response puts every fault into one shared, location-based record:
 **Customer reports a fault → Coordinator assigns a technician → Technician drives there and updates the status →
 Customer follows along until it is resolved.**
 
+In an emergency nobody has to sign up: the report page asks only for a phone number and a place. The
+coordinator sees it at once and the reporter gets a text with a private link to follow progress.
+
 Everyone reads and writes the same record, so a change by the technician shows up for the coordinator and the
 customer within seconds. Statuses are `Reported → Assigned → On the Way → Arrived → Working → Resolved`, and each
 change is time-stamped so response times can be measured.
 
 | Role                    | What they do                                                                         | Where        |
 | ----------------------- | ------------------------------------------------------------------------------------ | ------------ |
+| **Anyone, no account**  | Report a fault with a phone number, location and photo; get an SMS link to follow it | Web          |
 | **Customer**            | Report a fault (with a photo), follow it on a map and timeline, get notifications    | Web, Android |
 | **Service Coordinator** | See all faults, filter them, assign the nearest free technician, watch the analytics | Web only     |
 | **Technician**          | See assigned jobs, navigate there, update the status, record the fix, share location | Web, Android |
