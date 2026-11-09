@@ -70,7 +70,21 @@ Local API, 2,028 faults, no errors, single runs (times vary by about 30% on a la
 | `GET /stats/analytics` | p50 319 ms, 31 requests/s            | p50 67 ms, 121 requests/s        |
 | `GET /stats/overview`  | p50 106 ms, 91 requests/s            | p50 36 ms, 255 requests/s        |
 
-The first run showed the fault list was the slowest endpoint, so the list is now paged (20 per page). The same run showed the analytics endpoints slowing down, so the averages are now calculated in PostgreSQL. `[FILL: the same test against the live Render API, and how long the first request took after the server was asleep]`
+The first run showed the fault list was the slowest endpoint, so the list is now paged (20 per page). The same run showed the analytics endpoints slowing down, so the averages are now calculated in PostgreSQL.
+
+**Live Render API** (9 November 2026, run from a laptop, 200 requests per endpoint, 10 at a time, 1,600 requests, 0 errors). This is the small demo database, not 2,000 faults, so compare the shape and not the local table above:
+
+| Request                          | KB  | p50 (ms) | p95 (ms) | Requests/s |
+| -------------------------------- | --- | -------- | -------- | ---------- |
+| `GET /health`                    | 0   | 345      | 553      | 25         |
+| `GET /faults?status=ALL` (paged) | 28  | 616      | 765      | 15         |
+| `GET /stats/overview`            | 0   | 409      | 553      | 23         |
+| `GET /stats/analytics`           | 1   | 408      | 551      | 23         |
+| `GET /notifications`             | 0   | 405      | 453      | 24         |
+| `GET /technicians?faultId=…`     | 2   | 481      | 686      | 19         |
+| `GET /faults/:id`                | 717 | 869      | 1,856    | 10         |
+
+The times include the network from my laptop to Render, so they are slower than local. The slowest request is one fault, because it carries its photos as data URLs (717 KB), which is a documented scope decision. **Cold start:** the first request after the free-tier server had been asleep took **24.4 s**; the next one took 0.6 s.
 
 ## 4. Android app
 

@@ -85,7 +85,7 @@ We used five approaches (details and commands in [TESTING.md](TESTING.md)).
 | `GET /stats/analytics` | p50 319 ms             | p50 67 ms        |
 | `GET /stats/overview`  | p50 106 ms             | p50 36 ms        |
 
-These are single runs on a laptop and vary by up to 30%, so the sizes are more reliable than the times. `[FILL: the same test on the live Render API, including the slow first request after sleep]`
+These are single runs on a laptop and vary by up to 30%, so the sizes are more reliable than the times. On the live Render API (1,600 read-only requests, 10 at a time, 0 errors) the dashboard endpoints answered in 345 to 616 ms at the median and under 1 s at p95, with 10 to 25 requests per second. The one-fault request was slowest (p50 869 ms, p95 1.9 s) because it carries its photos (717 KB). The first request after the free-tier server had slept took 24.4 s, so the first visit of the day is slow; the next request took 0.6 s.
 
 **Compatibility and usability.** `[FILL: browser and device table from TESTING.md, Lighthouse mobile score, and the usability result (people, time, where they hesitated). If not done, say it is future work.]`
 
