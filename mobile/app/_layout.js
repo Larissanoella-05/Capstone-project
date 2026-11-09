@@ -85,6 +85,7 @@ function RootStack() {
         <Stack.Screen name="landing" />
         <Stack.Protected guard={!user}>
           <Stack.Screen name="login" />
+          <Stack.Screen name="register" />
         </Stack.Protected>
         <Stack.Protected guard={user?.role === 'CUSTOMER'}>
           <Stack.Screen name="customer" />

@@ -44,11 +44,12 @@ export function AuthProvider({ children }) {
     return () => setUnauthorizedHandler(null);
   }, []);
 
-  // `expectedRole` is the role picked on sign-in; a different account is refused before anything is stored.
-  const login = useCallback(async (email, password, expectedRole) => {
+  // `identifier` is an email address or a phone number. `expectedRole` is the role picked on sign-in; a
+  // different account is refused before anything is stored.
+  const login = useCallback(async (identifier, password, expectedRole) => {
     const data = await api('/auth/login', {
       method: 'POST',
-      body: { email, password, client: 'mobile' },
+      body: { identifier, password, client: 'mobile' },
     });
     if (data.user.role === 'COORDINATOR') {
       throw new Error('Coordinators use the web app.');
@@ -58,6 +59,17 @@ export function AuthProvider({ children }) {
         `This is a ${data.user.role.toLowerCase()} account. Choose ${data.user.role.toLowerCase()} above to sign in.`
       );
     }
+    await tokenStore.set(data.token);
+    setUser(data.user);
+    return data.user;
+  }, []);
+
+  // Creates a customer account (the only role that can sign itself up) and signs it in.
+  const register = useCallback(async (body) => {
+    const data = await api('/auth/register', {
+      method: 'POST',
+      body: { ...body, client: 'mobile' },
+    });
     await tokenStore.set(data.token);
     setUser(data.user);
     return data.user;
@@ -83,7 +95,10 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
-  const value = useMemo(() => ({ user, loading, login, logout }), [user, loading, login, logout]);
+  const value = useMemo(
+    () => ({ user, loading, login, register, logout }),
+    [user, loading, login, register, logout]
+  );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

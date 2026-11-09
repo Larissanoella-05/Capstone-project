@@ -10,7 +10,14 @@ const read = (relative) =>
   readFileSync(new URL(relative, import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 
 describe('lib files shared with the mobile app', () => {
-  for (const name of ['format.js', 'statusTone.js', 'reportSteps.js', 'landingCopy.js']) {
+  for (const name of [
+    'format.js',
+    'statusTone.js',
+    'reportSteps.js',
+    'landingCopy.js',
+    'guestReport.js',
+    'registration.js',
+  ]) {
     it(`has the same ${name} in frontend and mobile`, () => {
       assert.equal(
         read(`../../../mobile/src/lib/${name}`),
