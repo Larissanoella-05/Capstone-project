@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { homeDecision, loginLink, postLoginPath, TARGETS } from './landingLinks.js';
+import { homeDecision, loginLink, postLoginPath, registerLink, TARGETS } from './landingLinks.js';
 
 const HOME = { CUSTOMER: '/customer', TECHNICIAN: '/technician', COORDINATOR: '/coordinator' };
 
@@ -56,5 +56,11 @@ describe('postLoginPath', () => {
 
   it('matches whole path segments, not prefixes', () => {
     assert.equal(postLoginPath('/customerX', 'CUSTOMER', HOME), '/customer');
+  });
+});
+
+describe('registerLink', () => {
+  it('goes to the sign-up page without asking for a sign-in first', () => {
+    assert.deepEqual(registerLink, { to: '/register' });
   });
 });
