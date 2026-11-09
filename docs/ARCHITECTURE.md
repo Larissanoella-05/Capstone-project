@@ -30,38 +30,46 @@ flowchart LR
 A `User` is the login account. The role decides which profile row exists (`Customer`, `Technician` or
 `ServiceCoordinator`). `requireAuth` loads the user with all three profiles and puts it on `req.user`.
 
+Only customers can create their own account (`POST /auth/register`). Technician and coordinator accounts are
+seeded, because a self-registered staff account would see other people's faults. Registration makes the `User`,
+the `Customer` and the first `ServiceLocation` in one write. The phone number is required and unique, stored as
+`+2507XXXXXXXX`; the email is optional and unique when given. A meter number is digits only and may be shared
+between customers (a tenant on the landlord's meter), but one customer lists it once. Sign-in takes an email
+address or a phone number in one field: input with an `@` is looked up by email, anything else by phone.
+
 ## Backend (`backend/src`)
 
 Request flow: `app.js` (CORS, JSON body, logging) → `routes/` → `middleware/` (auth, validation) → `services/`
 → Prisma → PostgreSQL. Errors are formatted once by `middleware/error.js`.
 
-| Folder                      | Responsibility                                                                   |
-| --------------------------- | -------------------------------------------------------------------------------- |
-| `routes/`                   | HTTP only: pick middleware, call one service                                     |
-| `middleware/`               | `auth` (JWT, `requireRole`), `validate` (Zod), `error`                           |
-| `validators/`               | Zod request-body schemas per resource                                            |
-| `services/`                 | Business logic and database access: fault, technician, notification, push, stats |
-| `domain/`                   | Pure logic with no I/O: `FaultStatusMachine`, `TechnicianRanker`                 |
-| `config/`, `lib/`, `utils/` | Env loading, shared Prisma client, geo distance, constants, HTTP errors          |
-| `types/`                    | Type declarations for the JSDoc type-check (`req.user`)                          |
+| Folder                      | Responsibility                                                                         |
+| --------------------------- | -------------------------------------------------------------------------------------- |
+| `routes/`                   | HTTP only: pick middleware, call one service                                           |
+| `middleware/`               | `auth` (JWT, `requireRole`), `validate` (Zod), `error`                                 |
+| `validators/`               | Zod request-body schemas per resource                                                  |
+| `services/`                 | Business logic and database access: auth, fault, technician, notification, push, stats |
+| `domain/`                   | Pure logic with no I/O: `FaultStatusMachine`, `TechnicianRanker`, `loginIdentifier`    |
+| `config/`, `lib/`, `utils/` | Env loading, shared Prisma client, geo distance, constants, HTTP errors                |
+| `types/`                    | Type declarations for the JSDoc type-check (`req.user`)                                |
 
 ### Endpoints (all under `/api`)
 
-| Method and path                                                                        | Roles                                              | Purpose                                                      |
-| -------------------------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------ |
-| `POST /auth/login`, `GET /auth/me`                                                     | public / any signed in                             | Sign in (mobile sends `client: "mobile"` for a longer token) |
-| `GET /faults`, `GET /faults/:id`                                                       | any (scoped to user)                               | List with filters, fault detail with history                 |
-| `POST /faults`                                                                         | Customer                                           | Report a fault                                               |
-| `PATCH /faults/:id`                                                                    | Coordinator                                        | Change priority                                              |
-| `POST /faults/:id/assign`                                                              | Coordinator                                        | Assign a technician                                          |
-| `PATCH /faults/:id/status`                                                             | Technician, Coordinator                            | Move the status, resolve, or cancel                          |
-| `GET /technicians`, `GET /technicians/:id`                                             | Coordinator (list), Coordinator + Technician (one) | Technicians, ranked for a fault with `?faultId=`             |
-| `POST /technicians/me/location`                                                        | Technician                                         | Record the device position                                   |
-| `GET /notifications`, `PATCH /notifications/read-all`, `PATCH /notifications/:id/read` | any signed in                                      | In-app notifications                                         |
-| `POST /devices`, `DELETE /devices`                                                     | any signed in                                      | Register or remove an Expo push token                        |
-| `GET /service-locations`                                                               | Customer                                           | The customer's registered premises                           |
-| `GET /stats/overview`, `GET /stats/analytics`                                          | Coordinator                                        | Dashboard counts and response-time analytics                 |
-| `GET /health`                                                                          | public                                             | Health check (used to wake the free-tier API)                |
+| Method and path                                                                        | Roles                                              | Purpose                                                     |
+| -------------------------------------------------------------------------------------- | -------------------------------------------------- | ----------------------------------------------------------- |
+| `POST /auth/register`                                                                  | public (10 per hour per network)                   | Create a customer account and first location, signed in     |
+| `POST /auth/login`, `GET /auth/me`                                                     | public / any signed in                             | Sign in by email or phone (mobile sends `client: "mobile"`) |
+| `GET /faults`, `GET /faults/:id`                                                       | any (scoped to user)                               | List with filters, fault detail with history                |
+| `POST /faults`                                                                         | Customer                                           | Report a fault                                              |
+| `PATCH /faults/:id`                                                                    | Coordinator                                        | Change priority                                             |
+| `POST /faults/:id/assign`                                                              | Coordinator                                        | Assign a technician                                         |
+| `PATCH /faults/:id/status`                                                             | Technician, Coordinator                            | Move the status, resolve, or cancel                         |
+| `GET /technicians`, `GET /technicians/:id`                                             | Coordinator (list), Coordinator + Technician (one) | Technicians, ranked for a fault with `?faultId=`            |
+| `POST /technicians/me/location`                                                        | Technician                                         | Record the device position                                  |
+| `GET /notifications`, `PATCH /notifications/read-all`, `PATCH /notifications/:id/read` | any signed in                                      | In-app notifications                                        |
+| `POST /devices`, `DELETE /devices`                                                     | any signed in                                      | Register or remove an Expo push token                       |
+| `GET /service-locations`                                                               | Customer                                           | The customer's registered premises                          |
+| `GET /stats/overview`, `GET /stats/analytics`                                          | Coordinator                                        | Dashboard counts and response-time analytics                |
+| `GET /health`                                                                          | public                                             | Health check (used to wake the free-tier API)               |
 
 ### Key rules
 
