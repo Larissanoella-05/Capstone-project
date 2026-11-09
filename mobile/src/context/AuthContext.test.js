@@ -51,7 +51,53 @@ describe('AuthContext', () => {
 
     expect(api).toHaveBeenCalledWith('/auth/login', {
       method: 'POST',
-      body: { email: 't@demo.rw', password: 'demo1234', client: 'mobile' },
+      body: { identifier: 't@demo.rw', password: 'demo1234', client: 'mobile' },
+    });
+  });
+
+  it('signs in with a phone number the same way', async () => {
+    api.mockResolvedValue({ token: 'x', user: user('CUSTOMER') });
+    const { result } = await renderAuth();
+
+    await act(async () => {
+      await result.current.login('078 830 0114', 'demo1234');
+    });
+
+    expect(api).toHaveBeenCalledWith('/auth/login', {
+      method: 'POST',
+      body: { identifier: '078 830 0114', password: 'demo1234', client: 'mobile' },
+    });
+  });
+
+  describe('register', () => {
+    const form = { name: 'Aline', phone: '0788300114', password: 'longenough' };
+
+    it('creates the account, stores the token and signs the customer in', async () => {
+      api.mockResolvedValue({ token: 'new-token', user: user('CUSTOMER') });
+      const { result } = await renderAuth();
+
+      await act(async () => {
+        await result.current.register(form);
+      });
+
+      expect(api).toHaveBeenCalledWith('/auth/register', {
+        method: 'POST',
+        body: { ...form, client: 'mobile' },
+      });
+      expect(result.current.user.role).toBe('CUSTOMER');
+      expect(await tokenStore.get()).toBe('new-token');
+    });
+
+    it('stays signed out and stores nothing when the server refuses', async () => {
+      api.mockRejectedValue(new Error('An account with this phone number already exists.'));
+      const { result } = await renderAuth();
+
+      await act(async () => {
+        await expect(result.current.register(form)).rejects.toThrow(/phone number/);
+      });
+
+      expect(result.current.user).toBeNull();
+      expect(await tokenStore.get()).toBeNull();
     });
   });
 

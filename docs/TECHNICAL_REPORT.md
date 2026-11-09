@@ -11,19 +11,19 @@ When the power fails, people phone the utility and describe where they live. The
 
 **Table 1. Planned features and what was built**
 
-| Planned feature                         | Status                                        | Evidence                                                          |
-| --------------------------------------- | --------------------------------------------- | ----------------------------------------------------------------- |
-| Sign-in for three roles (FR1)           | Partial: email only, no self-registration     | `middleware/auth.js`, `[FILL: login screenshot]`                  |
-| Report linked to a service location     | Completed                                     | `faultService.createFault`, `[FILL: report screenshot]`           |
-| Report without an account               | Completed (added after feedback)              | `POST /api/public/faults`, `[FILL: guest report screenshot]`      |
-| Coordinator dashboard, queue and alert  | Completed                                     | `pages/coordinator/Dashboard.jsx`, `[FILL: dashboard screenshot]` |
-| Ranked technician assignment            | Completed                                     | `TechnicianRanker`, `[FILL: assign screenshot]`                   |
-| Status workflow with time stamps        | Completed                                     | `FaultStatusMachine`, `[FILL: technician screenshot]`             |
-| Customer and guest tracking             | Completed                                     | `pages/customer/Tracking.jsx`, `pages/public/`                    |
-| Live technician position                | Real GPS on Android, simulated on web         | `ActiveJobTracker`                                                |
-| Arrival distance and response analytics | Completed                                     | `statsService`, `[FILL: analytics screenshot]`                    |
-| SMS to the reporter                     | Partial: built, not yet tried on a real phone | `smsService.js`, [SMS_GATEWAY.md](SMS_GATEWAY.md)                 |
-| Administrator area (FR13)               | Not built                                     | Accounts come from the seed script                                |
+| Planned feature                         | Status                                                                                                    | Evidence                                                          |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Sign-in for three roles (FR1)           | Completed: customers register and sign in by email or phone on web and Android; staff accounts are seeded | `middleware/auth.js`, `[FILL: login screenshot]`                  |
+| Report linked to a service location     | Completed                                                                                                 | `faultService.createFault`, `[FILL: report screenshot]`           |
+| Report without an account               | Completed (added after feedback)                                                                          | `POST /api/public/faults`, `[FILL: guest report screenshot]`      |
+| Coordinator dashboard, queue and alert  | Completed                                                                                                 | `pages/coordinator/Dashboard.jsx`, `[FILL: dashboard screenshot]` |
+| Ranked technician assignment            | Completed                                                                                                 | `TechnicianRanker`, `[FILL: assign screenshot]`                   |
+| Status workflow with time stamps        | Completed                                                                                                 | `FaultStatusMachine`, `[FILL: technician screenshot]`             |
+| Customer and guest tracking             | Completed                                                                                                 | `pages/customer/Tracking.jsx`, `pages/public/`                    |
+| Live technician position                | Real GPS on Android, simulated on web                                                                     | `ActiveJobTracker`                                                |
+| Arrival distance and response analytics | Completed                                                                                                 | `statsService`, `[FILL: analytics screenshot]`                    |
+| SMS to the reporter                     | Partial: built, not yet tried on a real phone                                                             | `smsService.js`, [SMS_GATEWAY.md](SMS_GATEWAY.md)                 |
+| Administrator area (FR13)               | Not built                                                                                                 | Accounts come from the seed script                                |
 
 **Where the build differs from the proposal, and why**
 
@@ -59,7 +59,7 @@ When the power fails, people phone the utility and describe where they live. The
 - _Location throttling on the phone._ A position is sent only after 20 seconds and 30 metres of movement, to save battery and requests.
 - _Paging and SQL averages._ The fault list is paged, and averages are worked out in PostgreSQL (`AVG … FILTER`, `percentile_cont`).
 
-**Error handling.** Every body is checked by a Zod schema and one handler returns `{ error: { message, details } }`. Examples from the integration tests: wrong password gives 401, a phone number that is not Rwandan gives 400, another customer's fault gives 403, skipping a stage gives 409, a fourth guest report in an hour gives 429, and a wrong tracking token gives 404.
+**Error handling.** Every body is checked by a Zod schema and one handler returns `{ error: { message, details } }`. Examples from the integration tests: wrong password gives 401, a phone number that is not Rwandan gives 400, another customer's fault gives 403, skipping a stage gives 409, a fourth guest report in an hour gives 429, a phone number that is already registered gives 409, and a wrong tracking token gives 404.
 
 ## 3. Testing and results
 
@@ -67,13 +67,13 @@ We used five approaches (details and commands in [TESTING.md](TESTING.md)).
 
 **Table 2. Testing approaches**
 
-| Approach                    | Why this one                                           | Result                                                 |
-| --------------------------- | ------------------------------------------------------ | ------------------------------------------------------ |
-| Unit                        | Workflow, ranking and validation break quietly         | 452 pass (backend 196, frontend 127, mobile 129)       |
-| Integration                 | The roles hand work to each other through one database | 86 pass in 21 suites, against a separate test database |
-| Load                        | Every open screen polls the API                        | See Table 3                                            |
-| Code review of both apps    | Finds what tests miss                                  | 8 problems fixed, no feature broken                    |
-| Manual device and usability | Maps, GPS, camera and SMS need a real phone            | `[FILL: results from TESTING.md section 6]`            |
+| Approach                    | Why this one                                           | Result                                                  |
+| --------------------------- | ------------------------------------------------------ | ------------------------------------------------------- |
+| Unit                        | Workflow, ranking and validation break quietly         | 534 pass (backend 222, frontend 148, mobile 164)        |
+| Integration                 | The roles hand work to each other through one database | 104 pass in 27 suites, against a separate test database |
+| Load                        | Every open screen polls the API                        | See Table 3                                             |
+| Code review of both apps    | Finds what tests miss                                  | 8 problems fixed, no feature broken                     |
+| Manual device and usability | Maps, GPS, camera and SMS need a real phone            | `[FILL: results from TESTING.md section 6]`             |
 
 **What testing changed.** The concurrency tests showed that five quick "On the way" taps all succeeded and made duplicate history and notifications, and that two coordinators could assign the same fault. The fix was optimistic concurrency, and the tests fail without it. The load test showed the fault list returning 3 MB at 2,000 faults, so we added paging. The same run showed slow analytics, so we moved the averages into SQL.
 
@@ -105,8 +105,8 @@ These are single runs on a laptop and vary by up to 30%, so the sizes are more r
 
 **Process.** 179 commits between 26 September and 9 November 2026, written as Conventional Commits and merged through pull requests. Database changes are committed Prisma migrations, never edited after they are applied.
 
-**Known limits.** Photos are stored as data URLs, technician positions on the web app are simulated, updates are polled, the SMS gateway is untested on a real phone, customers cannot sign themselves up, there is no administrator area, and type-checking covers the backend only. Each is a documented prototype decision.
+**Known limits.** Photos are stored as data URLs, technician positions on the web app are simulated, updates are polled, the SMS gateway is untested on a real phone, staff accounts cannot be created from the app, there is no administrator area, and type-checking covers the backend only. Each is a documented prototype decision.
 
 ## 5. Conclusion
 
-The core flow from report to resolution works for three roles on web and Android, and now also for a person with no account. It is protected against double taps and wrong-role access and covered by 538 automated tests. Load testing found two slow endpoints, and both were fixed and measured again. Not built: the administrator area. Still to show: a real SMS, the device and browser table, and the usability test.
+The core flow from report to resolution works for three roles on web and Android, and now also for a person with no account. It is protected against double taps and wrong-role access and covered by 638 automated tests. Load testing found two slow endpoints, and both were fixed and measured again. Not built: the administrator area. Still to show: a real SMS, the device and browser table, and the usability test.

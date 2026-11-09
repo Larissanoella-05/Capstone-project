@@ -1,5 +1,5 @@
 // Copy and link data for the public landing page. Kept out of the components so a test can scan it.
-import { guestReportLink, loginLink, TARGETS } from './landingLinks.js';
+import { guestReportLink, loginLink, registerLink, TARGETS } from './landingLinks.js';
 import {
   CTA as CTA_COPY,
   FAQ as FAQ_COPY,
@@ -33,6 +33,7 @@ export const CTA = {
   ...CTA_COPY,
   body: 'No more guessing when the lights will return. Report a fault and follow the repair until power is back.',
   signIn: 'Report a fault',
+  register: 'Create an account',
 };
 
 /** The web hero headline. The Android landing screen keeps its own wording in landingCopy.js. */
@@ -57,6 +58,7 @@ export const DASHBOARD_MENU = [
 ];
 
 export const REPORT_LINK = guestReportLink;
+export const REGISTER_LINK = registerLink;
 export const COORDINATOR_LINK = loginLink(TARGETS.coordinator);
 
 export const ABOUT = {

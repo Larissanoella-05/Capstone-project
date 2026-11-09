@@ -10,6 +10,7 @@ import { homeDecision } from './lib/landingLinks.js';
 
 import Landing from './pages/landing/Landing.jsx';
 import Login from './pages/Login.jsx';
+import Register from './pages/Register.jsx';
 import NotFound from './pages/NotFound.jsx';
 import Notifications from './pages/Notifications.jsx';
 
@@ -106,6 +107,7 @@ export default function App() {
 
       {/* No account needed: report a fault and follow it by its link. */}
       <Route element={<PublicShell />}>
+        <Route path="/register" element={<Register />} />
         <Route path="/report" element={<GuestReport />} />
         <Route path="/report/sent/:token" element={<GuestSubmitted />} />
         <Route path="/track/:token" element={<GuestTracking />} />

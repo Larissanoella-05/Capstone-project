@@ -33,19 +33,34 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener('umuriro:signed-out', onSignedOut);
   }, []);
 
-  const login = useCallback(async (email, password) => {
-    const data = await api('/auth/login', { method: 'POST', body: { email, password } });
+  const startSession = useCallback((data) => {
     tokenStore.set(data.token);
     setUser(data.user);
     return data.user;
   }, []);
+
+  /** `identifier` is an email address or a phone number. */
+  const login = useCallback(
+    async (identifier, password) =>
+      startSession(await api('/auth/login', { method: 'POST', body: { identifier, password } })),
+    [startSession]
+  );
+
+  /** Creates a customer account and signs it in. `body` comes from buildRegisterPayload. */
+  const register = useCallback(
+    async (body) => startSession(await api('/auth/register', { method: 'POST', body })),
+    [startSession]
+  );
 
   const logout = useCallback(() => {
     tokenStore.clear();
     setUser(null);
   }, []);
 
-  const value = useMemo(() => ({ user, loading, login, logout }), [user, loading, login, logout]);
+  const value = useMemo(
+    () => ({ user, loading, login, register, logout }),
+    [user, loading, login, register, logout]
+  );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

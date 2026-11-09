@@ -130,7 +130,7 @@ describe('request validation schemas', () => {
 
   it('normalises the login email and rejects malformed ones', () => {
     assert.equal(
-      loginSchema.parse({ email: '  Aline@Demo.RW ', password: 'x' }).email,
+      loginSchema.parse({ email: '  Aline@Demo.RW ', password: 'x' }).identifier,
       'aline@demo.rw'
     );
     assert.equal(loginSchema.safeParse({ email: 'not-an-email', password: 'x' }).success, false);

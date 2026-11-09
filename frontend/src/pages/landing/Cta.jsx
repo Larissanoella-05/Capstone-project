@@ -1,4 +1,4 @@
-import { CTA, HOTLINE_HREF, REPORT_LINK } from '../../lib/landingContent.js';
+import { CTA, HOTLINE_HREF, REGISTER_LINK, REPORT_LINK } from '../../lib/landingContent.js';
 import { ArrowUpRight, LoginLink } from './LandingBits.jsx';
 
 export default function Cta({ seen }) {
@@ -31,6 +31,9 @@ export default function Cta({ seen }) {
           <div className="lp-ctas">
             <LoginLink className="lp-btn lp-white" link={REPORT_LINK}>
               {CTA.signIn} <ArrowUpRight />
+            </LoginLink>
+            <LoginLink className="lp-btn lp-ghost" link={REGISTER_LINK}>
+              {CTA.register}
             </LoginLink>
             <a className="lp-btn lp-ghost" href={HOTLINE_HREF}>
               {CTA.call}

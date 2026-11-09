@@ -35,12 +35,12 @@ Everyone reads and writes the same record, so a change by the technician shows u
 customer within seconds. Statuses are `Reported → Assigned → On the Way → Arrived → Working → Resolved`, and each
 change is time-stamped so response times can be measured.
 
-| Role                    | What they do                                                                         | Where        |
-| ----------------------- | ------------------------------------------------------------------------------------ | ------------ |
-| **Anyone, no account**  | Report a fault with a phone number, location and photo; get an SMS link to follow it | Web          |
-| **Customer**            | Report a fault (with a photo), follow it on a map and timeline, get notifications    | Web, Android |
-| **Service Coordinator** | See all faults, filter them, assign the nearest free technician, watch the analytics | Web only     |
-| **Technician**          | See assigned jobs, navigate there, update the status, record the fix, share location | Web, Android |
+| Role                    | What they do                                                                                                                    | Where        |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| **Anyone, no account**  | Report a fault with a phone number, location and photo; get an SMS link to follow it                                            | Web          |
+| **Customer**            | Create an account, sign in by email or phone, report a fault (with a photo), follow it on a map and timeline, get notifications | Web, Android |
+| **Service Coordinator** | See all faults, filter them, assign the nearest free technician, watch the analytics                                            | Web only     |
+| **Technician**          | See assigned jobs, navigate there, update the status, record the fix, share location                                            | Web, Android |
 
 ## Quick start
 
@@ -93,6 +93,8 @@ password `demo1234`:
 | Customer    | `aline@demo.rw`      |
 | Technician  | `jeanclaude@demo.rw` |
 | Coordinator | `grace@demo.rw`      |
+
+A new customer can also create an account at `/register`; technicians and coordinators are seeded.
 
 Tip: open three browser tabs, sign in as a different role in each, and watch one fault move through the whole
 workflow.

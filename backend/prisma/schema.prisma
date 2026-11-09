@@ -65,8 +65,10 @@ enum NotificationType {
 model User {
   id           Int      @id @default(autoincrement())
   name         String
-  email        String   @unique
-  phone        String?
+  /// Optional: a customer may register with a phone number only
+  email        String?  @unique
+  /// Stored as +2507XXXXXXXX so it can be used to sign in
+  phone        String?  @unique
   passwordHash String
   role         Role
   createdAt    DateTime @default(now())
@@ -125,7 +127,8 @@ model ServiceLocation {
   id          Int      @id @default(autoincrement())
   customerId  Int
   customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  meterNumber String   @unique
+  /// Digits only. Shared on purpose: a tenant uses the landlord's meter
+  meterNumber String
   village     String?
   cell        String
   sector      String   @default("Ndera")
@@ -136,6 +139,7 @@ model ServiceLocation {
 
   faults FaultReport[]
 
+  @@unique([customerId, meterNumber])
   @@index([customerId])
 }
 

@@ -4,13 +4,13 @@ We use five kinds of testing. Each one was chosen for a specific risk. The count
 
 | Kind                        | Why                                                          | Result                                          |
 | --------------------------- | ------------------------------------------------------------ | ----------------------------------------------- |
-| Unit                        | Workflow rules, ranking and validation break quietly         | 452 pass: backend 196, frontend 127, mobile 129 |
-| Integration                 | The value is the hand-off between roles through one database | 86 pass, 21 suites, about 17 s                  |
+| Unit                        | Workflow rules, ranking and validation break quietly         | 534 pass: backend 222, frontend 148, mobile 164 |
+| Integration                 | The value is the hand-off between roles through one database | 104 pass, 27 suites, about 26 s                 |
 | Load                        | Every open screen asks the API for data every 4 to 8 seconds | See below                                       |
 | Code review of both apps    | Finds what tests do not look for                             | No feature broken; 8 problems fixed             |
 | Manual device and usability | Maps, GPS, camera and push need a real phone                 | Checklist and tables below, to be filled in     |
 
-That is 538 automated tests. GitHub Actions runs lint, formatting, type-check and the unit tests on every pull request.
+That is 638 automated tests. GitHub Actions runs lint, formatting, type-check and the unit tests on every pull request.
 
 ## 1. Unit tests
 
@@ -36,23 +36,27 @@ DATABASE_URL="$TEST_DATABASE_URL" npx prisma migrate deploy
 npm run test:integration
 ```
 
-**Safety:** the tests wipe their database, so they refuse to start unless `TEST_DATABASE_URL` is set, ends in `_test`, is on localhost, is not the development database, and holds only demo accounts. Each refusal was triggered by hand once.
+**Safety:** the tests wipe their database, so they refuse to start unless `TEST_DATABASE_URL` is set, ends in `_test`, is on localhost, is not the development database, and holds only demo accounts. The registration tests delete the accounts they create, so the database still holds only demo accounts for the next run. Each refusal was triggered by hand once.
 
 **What they check:**
 
-| Area                      | Inputs                                                                              | Expected                                                              |
-| ------------------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| Sign-in                   | wrong password, unknown email, bad email, no token, tampered token                  | 401 (same message for the first two), 400 for a bad email             |
-| Full workflow             | report, rank, assign, on the way, arrived, working, resolved                        | every status and time stored; customer notified at each step          |
-| Permissions               | another customer's fault, customer assigning, unassigned technician                 | 403                                                                   |
-| Bad input                 | missing category, `abc` as id, unknown id, bad JSON, GPS out of range               | 400 or 404 with a readable message                                    |
-| Workflow rules            | skipping a stage, blank outcome note, changing a resolved fault                     | 409 or 400                                                            |
-| Double taps               | five identical updates at once; two assignments at once                             | one succeeds, the rest get 409; no duplicate history or notifications |
-| Report without an account | no sign-in, phone not Rwandan, no place, guest sets a priority, hidden field filled | accepted with a reference and token; the bad ones get 400             |
-| Private tracking link     | right token, wrong token, wrong shape, registered customer, 7 days after resolved   | guest sees progress (no phone, no meter); the rest get 404            |
-| Guest limits              | 4 reports from one phone in an hour                                                 | the fourth gets 429                                                   |
-| SMS                       | received, assigned, on the way, arrived, resolved, gateway down                     | one short text each; a failing gateway never fails the report         |
-| Paging and analytics      | pages, last page, bad `page`, 300 generated faults compared with plain JavaScript   | same numbers, no gaps or overlap                                      |
+| Area                      | Inputs                                                                                     | Expected                                                                                                    |
+| ------------------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| Sign-in                   | wrong password, unknown email or phone, bad identifier, no token, tampered token           | 401 (same message for the first two), 400 for a bad identifier                                              |
+| Sign-in by phone          | `078…`, `+25078…`, spaced forms, a seeded customer's phone, the old `email` field          | 200 with the same user as sign-in by email                                                                  |
+| Customer registration     | valid sign-up, a `role` field, short password, phone or email already taken, twice at once | customer created and signed in; the bad ones 400; the taken ones 409 naming the field, nothing half-created |
+| Shared meter              | tenant and landlord on one meter, one customer adding the same meter twice                 | both register and report faults; the database refuses the second copy                                       |
+| Sign-up limit             | 11 valid sign-ups from one network in an hour                                              | the 11th gets 429                                                                                           |
+| Full workflow             | report, rank, assign, on the way, arrived, working, resolved                               | every status and time stored; customer notified at each step                                                |
+| Permissions               | another customer's fault, customer assigning, unassigned technician                        | 403                                                                                                         |
+| Bad input                 | missing category, `abc` as id, unknown id, bad JSON, GPS out of range                      | 400 or 404 with a readable message                                                                          |
+| Workflow rules            | skipping a stage, blank outcome note, changing a resolved fault                            | 409 or 400                                                                                                  |
+| Double taps               | five identical updates at once; two assignments at once                                    | one succeeds, the rest get 409; no duplicate history or notifications                                       |
+| Report without an account | no sign-in, phone not Rwandan, no place, guest sets a priority, hidden field filled        | accepted with a reference and token; the bad ones get 400                                                   |
+| Private tracking link     | right token, wrong token, wrong shape, registered customer, 7 days after resolved          | guest sees progress (no phone, no meter); the rest get 404                                                  |
+| Guest limits              | 4 reports from one phone in an hour                                                        | the fourth gets 429                                                                                         |
+| SMS                       | received, assigned, on the way, arrived, resolved, gateway down                            | one short text each; a failing gateway never fails the report                                               |
+| Paging and analytics      | pages, last page, bad `page`, 300 generated faults compared with plain JavaScript          | same numbers, no gaps or overlap                                                                            |
 
 **What changed because of them:** simultaneous "On the way" taps used to all succeed and create duplicate history and notifications, and two coordinators could both assign a technician. With the fix removed both tests failed 3 times out of 3; with it they pass. A first version of the test passed even without the fix, because the first request finished before the others connected; warming the connections first made the race real.
 
@@ -90,12 +94,12 @@ The times include the network from my laptop to Render, so they are slower than 
 
 ```bash
 cd mobile
-npm test                                # 129 tests, 19 suites
+npm test                                # 164 tests, 20 suites
 npx expo-doctor                         # 20 of 20 checks
 npx expo export --platform android      # bundles the whole app; fails on any import error
 ```
 
-The Jest tests cover the API client (token, errors, timeouts), sign-in, polling that stops in the background, the location throttle (a position is sent at most every 20 seconds and only after 30 metres of movement), push registration and where a tapped notification opens.
+The Jest tests cover the API client (token, errors, timeouts), sign-in and sign-up (the account is created and stored, a refusal stores nothing, the form rules match the web app), polling that stops in the background, the location throttle (a position is sent at most every 20 seconds and only after 30 metres of movement), push registration and where a tapped notification opens.
 
 ## 5. Review of both apps
 
@@ -114,6 +118,7 @@ Two read-only reviews found no broken feature. Eight problems were fixed, for ex
 | 5   | The coordinator assigns a technician; the technician sees the job                          |        |
 | 6   | Technician: on the way, arrived, working, resolved; the guest's page follows               |        |
 | 7   | Android app: sign in as customer and as technician; force-close and reopen stays signed in |        |
+| 7a  | Android app: create a customer account, report a fault, sign out, sign in with the phone   |        |
 | 8   | Android app: location is shared while on the way, and stops when the phone is locked       |        |
 | 9   | Android app: push arrives with the app open, in the background and closed                  |        |
 | 10  | Airplane mode shows an offline message and recovers                                        |        |

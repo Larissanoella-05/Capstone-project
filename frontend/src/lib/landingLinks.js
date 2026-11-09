@@ -17,6 +17,9 @@ export function postLoginPath(from, role, homeByRole) {
   return inOwnArea ? from : home;
 }
 
+/** Creating an account is open to any customer. */
+export const registerLink = { to: '/register' };
+
 /** Reporting needs no account, so these actions go straight to the report form. */
 export const guestReportLink = { to: '/report' };
 

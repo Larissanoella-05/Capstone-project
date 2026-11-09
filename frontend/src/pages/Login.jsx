@@ -6,6 +6,7 @@ import { Field } from '../components/Field.jsx';
 import { FormError } from '../components/States.jsx';
 import { isDemoLogin } from '../lib/demo.js';
 import { postLoginPath } from '../lib/landingLinks.js';
+import { identifierError } from '../lib/registration.js';
 
 const DEMO = isDemoLogin(import.meta.env.VITE_DEMO_LOGIN);
 const DEMO_PASSWORD = 'demo1234';
@@ -35,7 +36,7 @@ export default function Login() {
   const location = useLocation();
 
   const [role, setRole] = useState(ROLES[0]);
-  const [email, setEmail] = useState(DEMO ? ROLES[0].email : '');
+  const [identifier, setIdentifier] = useState(DEMO ? ROLES[0].email : '');
   const [password, setPassword] = useState(DEMO ? DEMO_PASSWORD : '');
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
@@ -48,7 +49,7 @@ export default function Login() {
 
   function chooseRole(next) {
     setRole(next);
-    setEmail(next.email);
+    setIdentifier(next.email);
     setPassword(DEMO_PASSWORD);
     setErrors({});
     setFormError('');
@@ -57,9 +58,8 @@ export default function Login() {
   async function onSubmit(event) {
     event.preventDefault();
     const nextErrors = {};
-    if (!email.trim()) nextErrors.email = 'Enter your email address.';
-    else if (!/^\S+@\S+\.\S+$/.test(email.trim()))
-      nextErrors.email = 'Enter a valid email address.';
+    const problem = identifierError(identifier);
+    if (problem) nextErrors.identifier = problem;
     if (!password) nextErrors.password = 'Enter your password.';
     setErrors(nextErrors);
     setFormError('');
@@ -67,7 +67,7 @@ export default function Login() {
 
     setSubmitting(true);
     try {
-      await login(email.trim(), password);
+      await login(identifier.trim(), password);
     } catch (error) {
       setFormError(error.message);
     } finally {
@@ -105,7 +105,7 @@ export default function Login() {
           <div className="w-full max-w-[440px] rounded-card bg-white p-6 text-ink shadow-lg sm:p-8">
             <h1 className="display text-[28px]">Sign in</h1>
             <p className="mb-6 mt-2 text-sm text-grey">
-              Use the account created for you by your administrator.
+              Use your email address or your phone number.
             </p>
 
             <form onSubmit={onSubmit} noValidate className="flex flex-col gap-[18px]">
@@ -138,17 +138,19 @@ export default function Login() {
                 </div>
               )}
 
-              <Field id="email" label="Email" error={errors.email}>
+              <Field id="identifier" label="Email or phone" error={errors.identifier}>
                 <input
-                  id="email"
-                  type="email"
+                  id="identifier"
+                  type="text"
+                  inputMode="email"
                   autoComplete="username"
-                  placeholder="Enter your email"
+                  autoCapitalize="none"
+                  placeholder="Email or 078 123 4567"
                   className="field"
-                  value={email}
-                  aria-invalid={Boolean(errors.email)}
-                  aria-describedby={errors.email ? 'email-error' : undefined}
-                  onChange={(event) => setEmail(event.target.value)}
+                  value={identifier}
+                  aria-invalid={Boolean(errors.identifier)}
+                  aria-describedby={errors.identifier ? 'identifier-error' : undefined}
+                  onChange={(event) => setIdentifier(event.target.value)}
                 />
               </Field>
 
@@ -199,7 +201,13 @@ export default function Login() {
             </form>
 
             <div className="mt-6 flex flex-col gap-1 border-t border-line pt-4 text-xs text-grey">
-              <p className="m-0">Need access? Ask your administrator to create your account.</p>
+              <p className="m-0">
+                New customer?{' '}
+                <Link to="/register" className="font-semibold text-accent">
+                  Create an account
+                </Link>
+                . Technicians and coordinators: ask your administrator for access.
+              </p>
               <Link
                 to="/"
                 className="inline-flex min-h-11 items-center self-start text-sm font-semibold text-accent focus-visible:outline-accent"

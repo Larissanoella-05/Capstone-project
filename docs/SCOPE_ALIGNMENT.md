@@ -4,6 +4,7 @@ Status is one of Completed, Partial or Not built. Evidence points to the code or
 
 | Planned feature                                       | What problem it solves                                                   | Status                | Evidence                                                                                                                                                 |
 | ----------------------------------------------------- | ------------------------------------------------------------------------ | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Customer sign-up and sign-in by email or phone        | A customer creates an account and signs in without an administrator      | Completed             | `authService.js`, `pages/Register.jsx`, `app/register.js`, `lib/registration.js`; integration tests _registration_. Web and Android                      |
 | Sign-in for three roles                               | Each person sees only their own screens and data                         | Completed             | `middleware/auth.js`, `App.jsx`; integration tests _authorization between roles_                                                                         |
 | Fault report linked to the service location           | The technician no longer needs spoken directions                         | Completed             | `faultService.createFault`, `pages/customer/ReportFault.jsx`                                                                                             |
 | Report without an account (added after feedback)      | In an emergency nobody should have to sign up first                      | Completed             | `POST /api/public/faults`, `pages/public/GuestReport.jsx`; integration tests _Reporting without an account_                                              |
@@ -31,22 +32,22 @@ Status is one of Completed, Partial or Not built. Evidence points to the code or
 
 ## Checked against the proposal's functional requirements
 
-| Requirement                                                                | Status    | Note                                                                                       |
-| -------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------ |
-| FR1 Register and sign in with email or phone; roles                        | Partial   | Sign-in by email for three roles. No self-registration, no phone sign-in, no administrator |
-| FR2 Registered service locations with meter, phone and coordinates         | Completed | `ServiceLocation` table; a customer can have more than one                                 |
-| FR3 Report with a location, category, description and a reference number   | Completed | Also works without an account                                                              |
-| FR4 Coordinates attached automatically; default priority from the category | Completed | Guests use their phone's location or a written place                                       |
-| FR5 Coordinator sees all open reports on a list and a map                  | Completed | Dashboard, Fault management, Monitoring                                                    |
-| FR6 Assign, reassign, change priority, cancel                              | Completed | `Assign.jsx`, `PATCH /api/faults/:id`                                                      |
-| FR7 Technician sees the job, customer contact and a directions link        | Completed | `JobDetails.jsx`                                                                           |
-| FR8 Stages with times and an outcome note                                  | Completed | _Accepted_ dropped, _Working_ added                                                        |
-| FR9 Customer sees status and history; SMS on receipt and assignment        | Partial   | Tracking done. SMS built but not tried on a real phone                                     |
-| FR10 Live technician position while on the way                             | Partial   | Real on Android, simulated on web                                                          |
-| FR11 Position and distance at Arrived                                      | Completed | `arrivalDistanceM`                                                                         |
-| FR12 Clarification contacts recorded                                       | Completed | Recorded when resolving                                                                    |
-| FR13 Administrator manages users, categories and locations                 | Not built | Seed script instead                                                                        |
-| FR14 Response-performance report                                           | Completed | Analytics page                                                                             |
+| Requirement                                                                | Status    | Note                                                                                                                                                                 |
+| -------------------------------------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR1 Register and sign in with email or phone; roles                        | Completed | Customers register and sign in by email or phone on web and Android. Technicians and coordinators are seeded, so there is no administrator to create them (see FR13) |
+| FR2 Registered service locations with meter, phone and coordinates         | Completed | `ServiceLocation` table; a customer can have more than one                                                                                                           |
+| FR3 Report with a location, category, description and a reference number   | Completed | Also works without an account                                                                                                                                        |
+| FR4 Coordinates attached automatically; default priority from the category | Completed | Guests use their phone's location or a written place                                                                                                                 |
+| FR5 Coordinator sees all open reports on a list and a map                  | Completed | Dashboard, Fault management, Monitoring                                                                                                                              |
+| FR6 Assign, reassign, change priority, cancel                              | Completed | `Assign.jsx`, `PATCH /api/faults/:id`                                                                                                                                |
+| FR7 Technician sees the job, customer contact and a directions link        | Completed | `JobDetails.jsx`                                                                                                                                                     |
+| FR8 Stages with times and an outcome note                                  | Completed | _Accepted_ dropped, _Working_ added                                                                                                                                  |
+| FR9 Customer sees status and history; SMS on receipt and assignment        | Partial   | Tracking done. SMS built but not tried on a real phone                                                                                                               |
+| FR10 Live technician position while on the way                             | Partial   | Real on Android, simulated on web                                                                                                                                    |
+| FR11 Position and distance at Arrived                                      | Completed | `arrivalDistanceM`                                                                                                                                                   |
+| FR12 Clarification contacts recorded                                       | Completed | Recorded when resolving                                                                                                                                              |
+| FR13 Administrator manages users, categories and locations                 | Not built | Seed script instead                                                                                                                                                  |
+| FR14 Response-performance report                                           | Completed | Analytics page                                                                                                                                                       |
 
 The proposal also planned a pilot with about 20 customers, 5 technicians and 3 coordinators. That pilot has not run yet.
 
@@ -58,4 +59,5 @@ The proposal also planned a pilot with about 20 customers, 5 technicians and 3 c
 - **Technician positions** are simulated on the web app. The Android app sends real positions.
 - **Photos** are stored in the database, to keep the prototype simple. Production should use file storage.
 - **Polling, not WebSockets**, because it is simpler to host on free plans and 4 to 8 seconds is fast enough.
-- **No sign-up for customers.** Their accounts and service locations come from the seed script. A real rollout would import them from the utility's records.
+- **Customers sign themselves up.** A customer creates an account with a phone number (email is optional), a meter number and a first location, and signs in with either the email or the phone. Technician and coordinator accounts still come from the seed script, because a self-registered staff account would see other people's faults. A real rollout would import customer records from the utility.
+- **Shared meters.** Tenants often use their landlord's meter, so several customers can register the same meter number. Nothing can check that a meter belongs to the person typing it without the utility's records, so the number is a label for the coordinator; the GPS point places the fault.

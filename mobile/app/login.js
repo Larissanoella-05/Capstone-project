@@ -17,6 +17,7 @@ import { Brand } from '../src/components/Brand.js';
 import { FormError } from '../src/components/States.js';
 import { useAuth } from '../src/context/AuthContext.js';
 import { isDemoLogin } from '../src/lib/demo.js';
+import { identifierError } from '../src/lib/registration.js';
 import Backdrop from '../src/components/Backdrop.js';
 import { colors, fonts, radius } from '../src/theme.js';
 
@@ -50,7 +51,7 @@ export default function Login() {
   const router = useRouter();
 
   const [role, setRole] = useState(ROLES[0]);
-  const [email, setEmail] = useState(DEMO ? ROLES[0].email : '');
+  const [identifier, setIdentifier] = useState(DEMO ? ROLES[0].email : '');
   const [password, setPassword] = useState(DEMO ? DEMO_PASSWORD : '');
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
@@ -70,7 +71,7 @@ export default function Login() {
     setRole(next);
     // Only the demo build fills in the account; a real sign-in keeps what the person typed.
     if (DEMO) {
-      setEmail(next.email);
+      setIdentifier(next.email);
       setPassword(DEMO_PASSWORD);
     }
     setErrors({});
@@ -79,9 +80,8 @@ export default function Login() {
 
   async function onSubmit() {
     const nextErrors = {};
-    if (!email.trim()) nextErrors.email = 'Enter your email address.';
-    else if (!/^\S+@\S+\.\S+$/.test(email.trim()))
-      nextErrors.email = 'Enter a valid email address.';
+    const problem = identifierError(identifier);
+    if (problem) nextErrors.identifier = problem;
     if (!password) nextErrors.password = 'Enter your password.';
     setErrors(nextErrors);
     setFormError('');
@@ -90,7 +90,7 @@ export default function Login() {
     setSubmitting(true);
     try {
       // On success the root layout's guards move the user to their own tab tree.
-      await login(email.trim(), password, role.key);
+      await login(identifier.trim(), password, role.key);
     } catch (error) {
       setFormError(error.message);
       setSubmitting(false);
@@ -159,18 +159,19 @@ export default function Login() {
           </View>
 
           <View style={{ gap: 8 }}>
-            <Eyebrow>Email</Eyebrow>
+            <Eyebrow>Email or phone</Eyebrow>
             <TextInput
-              value={email}
-              onChangeText={setEmail}
+              value={identifier}
+              onChangeText={setIdentifier}
+              placeholder="Email or 078 123 4567"
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="username"
               autoCorrect={false}
-              accessibilityLabel="Email"
-              style={[styles.field, errors.email && styles.fieldInvalid]}
+              accessibilityLabel="Email or phone"
+              style={[styles.field, errors.identifier && styles.fieldInvalid]}
             />
-            {errors.email ? <Text style={styles.fieldError}>{errors.email}</Text> : null}
+            {errors.identifier ? <Text style={styles.fieldError}>{errors.identifier}</Text> : null}
           </View>
 
           <View style={{ gap: 8 }}>
@@ -211,6 +212,19 @@ export default function Login() {
             <Text accessibilityLiveRegion="polite" style={styles.hint}>
               Waking the server, this can take up to a minute…
             </Text>
+          ) : null}
+
+          {/* Only customers can sign themselves up; technicians are given an account. */}
+          {role.key === 'CUSTOMER' ? (
+            <Pressable
+              accessibilityRole="link"
+              onPress={() => router.push('/register')}
+              style={styles.createAccount}
+            >
+              <Text style={styles.hint}>
+                New customer? <Text style={styles.link}>Create an account</Text>
+              </Text>
+            </Pressable>
           ) : null}
         </View>
       </ScrollView>
@@ -283,6 +297,8 @@ const styles = StyleSheet.create({
     borderRadius: radius,
     backgroundColor: colors.accent,
   },
+  createAccount: { minHeight: 44, alignItems: 'center', justifyContent: 'center' },
+  link: { fontFamily: fonts.semibold, color: colors.accent },
   submitText: {
     fontFamily: fonts.bold,
     fontSize: 16,

@@ -26,6 +26,18 @@ describe('createRateLimiter', () => {
     assert.match(third.error.message, /too many/i);
   });
 
+  it('can say what was limited, so a sign-up is not told it sent too many reports', () => {
+    const limiter = createRateLimiter({
+      max: 1,
+      windowMs: 1000,
+      now: () => 0,
+      message: 'Too many sign-ups from this network.',
+    });
+    hit(limiter);
+    assert.equal(hit(limiter).error.message, 'Too many sign-ups from this network.');
+    assert.equal(hit(limiter).error.status, 429);
+  });
+
   it('counts each address separately', () => {
     const limiter = createRateLimiter({ max: 1, windowMs: 1000, now: () => 0 });
     assert.ok(hit(limiter, 'a').passed);
