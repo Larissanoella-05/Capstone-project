@@ -3,81 +3,88 @@
 Electricity fault reporting and technician response for Ndera Sector, Kigali.
 Repository: https://github.com/Larissanoella-05/Capstone-project · Live app: https://capstone-project-six-inky.vercel.app
 
-Items in `[FILL: …]` need your own evidence (a screenshot, a result from a real device or from users).
-
 ## 1. Scope alignment
 
-When the power fails, people phone the utility and describe where they live. The technician often has to call back to find the house. Umuriro Response puts every fault into one shared record with a location: the customer reports, the coordinator assigns a technician, the technician updates the status, and the customer follows it. The full feature table, and a check against each proposal requirement FR1 to FR14, are in [SCOPE_ALIGNMENT.md](SCOPE_ALIGNMENT.md). Table 1 gives the summary.
+When the power fails, people phone the utility and describe where they live, and the technician often calls back
+to find the house. Umuriro Response keeps one shared, located record: the customer reports, the coordinator assigns,
+the technician updates the status, the customer follows. Full detail: [SCOPE_ALIGNMENT.md](SCOPE_ALIGNMENT.md).
 
 **Table 1. Planned features and what was built**
 
-| Planned feature                         | Status                                                                                                    | Evidence                                                          |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| Sign-in for three roles (FR1)           | Completed: customers register and sign in by email or phone on web and Android; staff accounts are seeded | `middleware/auth.js`, `[FILL: login screenshot]`                  |
-| Report linked to a service location     | Completed                                                                                                 | `faultService.createFault`, `[FILL: report screenshot]`           |
-| Report without an account               | Completed (added after feedback)                                                                          | `POST /api/public/faults`, `[FILL: guest report screenshot]`      |
-| Coordinator dashboard, queue and alert  | Completed                                                                                                 | `pages/coordinator/Dashboard.jsx`, `[FILL: dashboard screenshot]` |
-| Ranked technician assignment            | Completed                                                                                                 | `TechnicianRanker`, `[FILL: assign screenshot]`                   |
-| Status workflow with time stamps        | Completed                                                                                                 | `FaultStatusMachine`, `[FILL: technician screenshot]`             |
-| Customer and guest tracking             | Completed                                                                                                 | `pages/customer/Tracking.jsx`, `pages/public/`                    |
-| Live technician position                | Real GPS on Android, simulated on web                                                                     | `ActiveJobTracker`                                                |
-| Arrival distance and response analytics | Completed                                                                                                 | `statsService`, `[FILL: analytics screenshot]`                    |
-| SMS to the reporter                     | Partial: tried on a real phone in a local run, not on the deployed app                                    | `smsService.js`, [SMS_GATEWAY.md](SMS_GATEWAY.md)                 |
-| Administrator area (FR13)               | Not built                                                                                                 | Accounts come from the seed script                                |
+| Planned feature                     | Status                                                 | Evidence                                       |
+| ----------------------------------- | ------------------------------------------------------ | ---------------------------------------------- |
+| Sign-in for three roles (FR1)       | Completed; customers register by email or phone        | `middleware/auth.js`                           |
+| Report linked to a service location | Completed                                              | `faultService.createFault`                     |
+| Report without an account           | Completed (added after feedback)                       | `POST /api/public/faults`                      |
+| Coordinator dashboard and queue     | Completed                                              | `pages/coordinator/Dashboard.jsx`              |
+| Ranked technician assignment        | Completed                                              | `TechnicianRanker`                             |
+| Time-stamped status workflow        | Completed                                              | `FaultStatusMachine`                           |
+| Customer and guest tracking         | Completed                                              | `pages/customer/Tracking.jsx`, `pages/public/` |
+| Live technician position            | Real GPS on Android, simulated on web                  | `ActiveJobTracker`                             |
+| Arrival distance and analytics      | Completed                                              | `statsService`                                 |
+| SMS to the reporter                 | Partial: real phone, local run; deployed app logs only | `smsService.js`                                |
+| Administrator area (FR13)           | Not built                                              | Accounts come from the seed script             |
 
-**Where the build differs from the proposal, and why**
+**Where the build differs from the proposal**
 
-- _Report without an account._ Our supervisor said nobody should have to log in during an emergency. A guest gives a phone number and a place and gets an SMS with a private link to follow the report. This was not in the proposal.
-- _Technology._ The proposal named TypeScript, PostGIS, Socket.IO and Google Maps. We used JavaScript checked with JSDoc and `tsc`, plain PostgreSQL, polling every 4 to 8 seconds, and Leaflet with OpenStreetMap. This removed a paid map key and a socket server from a free hosting plan. With a handful of technicians, spatial indexes are not needed.
-- _Android app._ The proposal ruled out a native app. We built one because a browser tab cannot keep sending the technician's position when the screen is locked.
-- _SMS._ A paid SMS account was not an option, so texts go through an Android phone running an open-source gateway app. The code and tests are done. In a local run on 10 November 2026, a "received" text and an "assigned" text reached an iPhone and the tracking link opened the right report. The deployed app does not send real texts yet.
-- _Workflow._ We dropped the _Accepted_ stage (the assignment is the commitment) and added _Working_, so travel time and time on site can be told apart.
-- _Evaluation._ `[FILL: how many people took part in a pilot, and when. If none, say that the results come from test faults.]`
+- _Report without an account:_ the supervisor said nobody should log in during an emergency.
+- _Technology:_ JavaScript checked with JSDoc and `tsc` (not TypeScript), plain PostgreSQL (not PostGIS), polling
+  every 4 to 15 s (not Socket.IO), Leaflet with OpenStreetMap (not Google Maps). This removed a paid map key and a
+  socket server from a free hosting plan.
+- _Android app:_ added because a browser tab cannot keep sending a technician's position with the screen locked.
+- _SMS:_ through an Android phone with an open-source gateway, since a paid account was not an option.
+- _Workflow:_ _Accepted_ dropped (assignment is the commitment), _Working_ added to separate travel from time on site.
+- _Evaluation:_ the proposed pilot (about 20 customers, 5 technicians, 3 coordinators) has not run. Results come from automated tests, a load test and a one-person walk through the live workflow with demo data. No response-time claim is made about real users.
 
 ## 2. Technical functionality
 
-**Architecture.** One Express API and one PostgreSQL database serve the React web app and the Expo Android app. The web app runs on Vercel, the API on Render and the database on Neon. `[FILL: architecture diagram from ARCHITECTURE.md]`
+**Architecture.** One Express API and one PostgreSQL database serve the React web app and the Expo Android app,
+hosted on Vercel, Render and Neon (Figure 1).
 
-**How a request flows.** A request goes through `routes/` (HTTP only), then `middleware/` (token, role and Zod validation), then `services/` (business rules and database), and `domain/` holds the rules that need no database.
+![Figure 1. System architecture](report/figures/01-architecture.png)
 
-1. A customer or a guest sends a report. The service finds the location, sets a default priority from the category, and in one transaction saves the report, its first history row and a notification.
-2. The coordinator asks for technicians ranked for that fault and assigns one.
-3. The technician moves the fault one stage at a time. Each change saves a time, a history row and a notification together.
-4. At _Arrived_ the system stores how far the technician's last position was from the fault.
-5. Texts and push messages go out after the transaction and can never make a request fail.
+**Request flow.** `routes/` (HTTP) → `middleware/` (token, role, Zod validation) → `services/` (rules, database)
+→ `domain/` (pure rules). A report is saved with its first history row and a notification in one transaction.
+Each later status change saves a time, history row and notification together. At _Arrived_ the distance from the
+technician's last position is stored. Texts and push go out after the transaction and never fail a request.
 
-**Guest reports.** A guest report has no customer. The server makes a long random tracking token (24 random bytes) that cannot be guessed. Anyone with the link sees progress but never the phone number or meter number, and the link stops working 7 days after the fault is resolved. The server allows 3 reports per phone per hour, and a hidden form field catches simple bots.
+**Guest reports.** No customer record. A 24-byte random tracking token gives a link that shows progress but never
+the phone or meter number and expires 7 days after resolution. Limit: 3 reports per phone per hour; a hidden form
+field catches simple bots.
 
-**Algorithms and custom logic**
+**Algorithms**
 
-- _Technician ranking._ Sorts by availability, then distance, then workload, then name. It is O(n log n) and gives the same order every time.
-- _Distance._ The haversine formula, for ranking and for arrival distance.
-- _Optimistic concurrency._ `guardedUpdate` runs `UPDATE … WHERE` on the status that was read. If someone else changed it first, no row matches and the caller gets 409. This stops a double tap from creating two updates, with no database locks.
-- _Coordinator work queue._ Unassigned reports first, oldest first, then the rest newest first. A report is marked late after 15 minutes. These rules are pure functions in `lib/workQueue.js`.
-- _New-report alert._ The first load is the baseline; after that, any report ID not seen before is new. `lib/newReports.js` is pure and tested.
-- _Photo shrinking._ A photo over 1 MB is redrawn on a canvas and re-saved as JPEG at lower quality until it fits, so phone photos work.
-- _Location throttling on the phone._ A position is sent only after 20 seconds and 30 metres of movement, to save battery and requests.
-- _Paging and SQL averages._ The fault list is paged, and averages are worked out in PostgreSQL (`AVG … FILTER`, `percentile_cont`).
+- _Technician ranking:_ availability, then distance (haversine), then workload, then name. Deterministic, O(n log n).
+- _Optimistic concurrency:_ `guardedUpdate` runs `UPDATE … WHERE` on the status that was read; a stale update
+  matches no row and returns 409, with no database locks.
+- _Work queue:_ unassigned first, oldest first; late after 15 minutes (`lib/workQueue.js`, pure).
+- _Photo shrinking:_ photos over 1 MB are redrawn on a canvas as lower-quality JPEG until they fit.
+- _Location throttling:_ a phone position is sent after 20 s and 30 m of movement.
+- _Paging and SQL averages:_ the list is paged; averages use `AVG … FILTER` and `percentile_cont`.
 
-**Error handling.** Every body is checked by a Zod schema and one handler returns `{ error: { message, details } }`. Examples from the integration tests: wrong password gives 401, a phone number that is not Rwandan gives 400, another customer's fault gives 403, skipping a stage gives 409, a fourth guest report in an hour gives 429, a phone number that is already registered gives 409, and a wrong tracking token gives 404.
+**Error handling.** Zod validates every body and one handler returns `{ error: { message, details } }`: wrong
+password 401, non-Rwandan phone 400, another customer's fault 403, skipped stage 409, fourth guest report in an
+hour 429, duplicate phone 409, wrong tracking token 404.
 
 ## 3. Testing and results
 
-We used five approaches (details and commands in [TESTING.md](TESTING.md)).
+Details and commands: [TESTING.md](TESTING.md).
 
-**Table 2. Testing approaches**
+**Table 2. Approaches**
 
-| Approach                    | Why this one                                           | Result                                                  |
-| --------------------------- | ------------------------------------------------------ | ------------------------------------------------------- |
-| Unit                        | Workflow, ranking and validation break quietly         | 534 pass (backend 222, frontend 148, mobile 164)        |
-| Integration                 | The roles hand work to each other through one database | 104 pass in 27 suites, against a separate test database |
-| Load                        | Every open screen polls the API                        | See Table 3                                             |
-| Code review of both apps    | Finds what tests miss                                  | 8 problems fixed, no feature broken                     |
-| Manual device and usability | Maps, GPS, camera and SMS need a real phone            | `[FILL: results from TESTING.md section 6]`             |
+| Approach                    | Why                                         | Result                                                |
+| --------------------------- | ------------------------------------------- | ----------------------------------------------------- |
+| Unit                        | Workflow, ranking, validation break quietly | 534 pass (backend 222, frontend 148, mobile 164)      |
+| Integration                 | Roles hand work over through one database   | 104 pass, 27 suites, separate test database           |
+| Load                        | Every open screen polls the API             | Table 3                                               |
+| Code review of both apps    | Finds what tests miss                       | 8 problems fixed                                      |
+| Manual device and usability | Maps, GPS, camera, SMS need a real phone    | Compatibility and Lighthouse below; usability not run |
 
-**What testing changed.** The concurrency tests showed that five quick "On the way" taps all succeeded and made duplicate history and notifications, and that two coordinators could assign the same fault. The fix was optimistic concurrency, and the tests fail without it. The load test showed the fault list returning 3 MB at 2,000 faults, so we added paging. The same run showed slow analytics, so we moved the averages into SQL.
+**What testing changed.** Five quick "On the way" taps all succeeded with duplicate history, and two coordinators
+could assign one fault; optimistic concurrency fixed both, and the tests fail without it. The load test showed a
+3 MB fault list at 2,000 faults (now paged) and slow analytics (averages moved into SQL).
 
-**Table 3. Load test, 2,028 faults, local laptop**
+**Table 3. Load test, 2,028 faults, local laptop** (single runs, about 30% variation)
 
 | Request                | Before                 | After            |
 | ---------------------- | ---------------------- | ---------------- |
@@ -85,28 +92,36 @@ We used five approaches (details and commands in [TESTING.md](TESTING.md)).
 | `GET /stats/analytics` | p50 319 ms             | p50 67 ms        |
 | `GET /stats/overview`  | p50 106 ms             | p50 36 ms        |
 
-These are single runs on a laptop and vary by up to 30%, so the sizes are more reliable than the times. On the live Render API (1,600 read-only requests, 10 at a time, 0 errors) the dashboard endpoints answered in 345 to 616 ms at the median and under 1 s at p95, with 10 to 25 requests per second. The one-fault request was slowest (p50 869 ms, p95 1.9 s) because it carries its photos (717 KB). The first request after the free-tier server had slept took 24.4 s, so the first visit of the day is slow; the next request took 0.6 s.
+On the live Render API (1,600 requests, 0 errors) dashboard endpoints answered in 345 to 616 ms at the median,
+under 1 s at p95. One fault (717 KB of photos) took p50 869 ms. The first request after the free tier slept took
+24.4 s; the next took 0.6 s.
 
-**Compatibility and usability.** `[FILL: browser and device table from TESTING.md, Lighthouse mobile score, and the usability result (people, time, where they hesitated). If not done, say it is future work.]`
+**Compatibility.** Every screenshot and live check used desktop Chrome (1440 × 840). Firefox, Safari and Edge were not tested. On a TECNO KG5j (Android 11) the installed app signed in as customer and technician, created an account, reported a fault and moved a job through every stage; real texts reached an iPhone in a local run. Push worked with the app open only.
+
+**Lighthouse, live site, mobile profile** (Lighthouse 12.8.2, Chrome 155, 10 Nov 2026, landing page): performance **64**, accessibility **98**, best practices **100**, SEO **92**. First contentful paint 3.6 s, largest contentful paint 5.6 s, total blocking time 240 ms, layout shift 0. Performance is the weak score; it was not tuned.
+
+**Usability.** A 5-task usability test and an acceptance survey (SUS) were prepared but not run, so there is no user-satisfaction result. It is the main piece of future work.
+
+![Figure 2. Coordinator assigning a ranked technician](report/figures/fr-coord-assign-ranked.jpg)
 
 ## 4. Code quality
 
-**Structure.** The repository has `backend/`, `frontend/`, `mobile/` and `docs/`. The backend keeps a one-way flow from routes to services to domain. No file mixes HTTP, business rules and queries. The largest service file is about 360 lines.
-
-**Object-oriented design**
-
-- _Encapsulation._ `FaultStatusMachine` holds every workflow rule and has no database code, so it is tested alone.
-- _Polymorphism._ `SmsProvider` is a base class with a logging provider and `SmsGateProvider` behind it. The notice code calls `send()` and does not know which one it has. Adding the real gateway needed no change to that code.
-- _Inheritance._ `HttpError` helpers (`badRequest`, `notFound`, `conflict`) all go through one error handler.
-- _Open/closed._ The status machine takes its stages as constructor arguments, so the flow can change without editing the class.
-- _Honest limit._ The service layer uses functions, not classes. We did not add classes just to look object-oriented.
-
-**Consistency.** ESLint with zero warnings, Prettier and a backend type-check run on every commit and again in GitHub Actions, where one job (`ci-ok`) must pass before a merge. All web HTTP calls go through one `api.js`, and pure logic lives in `lib/` so it can be unit-tested.
-
-**Process.** 179 commits between 26 September and 9 November 2026, written as Conventional Commits and merged through pull requests. Database changes are committed Prisma migrations, never edited after they are applied.
-
-**Known limits.** Photos are stored as data URLs, technician positions on the web app are simulated, updates are polled, the SMS gateway has only been shown in a local run, not on the deployed app, staff accounts cannot be created from the app, there is no administrator area, and type-checking covers the backend only. Each is a documented prototype decision.
+- **Structure:** `backend/`, `frontend/`, `mobile/`, `docs/`. The backend flows one way from routes to services to
+  domain; no file mixes HTTP, business rules and queries.
+- **Encapsulation:** `FaultStatusMachine` holds every workflow rule with no database code, so it is tested alone.
+- **Polymorphism:** `SmsProvider` is a base class with a logging provider and `SmsGateProvider`; notice code calls
+  `send()` and does not know which it has.
+- **Errors:** `HttpError` helpers (`badRequest`, `notFound`, `conflict`) all pass through one handler.
+- **Honest limit:** the service layer uses functions, not classes; we did not add classes for show.
+- **Consistency:** ESLint with zero warnings, Prettier and a backend type-check run on every commit and in GitHub
+  Actions, where the `ci-ok` job must pass before a merge. All web HTTP goes through `api.js`.
+- **Process:** 190 commits from 26 September to 10 November 2026, Conventional Commits, merged by pull request.
+  Database changes are committed Prisma migrations, never edited after being applied.
+- **Known limits:** photos as data URLs, simulated web positions, polling, SMS not on the deployed app, no
+  administrator area, type-checking on the backend only. Each is a documented prototype decision.
 
 ## 5. Conclusion
 
-The core flow from report to resolution works for three roles on web and Android, and now also for a person with no account. It is protected against double taps and wrong-role access and covered by 638 automated tests. Load testing found two slow endpoints, and both were fixed and measured again. Not built: the administrator area. Still to show: the device and browser table, and the usability test.
+The report-to-resolution flow works for three roles on web and Android, and for people with no account. It is
+guarded against double taps and wrong-role access and covered by 638 automated tests. Load testing found two slow
+endpoints, both fixed and re-measured. Not built: the administrator area. Still to do: browser coverage beyond Chrome and a usability test with real users.
