@@ -417,6 +417,116 @@ describe('API integration', { concurrency: false }, () => {
     });
   });
 
+  describe('assigning technicians who are busy, off duty or already assigned', () => {
+    const technicianIdOf = (key) =>
+      Number(Object.keys(technicianIds).find((id) => technicianIds[id] === key));
+    const assign = (faultId, technicianId) =>
+      call('POST', `/faults/${faultId}/assign`, { token: tokens.grace, body: { technicianId } });
+    const rankedFor = async (faultId) =>
+      (await call('GET', `/technicians?faultId=${faultId}`, { token: tokens.grace })).body
+        .technicians;
+
+    let first;
+    let second;
+    let busyId;
+
+    before(async () => {
+      first = await reportFault('POWER_OUTAGE', 'Busy technician test 1');
+      second = await reportFault('LOW_VOLTAGE', 'Busy technician test 2');
+      busyId = technicianIdOf(await assignBest(first.id));
+    });
+
+    it('lists a technician with an active job as ON_JOB', async () => {
+      const entry = (await rankedFor(second.id)).find((t) => t.id === busyId);
+      assert.equal(entry.availability, 'ON_JOB');
+      assert.ok(entry.activeJobs.some((job) => job.reference === first.reference));
+    });
+
+    it('still lets the coordinator give that technician a second job', async () => {
+      const res = await assign(second.id, busyId);
+      assert.equal(res.status, 200, JSON.stringify(res.body));
+      assert.equal(res.body.fault.status, 'ASSIGNED');
+      assert.equal(res.body.fault.technician.id, busyId);
+      const entry = (await rankedFor(second.id)).find((t) => t.id === busyId);
+      const references = entry.activeJobs.map((job) => job.reference);
+      assert.ok(references.includes(first.reference) && references.includes(second.reference));
+    });
+
+    it('refuses the same technician on the same fault twice (409)', async () => {
+      const res = await assign(second.id, busyId);
+      assert.equal(res.status, 409);
+      assert.match(res.body.error.message, /already assigned/);
+    });
+
+    it('refuses a technician that does not exist (404)', async () => {
+      assert.equal((await assign(second.id, 999999)).status, 404);
+    });
+
+    it('moves a fault that is still ASSIGNED to another technician', async () => {
+      const other = (await rankedFor(second.id)).find((t) => t.onDuty && t.id !== busyId);
+      assert.ok(other, 'expected a second on-duty technician');
+      const res = await assign(second.id, other.id);
+      assert.equal(res.status, 200, JSON.stringify(res.body));
+      assert.equal(res.body.fault.technician.id, other.id);
+      const previous = (await rankedFor(second.id)).find((t) => t.id === busyId);
+      assert.ok(!previous.activeJobs.some((job) => job.reference === second.reference));
+    });
+
+    it('refuses a technician who is off duty (409) and leaves the fault unassigned', async () => {
+      const fault = await reportFault('OTHER', 'Off duty technician test');
+      const id = technicianIdOf('emmanuel');
+      const { onDuty } = await prisma.technician.findUnique({ where: { id } });
+      await prisma.technician.update({ where: { id }, data: { onDuty: false } });
+      try {
+        const res = await assign(fault.id, id);
+        assert.equal(res.status, 409);
+        assert.match(res.body.error.message, /off duty/);
+        const after = await call('GET', `/faults/${fault.id}`, { token: tokens.grace });
+        assert.equal(after.body.fault.status, 'REPORTED');
+        assert.ok(!after.body.fault.technician);
+      } finally {
+        await prisma.technician.update({ where: { id }, data: { onDuty } });
+      }
+    });
+  });
+
+  describe('priority changes and the audit trail', () => {
+    it('lets a coordinator change the priority, and nobody else', async () => {
+      const fault = await reportFault('LOW_VOLTAGE', 'Priority change test');
+      const patch = (token, body) => call('PATCH', `/faults/${fault.id}`, { token, body });
+
+      const changed = await patch(tokens.grace, { priority: 'CRITICAL' });
+      assert.equal(changed.status, 200, JSON.stringify(changed.body));
+      assert.equal(changed.body.fault.priority, 'CRITICAL');
+
+      assert.equal((await patch(tokens.aline, { priority: 'LOW' })).status, 403);
+      assert.equal((await patch(tokens.patrick, { priority: 'LOW' })).status, 403);
+      assert.equal((await patch(tokens.grace, { priority: 'URGENT' })).status, 400);
+
+      const after = await call('GET', `/faults/${fault.id}`, { token: tokens.grace });
+      assert.equal(after.body.fault.priority, 'CRITICAL');
+    });
+
+    it('records who made each status change', async () => {
+      const fault = await reportFault('POWER_OUTAGE', 'Audit trail test');
+      const key = await assignBest(fault.id);
+      const moved = await setStatus(fault.id, tokens[key], { status: 'ON_THE_WAY' });
+      assert.equal(moved.status, 200, JSON.stringify(moved.body));
+
+      const res = await call('GET', `/faults/${fault.id}`, { token: tokens.grace });
+      const { history, technician } = res.body.fault;
+      assert.deepEqual(
+        history.map((entry) => [entry.status, entry.changedBy]),
+        [
+          ['REPORTED', 'Aline Mukamana'],
+          ['ASSIGNED', 'Grace Ingabire'],
+          ['ON_THE_WAY', technician.name],
+        ]
+      );
+      assert.ok(history.every((entry) => entry.createdAt));
+    });
+  });
+
   describe('arrival distance (FR11)', () => {
     const NORTH_OF_SITE = 0.001; // degrees of latitude: about 111 m
 

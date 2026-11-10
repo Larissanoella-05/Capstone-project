@@ -1,63 +1,62 @@
 # Scope alignment: planned vs. built
 
-Status is one of Completed, Partial or Not built. Evidence points to the code or the tests.
+Status: Completed, Partial or Not built. Evidence points to code or tests.
 
-| Planned feature                                       | What problem it solves                                                   | Status                | Evidence                                                                                                                                                                                                           |
-| ----------------------------------------------------- | ------------------------------------------------------------------------ | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Customer sign-up and sign-in by email or phone        | A customer creates an account and signs in without an administrator      | Completed             | `authService.js`, `pages/Register.jsx`, `app/register.js`, `lib/registration.js`; integration tests _registration_. Web and Android                                                                                |
-| Sign-in for three roles                               | Each person sees only their own screens and data                         | Completed             | `middleware/auth.js`, `App.jsx`; integration tests _authorization between roles_                                                                                                                                   |
-| Fault report linked to the service location           | The technician no longer needs spoken directions                         | Completed             | `faultService.createFault`, `pages/customer/ReportFault.jsx`                                                                                                                                                       |
-| Report without an account (added after feedback)      | In an emergency nobody should have to sign up first                      | Completed             | `POST /api/public/faults`, `pages/public/GuestReport.jsx`; integration tests _Reporting without an account_                                                                                                        |
-| Browser location and camera for guests                | Pin the fault on the map and show the technician what is wrong           | Completed             | `GuestReport.jsx`; photos are shrunk in the browser (`lib/photo.js`)                                                                                                                                               |
-| Follow a report with a private link                   | A guest can track progress without an account                            | Completed             | `GET /api/public/faults/:token`; link stops working 7 days after resolution                                                                                                                                        |
-| Optional fault photo                                  | Shows the technician the problem                                         | Completed (prototype) | Stored as a data URL, about 1 MB at most                                                                                                                                                                           |
-| Automatic starting priority                           | Dangerous faults are handled first                                       | Completed             | `DEFAULT_PRIORITY` in `utils/constants.js`                                                                                                                                                                         |
-| Coordinator dashboard, list, search and filters       | Find and triage reports quickly                                          | Completed             | `pages/coordinator/Dashboard.jsx`, `Faults.jsx`, `faultService.listFaults`                                                                                                                                         |
-| Work queue and new-report alert                       | The coordinator sees what waits longest and notices a new report at once | Completed             | `lib/workQueue.js`, `lib/newReports.js`, `NewReportAlert.jsx`; unit tests                                                                                                                                          |
-| Tap to call the reporter                              | The coordinator can phone a guest in one tap                             | Completed             | `CallLink` in `components/Bits.jsx`, `telHref` in `lib/guestReport.js`                                                                                                                                             |
-| Technician assignment with a ranked recommendation    | Send the nearest available technician                                    | Completed             | `domain/TechnicianRanker.js`, `pages/coordinator/Assign.jsx`                                                                                                                                                       |
-| Controlled status workflow                            | Stages cannot be skipped; every change is time-stamped                   | Completed             | `domain/FaultStatusMachine.js`, `FaultStatusHistory` table                                                                                                                                                         |
-| Safe concurrent updates                               | A double tap or two coordinators cannot create duplicates                | Completed             | `faultService.guardedUpdate`; integration tests _data integrity_                                                                                                                                                   |
-| Map of faults and technicians                         | See where everyone is                                                    | Completed             | `components/MapView.jsx` (Leaflet, OpenStreetMap)                                                                                                                                                                  |
-| Live technician GPS                                   | The customer sees the technician approach                                | Partial               | Real GPS on the Android app; simulated on the web app                                                                                                                                                              |
-| Customer tracking (timeline and map)                  | Follow progress without phoning                                          | Completed             | `pages/customer/Tracking.jsx`, polling every 4 s                                                                                                                                                                   |
-| In-app and push notifications                         | Everyone hears about each change                                         | Completed             | `notificationService.js`, written in the same transaction as the change                                                                                                                                            |
-| SMS when a report is received, assigned and updated   | Reach people without the app                                             | Partial               | `SmsGateProvider` sends through an Android phone ([SMS_GATEWAY.md](SMS_GATEWAY.md)); unit and integration tests pass. On 10 Nov 2026 a local run sent real texts to a phone; the deployed app still only logs them |
-| Resolution record (outcome, work done, clarification) | Proof of the fix and how often directions were still needed              | Completed             | `pages/technician/ResolveJob.jsx`                                                                                                                                                                                  |
-| Arrival distance (FR11)                               | Measure how close the technician was to the service point                | Completed             | `changeStatus` stores `arrivalDistanceM`; integration tests                                                                                                                                                        |
-| Response-time analytics                               | Measure report to assign, assign to arrive, time on site                 | Completed             | `statsService.getAnalytics`, `pages/coordinator/Analytics.jsx`                                                                                                                                                     |
-| Responsive web app and Android app                    | Works on customers' and technicians' phones                              | Completed             | `MobileShell.jsx`, `CoordinatorShell.jsx`, `mobile/`                                                                                                                                                               |
-| Deployment                                            | A public pilot                                                           | Completed             | Vercel, Render, Neon; see [DEPLOYMENT.md](DEPLOYMENT.md)                                                                                                                                                           |
-| Administrator area and record import (FR13)           | Manage users and service-location data                                   | Not built             | Accounts and locations come from the seed script                                                                                                                                                                   |
+## Features
 
-## Checked against the proposal's functional requirements
+| Planned feature                                     | Status    | Evidence                                                                           |
+| --------------------------------------------------- | --------- | ---------------------------------------------------------------------------------- |
+| Customer sign-up and sign-in by email or phone      | Completed | `authService.js`, `pages/Register.jsx`, `app/register.js`; web and Android         |
+| Sign-in for three roles, role-scoped data           | Completed | `middleware/auth.js`, `App.jsx`; integration tests                                 |
+| Fault report linked to a service location           | Completed | `faultService.createFault`, `pages/customer/ReportFault.jsx`                       |
+| Report without an account (added after feedback)    | Completed | `POST /api/public/faults`, `pages/public/`                                         |
+| Automatic starting priority                         | Completed | `DEFAULT_PRIORITY` in `utils/constants.js`                                         |
+| Coordinator dashboard, work queue, new-report alert | Completed | `pages/coordinator/`, `lib/workQueue.js`, `lib/newReports.js`                      |
+| Ranked technician assignment                        | Completed | `domain/TechnicianRanker.js`, `pages/coordinator/Assign.jsx`                       |
+| Controlled, time-stamped status workflow            | Completed | `domain/FaultStatusMachine.js`, `FaultStatusHistory` table                         |
+| Safe concurrent updates                             | Completed | `faultService.guardedUpdate`; integration tests                                    |
+| Map of faults and technicians                       | Completed | `components/MapView.jsx` (Leaflet, OpenStreetMap)                                  |
+| Live technician GPS                                 | Partial   | Real on Android, simulated on web                                                  |
+| Customer tracking (timeline and map)                | Completed | `pages/customer/Tracking.jsx`                                                      |
+| In-app and push notifications                       | Completed | `notificationService.js`, same transaction as the change                           |
+| SMS on received, assigned and updated               | Partial   | `SmsGateProvider`; tried on a real phone locally, deployed app only logs           |
+| Resolution record (outcome, work, clarification)    | Completed | `pages/technician/ResolveJob.jsx`                                                  |
+| Arrival distance and response-time analytics        | Completed | `arrivalDistanceM`, `statsService.getAnalytics`, `pages/coordinator/Analytics.jsx` |
+| Responsive web app and Android app                  | Completed | `MobileShell.jsx`, `CoordinatorShell.jsx`, `mobile/`                               |
+| Public deployment                                   | Completed | Vercel, Render, Neon ([DEPLOYMENT.md](DEPLOYMENT.md))                              |
+| Administrator area and record import                | Not built | Accounts and locations come from the seed script                                   |
 
-| Requirement                                                                | Status    | Note                                                                                                                                                                 |
-| -------------------------------------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1 Register and sign in with email or phone; roles                        | Completed | Customers register and sign in by email or phone on web and Android. Technicians and coordinators are seeded, so there is no administrator to create them (see FR13) |
-| FR2 Registered service locations with meter, phone and coordinates         | Completed | `ServiceLocation` table; a customer can have more than one                                                                                                           |
-| FR3 Report with a location, category, description and a reference number   | Completed | Also works without an account                                                                                                                                        |
-| FR4 Coordinates attached automatically; default priority from the category | Completed | Guests use their phone's location or a written place                                                                                                                 |
-| FR5 Coordinator sees all open reports on a list and a map                  | Completed | Dashboard, Fault management, Monitoring                                                                                                                              |
-| FR6 Assign, reassign, change priority, cancel                              | Completed | `Assign.jsx`, `PATCH /api/faults/:id`                                                                                                                                |
-| FR7 Technician sees the job, customer contact and a directions link        | Completed | `JobDetails.jsx`                                                                                                                                                     |
-| FR8 Stages with times and an outcome note                                  | Completed | _Accepted_ dropped, _Working_ added                                                                                                                                  |
-| FR9 Customer sees status and history; SMS on receipt and assignment        | Partial   | Tracking done. SMS tried on a real phone in a local run, not yet on the deployed app                                                                                 |
-| FR10 Live technician position while on the way                             | Partial   | Real on Android, simulated on web                                                                                                                                    |
-| FR11 Position and distance at Arrived                                      | Completed | `arrivalDistanceM`                                                                                                                                                   |
-| FR12 Clarification contacts recorded                                       | Completed | Recorded when resolving                                                                                                                                              |
-| FR13 Administrator manages users, categories and locations                 | Not built | Seed script instead                                                                                                                                                  |
-| FR14 Response-performance report                                           | Completed | Analytics page                                                                                                                                                       |
+## Proposal requirements FR1 to FR14
 
-The proposal also planned a pilot with about 20 customers, 5 technicians and 3 coordinators. That pilot has not run yet.
+| Requirement                                                | Status    | Note                                           |
+| ---------------------------------------------------------- | --------- | ---------------------------------------------- |
+| FR1 Register and sign in (email or phone); roles           | Completed | Customers self-register; staff are seeded      |
+| FR2 Service locations with meter, phone, coordinates       | Completed | `ServiceLocation`; a customer can have several |
+| FR3 Report with location, category, description, reference | Completed | Also without an account                        |
+| FR4 Automatic coordinates and default priority             | Completed | Guests use phone location or a written place   |
+| FR5 Coordinator sees open reports on list and map          | Completed |                                                |
+| FR6 Assign, reassign, change priority, cancel              | Completed | `Assign.jsx`, `PATCH /api/faults/:id`          |
+| FR7 Technician sees job, contact, directions link          | Completed | `JobDetails.jsx`                               |
+| FR8 Stages with times and an outcome note                  | Completed | _Accepted_ dropped, _Working_ added            |
+| FR9 Customer sees status; SMS on receipt, assignment       | Partial   | Tracking done; SMS not yet on the deployed app |
+| FR10 Live technician position while on the way             | Partial   | Real on Android, simulated on web              |
+| FR11 Position and distance at Arrived                      | Completed | `arrivalDistanceM`                             |
+| FR12 Clarification contacts recorded                       | Completed | Recorded when resolving                        |
+| FR13 Administrator manages users, categories, locations    | Not built | Seed script instead                            |
+| FR14 Response-performance report                           | Completed | Analytics page                                 |
 
-## Changes from the plan, and why
+The proposal also planned a pilot (about 20 customers, 5 technicians, 3 coordinators). It has not run yet.
 
-- **Report without an account.** The supervisor's feedback was that nobody should have to log in during an emergency. A guest gives a phone number and a place, gets an SMS with a private tracking link, and the coordinator treats the report like any other. Guests are limited to 3 reports an hour per phone to stop abuse. Customers who do sign in still see all their own reports.
-- **Coordinator first.** The coordinator dashboard is now the main screen of the system. It shows the oldest unassigned report first and warns when a report has waited more than 15 minutes.
-- **SMS.** Built, but sent through an Android phone running an open-source gateway app, because an SMS provider account costs money. On 10 Nov 2026 a local run sent a "received" text and an "assigned" text to a real iPhone, and the tracking link in the text opened the right report. The deployed app still only logs texts, because the phone's local server cannot be reached from Render.
-- **Technician positions** are simulated on the web app. The Android app sends real positions.
-- **Photos** are stored in the database, to keep the prototype simple. Production should use file storage.
-- **Polling, not WebSockets**, because it is simpler to host on free plans and 4 to 8 seconds is fast enough.
-- **Customers sign themselves up.** A customer creates an account with a phone number (email is optional), a meter number and a first location, and signs in with either the email or the phone. Technician and coordinator accounts still come from the seed script, because a self-registered staff account would see other people's faults. A real rollout would import customer records from the utility.
-- **Shared meters.** Tenants often use their landlord's meter, so several customers can register the same meter number. Nothing can check that a meter belongs to the person typing it without the utility's records, so the number is a label for the coordinator; the GPS point places the fault.
+## Changes from the plan
+
+- **Report without an account.** Supervisor feedback: nobody should log in during an emergency. A guest gives a
+  phone number and place and gets an SMS with a private tracking link. Limit: 3 reports an hour per phone.
+- **SMS** goes through an Android phone running an open-source gateway, because a provider account costs money.
+  On 10 Nov 2026 a local run delivered texts to a real iPhone and the link opened the right report. Render cannot
+  reach the phone's local server, so the deployed app only logs texts.
+- **Customers sign themselves up** (phone, optional email, meter, first location). Staff stay seeded, because a
+  self-registered staff account would see other people's faults. Several customers may share a meter (tenants), so the
+  meter number is a label; the GPS point places the fault.
+- **Technician positions** are simulated on web; Android sends real ones.
+- **Photos** are stored in the database (prototype). Production should use file storage.
+- **Polling, not WebSockets**: simpler on free hosting, and 4 to 15 seconds is fast enough.
