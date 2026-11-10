@@ -22,7 +22,7 @@ When the power fails, people phone the utility and describe where they live. The
 | Customer and guest tracking             | Completed                                                                                                 | `pages/customer/Tracking.jsx`, `pages/public/`                    |
 | Live technician position                | Real GPS on Android, simulated on web                                                                     | `ActiveJobTracker`                                                |
 | Arrival distance and response analytics | Completed                                                                                                 | `statsService`, `[FILL: analytics screenshot]`                    |
-| SMS to the reporter                     | Partial: built, not yet tried on a real phone                                                             | `smsService.js`, [SMS_GATEWAY.md](SMS_GATEWAY.md)                 |
+| SMS to the reporter                     | Partial: tried on a real phone in a local run, not on the deployed app                                    | `smsService.js`, [SMS_GATEWAY.md](SMS_GATEWAY.md)                 |
 | Administrator area (FR13)               | Not built                                                                                                 | Accounts come from the seed script                                |
 
 **Where the build differs from the proposal, and why**
@@ -30,7 +30,7 @@ When the power fails, people phone the utility and describe where they live. The
 - _Report without an account._ Our supervisor said nobody should have to log in during an emergency. A guest gives a phone number and a place and gets an SMS with a private link to follow the report. This was not in the proposal.
 - _Technology._ The proposal named TypeScript, PostGIS, Socket.IO and Google Maps. We used JavaScript checked with JSDoc and `tsc`, plain PostgreSQL, polling every 4 to 8 seconds, and Leaflet with OpenStreetMap. This removed a paid map key and a socket server from a free hosting plan. With a handful of technicians, spatial indexes are not needed.
 - _Android app._ The proposal ruled out a native app. We built one because a browser tab cannot keep sending the technician's position when the screen is locked.
-- _SMS._ A paid SMS account was not an option, so texts go through an Android phone running an open-source gateway app. The code and tests are done. A real text has not been sent yet.
+- _SMS._ A paid SMS account was not an option, so texts go through an Android phone running an open-source gateway app. The code and tests are done. In a local run on 10 November 2026, a "received" text and an "assigned" text reached an iPhone and the tracking link opened the right report. The deployed app does not send real texts yet.
 - _Workflow._ We dropped the _Accepted_ stage (the assignment is the commitment) and added _Working_, so travel time and time on site can be told apart.
 - _Evaluation._ `[FILL: how many people took part in a pilot, and when. If none, say that the results come from test faults.]`
 
@@ -105,8 +105,8 @@ These are single runs on a laptop and vary by up to 30%, so the sizes are more r
 
 **Process.** 179 commits between 26 September and 9 November 2026, written as Conventional Commits and merged through pull requests. Database changes are committed Prisma migrations, never edited after they are applied.
 
-**Known limits.** Photos are stored as data URLs, technician positions on the web app are simulated, updates are polled, the SMS gateway is untested on a real phone, staff accounts cannot be created from the app, there is no administrator area, and type-checking covers the backend only. Each is a documented prototype decision.
+**Known limits.** Photos are stored as data URLs, technician positions on the web app are simulated, updates are polled, the SMS gateway has only been shown in a local run, not on the deployed app, staff accounts cannot be created from the app, there is no administrator area, and type-checking covers the backend only. Each is a documented prototype decision.
 
 ## 5. Conclusion
 
-The core flow from report to resolution works for three roles on web and Android, and now also for a person with no account. It is protected against double taps and wrong-role access and covered by 638 automated tests. Load testing found two slow endpoints, and both were fixed and measured again. Not built: the administrator area. Still to show: a real SMS, the device and browser table, and the usability test.
+The core flow from report to resolution works for three roles on web and Android, and now also for a person with no account. It is protected against double taps and wrong-role access and covered by 638 automated tests. Load testing found two slow endpoints, and both were fixed and measured again. Not built: the administrator area. Still to show: the device and browser table, and the usability test.
