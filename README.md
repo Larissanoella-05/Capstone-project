@@ -29,7 +29,9 @@ Umuriro Response puts every fault into one shared, location-based record:
 Customer follows along until it is resolved.**
 
 In an emergency nobody has to sign up: the report page asks only for a phone number and a place. The
-coordinator sees it at once and the reporter gets a text with a private link to follow progress.
+coordinator sees it at once and the reporter gets a text with a private link to follow progress. The texts go
+out through an Android phone running a gateway app ([docs/SMS_GATEWAY.md](docs/SMS_GATEWAY.md)). They have been
+sent to a real phone in a local run, but the deployed app only logs them for now.
 
 Everyone reads and writes the same record, so a change by the technician shows up for the coordinator and the
 customer within seconds. Statuses are `Reported → Assigned → On the Way → Arrived → Working → Resolved`, and each
@@ -110,7 +112,8 @@ workflow.
 - **Android:** Expo SDK 58 (React Native), Expo Router, MapLibre + OpenFreeMap, Firebase push
 - **Hosting:** Vercel (web), Render (API), Neon (database), EAS Build (APK)
 
-No paid map or SMS keys are needed to run any of it.
+No paid map or SMS keys are needed to run any of it. Real texts need a phone with a SIM running a free gateway
+app, set up in [docs/SMS_GATEWAY.md](docs/SMS_GATEWAY.md).
 
 ## Project layout
 
@@ -145,6 +148,7 @@ every pull request (`.github/workflows/ci.yml`).
 | [docs/MOBILE.md](docs/MOBILE.md)                     | Building and running the Android app, push notifications             |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)             | Deploying to Vercel, Render and Neon                                 |
 | [docs/TESTING.md](docs/TESTING.md)                   | Test method, commands and results                                    |
+| [docs/SMS_GATEWAY.md](docs/SMS_GATEWAY.md)           | Sending real texts through an Android phone                          |
 | [docs/SCOPE_ALIGNMENT.md](docs/SCOPE_ALIGNMENT.md)   | How the build matches the project scope                              |
 | [docs/TECHNICAL_REPORT.md](docs/TECHNICAL_REPORT.md) | The technical report                                                 |
 |                                                      |
