@@ -22,7 +22,7 @@ SMS_GATEWAY_USER=<from the app>
 SMS_GATEWAY_PASSWORD=<from the app>
 ```
 
-For local mode, set `SMS_GATEWAY_URL` to the phone's address instead. The backend refuses to start with `smsgate` selected if the user or password is missing. Never commit these values.
+For local mode, set `SMS_GATEWAY_URL` to the phone's bare address instead (for example `http://192.168.1.20:8080`, with no `/3rdparty/v1`). Also set `PUBLIC_WEB_URL` to where the web app can be opened, because the tracking link in the text starts with it. It defaults to `http://localhost:5173`, which a phone cannot open. The backend refuses to start with `smsgate` selected if the user or password is missing. Never commit these values.
 
 The relay address has appeared in two forms (`sms.capcom.me` and `api.sms-gate.app`). Use the one the app shows.
 
