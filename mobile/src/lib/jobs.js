@@ -1,4 +1,5 @@
 import { isOpen } from './format.js';
+import { reporterName, reporterPhone } from './guestReport.js';
 
 const IN_PROGRESS = ['ON_THE_WAY', 'ARRIVED', 'WORKING'];
 
@@ -10,4 +11,13 @@ export function pickActiveJob(faults) {
     [...open].sort((a, b) => new Date(a.assignedAt) - new Date(b.assignedAt))[0] ??
     null
   );
+}
+
+/** Who to show and call on a job. A guest report has no customer record and may have no service location. */
+export function customerSummary(fault) {
+  return {
+    name: reporterName(fault),
+    phone: reporterPhone(fault),
+    meter: fault.serviceLocation?.meterNumber ?? null,
+  };
 }
