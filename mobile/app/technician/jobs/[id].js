@@ -24,6 +24,7 @@ import {
   fmtTime,
   locationLine,
 } from '../../../src/lib/format.js';
+import { customerSummary } from '../../../src/lib/jobs.js';
 import { TRACKED_STATUSES } from '../../../src/lib/location.js';
 import { faultMapParts } from '../../../src/lib/mapParts.js';
 import { colors, fonts, radius } from '../../../src/theme.js';
@@ -99,7 +100,7 @@ export default function JobDetails() {
           const stageIndex = STAGES.indexOf(fault.status);
           const approaching = ['ASSIGNED', 'ON_THE_WAY'].includes(fault.status);
           const sharing = TRACKED_STATUSES.includes(fault.status);
-          const customerPhone = fault.contactPhone || fault.customer.phone;
+          const { name: customerName, phone: customerPhone, meter } = customerSummary(fault);
 
           return (
             <>
@@ -257,8 +258,8 @@ export default function JobDetails() {
                   ]}
                 >
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.customer}>{fault.customer.name}</Text>
-                    <Text style={styles.mono}>Meter {location.meterNumber}</Text>
+                    <Text style={styles.customer}>{customerName}</Text>
+                    {meter ? <Text style={styles.mono}>Meter {meter}</Text> : null}
                   </View>
                   {customerPhone ? (
                     <Button
