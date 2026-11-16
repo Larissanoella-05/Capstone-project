@@ -25,3 +25,6 @@ mobile/google-services.json
 docs/agents
 CLAUDE.md
 AGENTS.md
+
+# implementation plans (local only)
+docs/plans/
