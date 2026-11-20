@@ -34,7 +34,7 @@ the technician updates the status, the customer follows. Full detail: [SCOPE_ALI
 - _Android app:_ added because a browser tab cannot keep sending a technician's position with the screen locked.
 - _SMS:_ through an Android phone with an open-source gateway, since a paid account was not an option.
 - _Workflow:_ _Accepted_ dropped (assignment is the commitment), _Working_ added to separate travel from time on site.
-- _Evaluation:_ the proposed pilot (about 20 customers, 5 technicians, 3 coordinators) has not run. Results come from automated tests, a load test and a one-person walk through the live workflow with demo data. No response-time claim is made about real users.
+- _Evaluation:_ the proposed pilot (about 20 customers, 5 technicians, 3 coordinators) has not run. Results come from automated tests, a load test, a one-person walk through the live workflow with demo data, and an acceptance survey with 20 volunteers (SUS). No response-time claim is made about real users.
 
 ## 2. Technical functionality
 
@@ -74,11 +74,11 @@ Details and commands: [TESTING.md](TESTING.md).
 
 | Approach                    | Why                                         | Result                                                |
 | --------------------------- | ------------------------------------------- | ----------------------------------------------------- |
-| Unit                        | Workflow, ranking, validation break quietly | 534 pass (backend 222, frontend 148, mobile 164)      |
-| Integration                 | Roles hand work over through one database   | 104 pass, 27 suites, separate test database           |
+| Unit                        | Workflow, ranking, validation break quietly | 537 pass (backend 222, frontend 148, mobile 167)      |
+| Integration                 | Roles hand work over through one database   | 129 pass, 35 suites, separate test database           |
 | Load                        | Every open screen polls the API             | Table 3                                               |
 | Code review of both apps    | Finds what tests miss                       | 8 problems fixed                                      |
-| Manual device and usability | Maps, GPS, camera, SMS need a real phone    | Compatibility and Lighthouse below; usability not run |
+| Manual device and usability | Maps, GPS, camera, SMS need a real phone    | Compatibility and Lighthouse below; SUS 88.6 (n = 20) |
 
 **What testing changed.** Five quick "On the way" taps all succeeded with duplicate history, and two coordinators
 could assign one fault; optimistic concurrency fixed both, and the tests fail without it. The load test showed a
@@ -92,15 +92,16 @@ could assign one fault; optimistic concurrency fixed both, and the tests fail wi
 | `GET /stats/analytics` | p50 319 ms             | p50 67 ms        |
 | `GET /stats/overview`  | p50 106 ms             | p50 36 ms        |
 
-On the live Render API (1,600 requests, 0 errors) dashboard endpoints answered in 345 to 616 ms at the median,
-under 1 s at p95. One fault (717 KB of photos) took p50 869 ms. The first request after the free tier slept took
-24.4 s; the next took 0.6 s.
+On the live Render API on 17 Nov 2026 (1,600 requests, 0 errors) endpoints answered in 412 to 594 ms at the median
+and under 900 ms at p95, except the unpaged fault list (84 KB, p50 1,177 ms, p99 1,789 ms). An earlier run on
+9 Nov measured a fault carrying 717 KB of photos at p50 869 ms, and the first request after the free tier slept at
+24.4 s (the next took 0.6 s).
 
-**Compatibility.** Every screenshot and live check used desktop Chrome (1440 × 840). Firefox, Safari and Edge were not tested. On a TECNO KG5j (Android 11) the installed app signed in as customer and technician, created an account, reported a fault and moved a job through every stage; real texts reached an iPhone in a local run. Push worked with the app open only.
+**Compatibility.** Every screenshot and live check used desktop Chrome (1440 × 840). Firefox, Safari and Edge were not tested. On a TECNO KG5j (Android 11) the installed app signed in as customer and technician, created an account, reported a fault and moved a job through every stage; real texts reached an iPhone in a local run (the deployed app only logs them). A Pixel 6 (Android 17) ran a development build against the live API and exposed the guest-fault job-screen crash. Push worked with the app open only.
 
 **Lighthouse, live site, mobile profile** (Lighthouse 12.8.2, Chrome 155, 10 Nov 2026, landing page): performance **64**, accessibility **98**, best practices **100**, SEO **92**. First contentful paint 3.6 s, largest contentful paint 5.6 s, total blocking time 240 ms, layout shift 0. Performance is the weak score; it was not tuned.
 
-**Usability.** A 5-task usability test and an acceptance survey (SUS) were prepared but not run, so there is no user-satisfaction result. It is the main piece of future work.
+**Usability.** An acceptance survey with 20 volunteers (18 customers, 2 technicians, no coordinators) ran five tasks on a test report and the System Usability Scale: mean **88.6** (SD 9.0, 95% CI 84.4 to 92.8), all 20 at 68 or above. It is a convenience sample of people who knew the author built the system, so it describes ease of use in a first trial and says nothing about response time. Detail is in the final report, section 4.5.7.
 
 ![Figure 2. Coordinator assigning a ranked technician](report/figures/fr-coord-assign-ranked.jpg)
 
@@ -115,7 +116,7 @@ under 1 s at p95. One fault (717 KB of photos) took p50 869 ms. The first reques
 - **Honest limit:** the service layer uses functions, not classes; we did not add classes for show.
 - **Consistency:** ESLint with zero warnings, Prettier and a backend type-check run on every commit and in GitHub
   Actions, where the `ci-ok` job must pass before a merge. All web HTTP goes through `api.js`.
-- **Process:** 190 commits from 26 September to 10 November 2026, Conventional Commits, merged by pull request.
+- **Process:** 202 commits and 32 merged pull requests between 26 September and 16 November 2026 (counted on 17 November; the number rises as the documentation is revised), Conventional Commits, merged by pull request.
   Database changes are committed Prisma migrations, never edited after being applied.
 - **Known limits:** photos as data URLs, simulated web positions, polling, SMS not on the deployed app, no
   administrator area, type-checking on the backend only. Each is a documented prototype decision.
@@ -123,5 +124,5 @@ under 1 s at p95. One fault (717 KB of photos) took p50 869 ms. The first reques
 ## 5. Conclusion
 
 The report-to-resolution flow works for three roles on web and Android, and for people with no account. It is
-guarded against double taps and wrong-role access and covered by 638 automated tests. Load testing found two slow
-endpoints, both fixed and re-measured. Not built: the administrator area. Still to do: browser coverage beyond Chrome and a usability test with real users.
+guarded against double taps and wrong-role access and covered by 666 automated tests. Load testing found two slow
+endpoints, both fixed and re-measured. Not built: the administrator area. Still to do: browser coverage beyond Chrome, and a controlled comparison with current practice using real faults and utility staff.
