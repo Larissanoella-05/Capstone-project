@@ -139,6 +139,7 @@ export const FOOTER = {
     { label: 'Services', href: '#services' },
     { label: 'Dashboards', href: '#roles' },
     { label: 'FAQ', href: '#faq' },
+    { label: 'Privacy policy', to: '/privacy' },
   ],
   services: [
     { label: 'Report a fault', link: guestReportLink },
