@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { FOOTER } from '../../lib/landingContent.js';
 import { Bolt, LoginLink } from './LandingBits.jsx';
 
@@ -7,6 +8,13 @@ function FooterLink({ item }) {
       <LoginLink className="lp-flink" link={item.link}>
         {item.label}
       </LoginLink>
+    );
+  }
+  if (item.to) {
+    return (
+      <Link className="lp-flink" to={item.to}>
+        {item.label}
+      </Link>
     );
   }
   return (
