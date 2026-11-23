@@ -260,12 +260,12 @@ export const RW = {
   'Photo attached to the report': 'Ifoto yometse kuri raporo',
 
   // Landing page, navigation and customer screens
-  About: 'Turi bande',
+  About: 'Abo turi bo',
   'About Us': 'Abo turi bo',
   'About Umuriro': 'Ibyerekeye Umuriro',
   'How it works': 'Uko bikora',
   Dashboards: 'Imbonerahamwe',
-  FAQ: 'Ibibazo bikunze kubazwa',
+  FAQ: 'Ibibazo',
   Contact: 'Twandikire',
   Home: 'Ahabanza',
   Main: 'Ibyingenzi',
@@ -444,7 +444,7 @@ export const RW = {
     'Umuhuzabikorwa agiye kugenera umutekinisiye iki kibazo. Umutekinisiye yoherezwa aho wiyandikishije, bityo ntukeneye guhamagara ngo utange ibyerekezo.',
   'What happens next': 'Ibikurikiraho',
   'All notifications marked as read.': 'Imenyesha ryose ryasomwe.',
-  'Mark all as read': 'Byose ubishyire ku byasomwe',
+  'Mark all as read': 'Byose byasomwe',
   'No notifications yet': 'Nta menyesha riraboneka',
   'Updates about your faults will appear here.': 'Amakuru ku bibazo byawe azagaragara hano.',
   'Updates about your faults appear here.': 'Amakuru ku bibazo byawe agaragara hano.',
@@ -601,4 +601,12 @@ export const RW = {
     'Ntibyashobotse kubona aho uri. Reba ko GPS ifunguye.',
   'Location sharing is paused. Keep this app open to share your position.':
     'Gusangiza aho uri byahagaze. Reka iyi porogaramu ifunguye kugira ngo usangize aho uri.',
+
+  // Alerts page intros
+  'Updates about your fault reports as they move through each stage.':
+    'Amakuru ku raporo zawe uko zigenda zinyura mu byiciro byose.',
+  'New jobs assigned to you by the service coordinator.': "Imirimo mishya wahawe n'umuhuzabikorwa.",
+  'Updates about your fault reports.': 'Amakuru ku raporo zawe.',
+  'New jobs and updates about the faults assigned to you.':
+    "Imirimo mishya n'amakuru ku bibazo wahawe.",
 };
