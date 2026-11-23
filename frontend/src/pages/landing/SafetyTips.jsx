@@ -1,9 +1,12 @@
-import { SAFETY_TIPS } from '../../lib/landingContent.js';
+import { useTranslated } from '../../context/LanguageContext.jsx';
+import { SAFETY_TIPS as SAFETY_TIPS_COPY } from '../../lib/landingContent.js';
 
 const DELAYS = ['', 'lp-d2', 'lp-d3'];
 
 /** Three plain safety cards. They do not link anywhere, so they do not lift on hover. */
 export default function SafetyTips({ seen }) {
+  const SAFETY_TIPS = useTranslated(SAFETY_TIPS_COPY);
+
   return (
     <section id="blog" className={`lp-sec ${seen ? 'lp-seen' : ''}`}>
       <div

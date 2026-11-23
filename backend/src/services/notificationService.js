@@ -1,40 +1,26 @@
+import { aTechnician, noticeText } from '../domain/notificationText.js';
+
 /** Always called inside the transaction of the event it describes, so the two cannot drift apart. */
 export function notify(tx, { userId, faultId, type, title, message }) {
   return tx.notification.create({ data: { userId, faultId, type, title, message } });
 }
 
+const TYPE_FOR_STATUS = {
+  ON_THE_WAY: 'TECHNICIAN_ON_THE_WAY',
+  ARRIVED: 'TECHNICIAN_ARRIVED',
+  RESOLVED: 'FAULT_RESOLVED',
+  CANCELLED: 'FAULT_CANCELLED',
+};
+
 /**
  * @param {string} status
- * @param {{ reference: string, technicianName?: string }} details
+ * @param {{ reference: string, technicianName?: string, language?: string }} details
  */
-export function customerMessageFor(status, { reference, technicianName }) {
-  const first = technicianName ? technicianName.split(' ').slice(0, 2).join(' ') : 'A technician';
-  switch (status) {
-    case 'ON_THE_WAY':
-      return {
-        type: 'TECHNICIAN_ON_THE_WAY',
-        title: 'Technician on the way',
-        message: `${first} is on the way to your service location for fault #${reference}.`,
-      };
-    case 'ARRIVED':
-      return {
-        type: 'TECHNICIAN_ARRIVED',
-        title: 'Technician arrived',
-        message: `${first} has arrived at your service location for fault #${reference}.`,
-      };
-    case 'RESOLVED':
-      return {
-        type: 'FAULT_RESOLVED',
-        title: 'Fault resolved',
-        message: `Your electricity fault #${reference} is fixed. If the power is still off, report it again.`,
-      };
-    case 'CANCELLED':
-      return {
-        type: 'FAULT_CANCELLED',
-        title: 'Report cancelled',
-        message: `Your fault report #${reference} was cancelled by the service coordinator.`,
-      };
-    default:
-      return null; // WORKING does not notify the customer
-  }
+export function customerMessageFor(status, { reference, technicianName, language = 'en' }) {
+  const type = TYPE_FOR_STATUS[status];
+  if (!type) return null; // WORKING does not notify the customer
+  const technician = technicianName
+    ? technicianName.split(' ').slice(0, 2).join(' ')
+    : aTechnician(language);
+  return { type, ...noticeText(type, language, { reference, technician }) };
 }

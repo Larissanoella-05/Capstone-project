@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Bell, LogOut, X, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useT } from '../context/LanguageContext.jsx';
+import LanguageSwitch from './LanguageSwitch.jsx';
 
 /** `inverse` is the accent-on-white variant for dark backgrounds. */
 export function LogoMark({ inverse = false }) {
@@ -25,6 +27,7 @@ function wasDismissed() {
 
 /** Pilot notice, dismissible for the visit. */
 export function PilotBanner() {
+  const t = useT();
   const [hidden, setHidden] = useState(wasDismissed);
   if (hidden) return null;
 
@@ -40,15 +43,15 @@ export function PilotBanner() {
   return (
     <div className="flex items-center gap-2 overflow-x-clip bg-ink pl-5 text-[11px] font-medium text-white">
       <span className="shrink-0 rounded-tag bg-accent px-2 py-0.5 font-semibold uppercase text-on-accent">
-        Pilot
+        {t('Pilot')}
       </span>
       <span className="min-w-0 flex-1 py-2 uppercase">
-        Test reports only. Real fault: call 2727
+        {t('Test reports only. Real fault: call 2727')}
       </span>
       {/* 32px wide so the text fits one line on a phone; the pseudo-element keeps a 44px tap area */}
       <button
         type="button"
-        aria-label="Hide the pilot notice"
+        aria-label={t('Hide the pilot notice')}
         className="relative -my-1.5 flex h-11 w-8 shrink-0 cursor-pointer items-center justify-center bg-transparent text-white after:absolute after:-inset-x-1.5 after:inset-y-0 after:content-['']"
         onClick={dismiss}
       >
@@ -59,16 +62,20 @@ export function PilotBanner() {
 }
 
 export function AppHeader({ homeTo, notificationsTo, unread = 0, onSignOut }) {
+  const t = useT();
   return (
     <header className="flex items-center justify-between border-b border-line bg-white/90 px-5 py-3">
       <Link to={homeTo} className="flex items-center gap-2.5 no-underline">
         <LogoMark />
         <span className="heading-weight text-xl tracking-[-0.02em]">Umuriro</span>
       </Link>
-      <div className="flex items-center">
+      <div className="flex items-center gap-1">
+        <LanguageSwitch />
         <Link
           to={notificationsTo}
-          aria-label={unread ? `Notifications, ${unread} unread` : 'Notifications'}
+          aria-label={
+            unread ? t('Notifications, {count} unread', { count: unread }) : t('Notifications')
+          }
           className="relative flex h-11 w-11 items-center justify-center"
         >
           <Bell size={26} strokeWidth={1.75} aria-hidden="true" />
@@ -81,8 +88,8 @@ export function AppHeader({ homeTo, notificationsTo, unread = 0, onSignOut }) {
         </Link>
         <button
           type="button"
-          aria-label="Sign out"
-          title="Sign out"
+          aria-label={t('Sign out')}
+          title={t('Sign out')}
           className="flex h-11 w-11 cursor-pointer items-center justify-center bg-transparent text-grey"
           onClick={onSignOut}
         >

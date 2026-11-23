@@ -1,3 +1,4 @@
+import { useT } from '../../../src/context/LanguageContext.js';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -16,6 +17,7 @@ const FILTERS = [
 ];
 
 export default function Jobs() {
+  const t = useT();
   const router = useRouter();
   const state = useApi('/faults', { interval: 5000 });
   const [tab, setTab] = useState('OPEN');
@@ -26,7 +28,7 @@ export default function Jobs() {
   return (
     <Screen>
       <PageHeading
-        eyebrow={state.data ? `${faults.length} jobs in total` : 'Jobs'}
+        eyebrow={state.data ? t('{count} jobs in total', { count: faults.length }) : 'Jobs'}
         title="My jobs"
       />
 
@@ -37,7 +39,7 @@ export default function Jobs() {
               {FILTERS.map((item) => (
                 <Chip
                   key={item.key}
-                  label={`${item.label} ${faults.filter(item.test).length}`}
+                  label={`${t(item.label)} ${faults.filter(item.test).length}`}
                   active={tab === item.key}
                   onPress={() => setTab(item.key)}
                 />
@@ -45,10 +47,10 @@ export default function Jobs() {
             </View>
 
             {visible.length === 0 ? (
-              <EmptyState title={tab === 'DONE' ? 'No completed jobs yet' : 'No jobs here'}>
+              <EmptyState title={tab === 'DONE' ? t('No completed jobs yet') : t('No jobs here')}>
                 {tab === 'DONE'
-                  ? 'Jobs you resolve are kept here.'
-                  : 'New jobs assigned by the service coordinator appear here automatically.'}
+                  ? t('Jobs you resolve are kept here.')
+                  : t('New jobs assigned by the service coordinator appear here automatically.')}
               </EmptyState>
             ) : (
               <View style={{ gap: 12 }}>
@@ -62,7 +64,7 @@ export default function Jobs() {
                       <View style={styles.top}>
                         <FaultIcon category={fault.category} />
                         <View style={{ flex: 1 }}>
-                          <Text style={styles.title}>{CATEGORY_LABEL[fault.category]}</Text>
+                          <Text style={styles.title}>{t(CATEGORY_LABEL[fault.category])}</Text>
                           <Text numberOfLines={1} style={styles.ref}>
                             #{fault.reference} · {locationLine(fault.serviceLocation)}
                           </Text>
@@ -73,8 +75,10 @@ export default function Jobs() {
                         <PriorityPill priority={fault.priority} withLabel />
                         <Text style={styles.ref}>
                           {isOpen(fault)
-                            ? `Reported ${fmtDateTime(fault.reportedAt)}`
-                            : `Closed ${fmtDateTime(fault.resolvedAt ?? fault.cancelledAt)}`}
+                            ? t('Reported {when}', { when: fmtDateTime(fault.reportedAt, t) })
+                            : t('Closed {when}', {
+                                when: fmtDateTime(fault.resolvedAt ?? fault.cancelledAt, t),
+                              })}
                         </Text>
                       </View>
                     </Panel>

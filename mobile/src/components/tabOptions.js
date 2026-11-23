@@ -1,3 +1,4 @@
+import { useT } from '../context/LanguageContext.js';
 import { Feather } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 import { colors, fonts } from '../theme.js';
@@ -23,7 +24,8 @@ export const tabScreenOptions = {
 
 export const tabLabel = (title) =>
   function TabLabel({ color }) {
-    return <Text style={{ color, fontFamily: fonts.semibold, fontSize: 11 }}>{title}</Text>;
+    const t = useT();
+    return <Text style={{ color, fontFamily: fonts.semibold, fontSize: 11 }}>{t(title)}</Text>;
   };
 
 /** A tab icon with the 3 px accent bar above it when the tab is active. */

@@ -1,3 +1,5 @@
+import { useT } from '../../../src/context/LanguageContext.js';
+import { translateErrors } from '../../../src/lib/i18n.js';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -22,6 +24,7 @@ import { STEP_NAMES, validateStep } from '../../../src/lib/reportSteps.js';
 import { colors, fonts, radius } from '../../../src/theme.js';
 
 export default function ReportFault() {
+  const t = useT();
   const { user } = useAuth();
   const router = useRouter();
   const locations = useApi('/service-locations');
@@ -48,7 +51,7 @@ export default function ReportFault() {
         setErrors((current) => ({ ...current, photo: undefined }));
       }
     } catch (error) {
-      setErrors((current) => ({ ...current, photo: error.message }));
+      setErrors((current) => ({ ...current, photo: t(error.message) }));
     } finally {
       setPhotoBusy(false);
     }
@@ -62,7 +65,7 @@ export default function ReportFault() {
   }
 
   async function send() {
-    const nextErrors = validateStep(3, form);
+    const nextErrors = translateErrors(t, validateStep(3, form));
     setErrors(nextErrors);
     setFormError('');
     if (Object.keys(nextErrors).length) {
@@ -101,7 +104,7 @@ export default function ReportFault() {
       send();
       return;
     }
-    const nextErrors = validateStep(step, form);
+    const nextErrors = translateErrors(t, validateStep(step, form));
     setErrors(nextErrors);
     setFormError('');
     if (Object.keys(nextErrors).length === 0) setStep(step + 1);
@@ -121,7 +124,7 @@ export default function ReportFault() {
       <View style={styles.headRow}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={step === 1 ? 'Back to home' : 'Back to the previous step'}
+          accessibilityLabel={step === 1 ? t('Back to home') : t('Back to the previous step')}
           onPress={goBack}
           style={styles.back}
         >
@@ -129,10 +132,11 @@ export default function ReportFault() {
         </Pressable>
         <View>
           <Text accessibilityRole="header" style={styles.title}>
-            Report a fault
+            {t('Report a fault')}
           </Text>
           <Text style={styles.stepNote}>
-            Step {step} of {STEP_NAMES.length} · {STEP_NAMES[step - 1]}
+            {t('Step {step} of {total}', { step, total: STEP_NAMES.length })} ·{' '}
+            {t(STEP_NAMES[step - 1])}
           </Text>
         </View>
       </View>
@@ -148,7 +152,7 @@ export default function ReportFault() {
 
       {step === 1 ? (
         <View style={{ gap: 12 }}>
-          <Text style={styles.question}>What is the problem?</Text>
+          <Text style={styles.question}>{t('What is the problem?')}</Text>
           <View accessibilityRole="radiogroup" style={{ gap: 10 }}>
             {CATEGORIES.map((item) => {
               const active = category === item.value;
@@ -167,8 +171,8 @@ export default function ReportFault() {
                     {active ? <View style={styles.radioDot} /> : null}
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.optionLabel}>{item.label}</Text>
-                    <Text style={styles.optionHint}>{item.hint}</Text>
+                    <Text style={styles.optionLabel}>{t(item.label)}</Text>
+                    <Text style={styles.optionHint}>{t(item.hint)}</Text>
                   </View>
                 </Pressable>
               );
@@ -186,18 +190,20 @@ export default function ReportFault() {
             ) : location ? (
               <>
                 <View style={styles.locationTop}>
-                  <Eyebrow>Registered location · Meter {location.meterNumber}</Eyebrow>
-                  <Text style={styles.auto}>Auto</Text>
+                  <Eyebrow>
+                    {t('Registered location · Meter {number}', { number: location.meterNumber })}
+                  </Eyebrow>
+                  <Text style={styles.auto}>{t('Auto')}</Text>
                 </View>
                 <Text style={styles.locationLine}>{locationLine(location)}</Text>
                 <Text style={styles.locationNote}>
-                  Your registered service location is added to this report automatically.
+                  {t('Your registered service location is added to this report automatically.')}
                 </Text>
               </>
             ) : (
               <Text style={[styles.error, { fontSize: 14 }]}>
                 {locations.error?.message ||
-                  'No registered service location was found for your account.'}
+                  t('No registered service location was found for your account.')}
               </Text>
             )}
           </Panel>
@@ -213,9 +219,11 @@ export default function ReportFault() {
               multiline
               numberOfLines={4}
               textAlignVertical="top"
-              placeholder="For example: electricity went off suddenly, the neighbours still have power."
+              placeholder={t(
+                'For example: electricity went off suddenly, the neighbours still have power.'
+              )}
               placeholderTextColor={colors.ash}
-              accessibilityLabel="Description"
+              accessibilityLabel={t('Description')}
               style={[styles.field, styles.multiline, errors.description && styles.fieldInvalid]}
             />
             {errors.description ? <Text style={styles.error}>{errors.description}</Text> : null}
@@ -230,7 +238,7 @@ export default function ReportFault() {
               <View style={styles.photoRow}>
                 <Image
                   source={{ uri: photo.uri }}
-                  accessibilityLabel="Selected fault photo"
+                  accessibilityLabel={t('Selected fault photo')}
                   style={styles.thumb}
                 />
                 <Text numberOfLines={1} style={styles.photoName}>
@@ -238,7 +246,7 @@ export default function ReportFault() {
                 </Text>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="Remove photo"
+                  accessibilityLabel={t('Remove photo')}
                   onPress={() => setPhoto(null)}
                   style={styles.remove}
                 >
@@ -278,7 +286,7 @@ export default function ReportFault() {
               onChangeText={setContactPhone}
               keyboardType="phone-pad"
               autoComplete="tel"
-              accessibilityLabel="Contact phone"
+              accessibilityLabel={t('Contact phone')}
               style={[styles.field, errors.contactPhone && styles.fieldInvalid]}
             />
             {errors.contactPhone ? <Text style={styles.error}>{errors.contactPhone}</Text> : null}
@@ -291,16 +299,16 @@ export default function ReportFault() {
           <Panel style={{ paddingHorizontal: 16, paddingVertical: 4 }}>
             <KeyRow label="Type">{CATEGORY_LABEL[category]}</KeyRow>
             <KeyRow label="Location">
-              {locationLine(location)} · Meter {location?.meterNumber}
+              {locationLine(location)} · {t('Meter {number}', { number: location?.meterNumber })}
             </KeyRow>
             <KeyRow label="Contact phone">{contactPhone.trim() || '—'}</KeyRow>
             <KeyRow label="Description" last={!photo}>
-              {description.trim() || 'No description given.'}
+              {description.trim() || t('No description given.')}
             </KeyRow>
             {photo ? (
               <Image
                 source={{ uri: photo.uri }}
-                accessibilityLabel="Selected fault photo"
+                accessibilityLabel={t('Selected fault photo')}
                 style={styles.reviewPhoto}
               />
             ) : null}
@@ -314,9 +322,9 @@ export default function ReportFault() {
               style={{ marginTop: 2 }}
             />
             <Text style={styles.dangerText}>
-              If you can see a fallen, sparking or exposed wire, stay away from it and call{' '}
-              <Text style={{ fontFamily: fonts.bold }}>2727</Text> now. This report is for the pilot
-              and is not an emergency line.
+              {t('If you can see a fallen, sparking or exposed wire, stay away from it and call')}{' '}
+              <Text style={{ fontFamily: fonts.bold }}>2727</Text>{' '}
+              {t('now. This report is for the pilot and is not an emergency line.')}
             </Text>
           </View>
         </>

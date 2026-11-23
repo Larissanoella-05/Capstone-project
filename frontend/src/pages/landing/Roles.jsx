@@ -1,9 +1,12 @@
-import { ROLES } from '../../lib/landingContent.js';
+import { useTranslated } from '../../context/LanguageContext.jsx';
+import { ROLES as ROLES_COPY } from '../../lib/landingContent.js';
 import { ArrowUpRight, LoginLink } from './LandingBits.jsx';
 
 const DELAYS = ['', 'lp-d2', 'lp-d3'];
 
 export default function Roles({ seen }) {
+  const ROLES = useTranslated(ROLES_COPY);
+
   return (
     <section id="roles" className={`lp-sec ${seen ? 'lp-seen' : ''}`}>
       <div

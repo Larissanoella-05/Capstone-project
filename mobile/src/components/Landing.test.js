@@ -50,13 +50,20 @@ describe('Landing', () => {
     ).toBeTruthy();
   });
 
-  it('opens the sign-in screen from the header, the hero and the footer', async () => {
+  it('opens the sign-in screen from the hero and the technician link', async () => {
     await render(<Landing />);
     await fireEvent.press(screen.getByText('Sign in'));
-    await fireEvent.press(screen.getAllByLabelText('Report a fault')[0]);
     await fireEvent.press(screen.getByText('Technician jobs'));
-    expect(mockPush).toHaveBeenCalledTimes(3);
+    expect(mockPush).toHaveBeenCalledTimes(2);
     for (const call of mockPush.mock.calls) expect(call[0]).toBe('/login');
+  });
+
+  it('opens the report form without an account from the header and the footer', async () => {
+    await render(<Landing />);
+    await fireEvent.press(screen.getAllByLabelText('Report a fault')[0]);
+    await fireEvent.press(screen.getAllByText('Report a fault').at(-1));
+    expect(mockPush).toHaveBeenCalledTimes(2);
+    for (const call of mockPush.mock.calls) expect(call[0]).toBe('/guest/report');
   });
 
   it.each([

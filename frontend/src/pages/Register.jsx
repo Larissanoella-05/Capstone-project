@@ -1,8 +1,10 @@
+import { useT } from '../context/LanguageContext.jsx';
 import { useMemo, useState } from 'react';
 import { LocateFixed, MapPin } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import { HOME_BY_ROLE, useAuth } from '../context/AuthContext.jsx';
 import { errorSummary } from '../lib/formErrors.js';
+import { translateErrors } from '../lib/i18n.js';
 import { accuracyText, locationErrorMessage, pointFromPosition } from '../lib/guestReport.js';
 import { buildRegisterPayload, validateRegisterForm } from '../lib/registration.js';
 import { Card } from '../components/Card.jsx';
@@ -27,6 +29,7 @@ const API_FIELD = { latitude: 'location', longitude: 'location' };
 const LOCATION_OPTIONS = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
 
 export default function Register() {
+  const t = useT();
   const { user, register } = useAuth();
 
   const [name, setName] = useState('');
@@ -54,11 +57,11 @@ export default function Register() {
               lat: point.latitude,
               lng: point.longitude,
               kind: 'unassigned',
-              label: 'Your home',
+              label: t('Your home'),
             },
           ]
         : [],
-    [point]
+    [point, t]
   );
 
   // A new account is signed in straight away, so this also sends the new customer to their home.
@@ -71,7 +74,7 @@ export default function Register() {
   function findMe() {
     setLocationNote('');
     if (!('geolocation' in navigator)) {
-      setLocationNote(locationErrorMessage(0));
+      setLocationNote(t(locationErrorMessage(0)));
       return;
     }
     setLocating(true);
@@ -82,7 +85,7 @@ export default function Register() {
         setLocating(false);
       },
       (error) => {
-        setLocationNote(locationErrorMessage(error.code));
+        setLocationNote(t(locationErrorMessage(error.code)));
         setLocating(false);
       },
       LOCATION_OPTIONS
@@ -92,7 +95,7 @@ export default function Register() {
   async function onSubmit(event) {
     event.preventDefault();
     const form = { name, phone, email, password, meterNumber, cell, village, landmark, point };
-    const nextErrors = validateRegisterForm(form);
+    const nextErrors = translateErrors(t, validateRegisterForm(form));
     setErrors(nextErrors);
     setFormError('');
     if (Object.keys(nextErrors).length) return;
@@ -118,15 +121,15 @@ export default function Register() {
       className="mx-auto flex w-full max-w-[560px] flex-col gap-3.5"
     >
       <div>
-        <h1 className="display text-[26px]">Create your account</h1>
+        <h1 className="display text-[26px]">{t('Create your account')}</h1>
         <p className="mb-0 mt-1.5 text-sm text-grey">
-          One account to report faults and follow them. It takes about two minutes.
+          {t('One account to report faults and follow them. It takes about two minutes.')}
         </p>
       </div>
 
       <ErrorSummary items={errorSummary(errors, FIELDS)} />
 
-      <Field id="name" label="Full name" error={errors.name}>
+      <Field id="name" label={t('Full name')} error={errors.name}>
         <input
           id="name"
           type="text"
@@ -144,9 +147,9 @@ export default function Register() {
 
       <Field
         id="phone"
-        label="Phone number"
+        label={t('Phone number')}
         error={errors.phone}
-        help="You can sign in with it, and it is where we text updates."
+        help={t('You can sign in with it, and it is where we text updates.')}
       >
         <input
           id="phone"
@@ -165,7 +168,7 @@ export default function Register() {
         />
       </Field>
 
-      <Field id="email" label="Email" hint="(optional)" error={errors.email}>
+      <Field id="email" label={t('Email')} hint={t('(optional)')} error={errors.email}>
         <input
           id="email"
           type="email"
@@ -181,7 +184,12 @@ export default function Register() {
         />
       </Field>
 
-      <Field id="password" label="Password" error={errors.password} help="At least 8 characters.">
+      <Field
+        id="password"
+        label={t('Password')}
+        error={errors.password}
+        help={t('At least 8 characters.')}
+      >
         <div className="relative">
           <input
             id="password"
@@ -198,13 +206,13 @@ export default function Register() {
           />
           <button
             type="button"
-            aria-label="Show password"
+            aria-label={t('Show password')}
             aria-pressed={showPassword}
             aria-controls="password"
             className="absolute inset-y-0 right-0 min-w-11 cursor-pointer bg-transparent px-3 text-xs font-semibold text-grey focus-visible:outline-2 focus-visible:outline-accent"
             onClick={() => setShowPassword((shown) => !shown)}
           >
-            {showPassword ? 'Hide' : 'Show'}
+            {showPassword ? t('Hide') : t('Show')}
           </button>
         </div>
       </Field>
@@ -212,14 +220,16 @@ export default function Register() {
       <Card className="flex flex-col gap-3.5 px-[18px] py-4">
         <div className="heading-weight flex items-center gap-2 text-lg">
           <MapPin size={18} className="shrink-0 text-accent" aria-hidden="true" />
-          Your meter
+          {t('Your meter')}
         </div>
 
         <Field
           id="meter"
-          label="Meter number"
+          label={t('Meter number')}
           error={errors.meterNumber}
-          help="Printed on your meter and on your token receipt. Shared meter? Enter your landlord's meter number."
+          help={t(
+            "Printed on your meter and on your token receipt. Shared meter? Enter your landlord's meter number."
+          )}
         >
           <input
             id="meter"
@@ -238,7 +248,7 @@ export default function Register() {
         </Field>
 
         <div className="grid gap-3.5 sm:grid-cols-2">
-          <Field id="cell" label="Cell" error={errors.cell}>
+          <Field id="cell" label={t('Cell')} error={errors.cell}>
             <input
               id="cell"
               type="text"
@@ -253,7 +263,7 @@ export default function Register() {
               }}
             />
           </Field>
-          <Field id="village" label="Village" hint="(optional)">
+          <Field id="village" label={t('Village')} hint={t('(optional)')}>
             <input
               id="village"
               type="text"
@@ -265,12 +275,12 @@ export default function Register() {
           </Field>
         </div>
 
-        <Field id="landmark" label="Landmark" hint="(optional)">
+        <Field id="landmark" label={t('Landmark')} hint={t('(optional)')}>
           <input
             id="landmark"
             type="text"
             autoComplete="off"
-            placeholder="For example: near the blue gate"
+            placeholder={t('For example: near the blue gate')}
             className="field"
             value={landmark}
             onChange={(event) => setLandmark(event.target.value)}
@@ -285,7 +295,11 @@ export default function Register() {
           disabled={locating}
         >
           <LocateFixed size={18} aria-hidden="true" />
-          {locating ? 'Finding your location…' : point ? 'Update my location' : 'Use my location'}
+          {locating
+            ? t('Finding your location…')
+            : point
+              ? t('Update my location')
+              : t('Use my location')}
         </button>
         {errors.location && (
           <span role="alert" className="text-sm font-semibold text-red">
@@ -294,8 +308,8 @@ export default function Register() {
         )}
         {point && (
           <div role="status" className="text-sm">
-            <div className="font-semibold">Location found</div>
-            <div className="text-grey">{accuracyText(point.accuracyM)}</div>
+            <div className="font-semibold">{t('Location found')}</div>
+            <div className="text-grey">{accuracyText(point.accuracyM, t)}</div>
           </div>
         )}
         {locationNote && (
@@ -309,7 +323,7 @@ export default function Register() {
               markers={markers}
               interactive={false}
               className="h-40"
-              ariaLabel="Map showing the location your phone found"
+              ariaLabel={t('Map showing the location your phone found')}
             />
           </div>
         )}
@@ -318,13 +332,13 @@ export default function Register() {
       <FormError>{formError}</FormError>
 
       <button type="submit" className="btn btn-accent btn-lg w-full" disabled={submitting}>
-        {submitting ? 'Creating your account…' : 'Create account'}
+        {submitting ? t('Creating your account…') : t('Create account')}
       </button>
 
       <p className="m-0 text-center text-sm text-grey">
-        Already registered?{' '}
+        {t('Already registered?')}{' '}
         <Link to="/login" className="font-semibold text-accent">
-          Sign in
+          {t('Sign in')}
         </Link>
       </p>
     </form>

@@ -1,3 +1,4 @@
+import { useT } from '../../../src/context/LanguageContext.js';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -21,6 +22,7 @@ import { colors, fonts, radius } from '../../../src/theme.js';
 const isToday = (value) => value && new Date(value).toDateString() === new Date().toDateString();
 
 export default function TechnicianDashboard() {
+  const t = useT();
   const { user } = useAuth();
   const router = useRouter();
   const state = useApi('/faults', { interval: 5000 });
@@ -38,7 +40,7 @@ export default function TechnicianDashboard() {
     <Screen>
       <View style={styles.greetingRow}>
         <View>
-          <Text style={styles.greeting}>{greeting()},</Text>
+          <Text style={styles.greeting}>{t(greeting())},</Text>
           <Text accessibilityRole="header" style={styles.name}>
             {firstNames(user.name)}
           </Text>
@@ -51,9 +53,9 @@ export default function TechnicianDashboard() {
           <>
             <View style={styles.stats}>
               {[
-                ["Today's assignments", assignedToday.length],
-                ['Pending', faults.filter(isOpen).length],
-                ['Completed today', completedToday.length],
+                [t("Today's assignments"), assignedToday.length],
+                [t('Pending'), faults.filter(isOpen).length],
+                [t('Completed today'), completedToday.length],
               ].map(([label, value]) => (
                 <Panel key={label} style={styles.stat}>
                   <Text style={styles.statLabel}>{label}</Text>
@@ -63,14 +65,18 @@ export default function TechnicianDashboard() {
             </View>
 
             {active ? (
-              <Panel accessibilityLabel="Next job">
+              <Panel accessibilityLabel={t('Next job')}>
                 <View style={styles.activeHead}>
-                  <Text style={styles.activeHeadTitle}>Next job</Text>
-                  <Text style={styles.activeHeadNote}>Assigned {timeAgo(active.assignedAt)}</Text>
+                  <Text style={styles.activeHeadTitle}>{t('Next job')}</Text>
+                  <Text style={styles.activeHeadNote}>
+                    {t('Assigned {when}', { when: timeAgo(active.assignedAt, t) })}
+                  </Text>
                 </View>
                 <View style={styles.activeBody}>
-                  <Text style={styles.ref}>Fault #{active.reference}</Text>
-                  <Text style={styles.activeTitle}>{CATEGORY_LABEL[active.category]}</Text>
+                  <Text style={styles.ref}>
+                    {t('Fault #{reference}', { reference: active.reference })}
+                  </Text>
+                  <Text style={styles.activeTitle}>{t(CATEGORY_LABEL[active.category])}</Text>
                   <Text style={styles.activeLocation}>{locationLine(active.serviceLocation)}</Text>
                   {active.serviceLocation.landmark ? (
                     <Text style={styles.text}>{active.serviceLocation.landmark}</Text>
@@ -82,29 +88,29 @@ export default function TechnicianDashboard() {
                 </View>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="Open job"
+                  accessibilityLabel={t('Open job')}
                   onPress={() => open(active.id)}
                   style={({ pressed }) => [styles.openBar, pressed && { opacity: 0.85 }]}
                 >
-                  <Text style={styles.openText}>Open job</Text>
+                  <Text style={styles.openText}>{t('Open job')}</Text>
                   <Feather name="chevron-right" size={20} color={colors.onAccent} />
                 </Pressable>
               </Panel>
             ) : (
-              <EmptyState title="No active job">
-                New jobs assigned by the service coordinator appear here automatically.
+              <EmptyState title={t('No active job')}>
+                {t('New jobs assigned by the service coordinator appear here automatically.')}
               </EmptyState>
             )}
 
             {pending.length > 0 ? (
               <View style={{ gap: 12 }}>
-                <Text style={styles.sectionTitle}>Waiting</Text>
+                <Text style={styles.sectionTitle}>{t('Waiting')}</Text>
                 {pending.map((fault) => (
                   <Pressable key={fault.id} accessibilityRole="link" onPress={() => open(fault.id)}>
                     <Panel style={styles.row}>
                       <FaultIcon category={fault.category} />
                       <View style={{ flex: 1 }}>
-                        <Text style={styles.rowTitle}>{CATEGORY_LABEL[fault.category]}</Text>
+                        <Text style={styles.rowTitle}>{t(CATEGORY_LABEL[fault.category])}</Text>
                         <Text numberOfLines={1} style={styles.ref}>
                           #{fault.reference} · {locationLine(fault.serviceLocation)}
                         </Text>

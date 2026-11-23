@@ -1,25 +1,28 @@
 import { Feather } from '@expo/vector-icons';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useT } from '../context/LanguageContext.js';
 import { colors, fonts, radius } from '../theme.js';
 import { Eyebrow } from './Bits.js';
 
 export function Loading({ label = 'Loading' }) {
+  const t = useT();
   return (
     <View accessibilityRole="progressbar" style={[styles.box, styles.centerRow]}>
       <ActivityIndicator color={colors.muted} />
-      <Eyebrow style={{ color: colors.muted }}>{label}…</Eyebrow>
+      <Eyebrow style={{ color: colors.muted }}>{t(label)}…</Eyebrow>
     </View>
   );
 }
 
 export function OutlineButton({ label, onPress, style }) {
+  const t = useT();
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => [styles.outline, pressed && styles.pressed, style]}
     >
-      <Text style={styles.outlineText}>{label}</Text>
+      <Text style={styles.outlineText}>{t(label)}</Text>
     </Pressable>
   );
 }
@@ -28,6 +31,7 @@ export function OutlineButton({ label, onPress, style }) {
 export const isOffline = (error) => error?.status === 0;
 
 export function ErrorState({ error, onRetry }) {
+  const t = useT();
   const offline = isOffline(error);
   return (
     <View accessibilityRole="alert" style={styles.errorBox}>
@@ -39,9 +43,11 @@ export function ErrorState({ error, onRetry }) {
           style={{ marginTop: 2 }}
         />
         <View style={{ flex: 1 }}>
-          <Text style={styles.errorTitle}>{offline ? 'No connection' : 'This did not load'}</Text>
+          <Text style={styles.errorTitle}>
+            {offline ? t('No connection') : t('This did not load')}
+          </Text>
           <Text style={styles.errorMessage}>
-            {error?.message || 'Could not load this. Check your connection and try again.'}
+            {error?.message || t('Could not load this. Check your connection and try again.')}
           </Text>
         </View>
       </View>
@@ -89,12 +95,13 @@ export function Async({ state, label, children }) {
 
 /** Shown above already-loaded content when a refresh fails because the connection is down. */
 export function OfflineStrip({ onRetry }) {
+  const t = useT();
   return (
     <View accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.offline}>
       <Feather name="wifi-off" size={16} color={colors.ink} />
-      <Text style={styles.offlineText}>No connection. Showing the last update.</Text>
+      <Text style={styles.offlineText}>{t('No connection. Showing the last update.')}</Text>
       <Pressable accessibilityRole="button" onPress={onRetry} hitSlop={8}>
-        <Text style={styles.offlineAction}>Try again</Text>
+        <Text style={styles.offlineAction}>{t('Try again')}</Text>
       </Pressable>
     </View>
   );

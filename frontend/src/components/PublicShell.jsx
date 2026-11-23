@@ -1,10 +1,13 @@
 import { useEffect } from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import Backdrop from './Backdrop.jsx';
+import { useT } from '../context/LanguageContext.jsx';
 import { LogoMark, PilotBanner } from './Brand.jsx';
+import LanguageSwitch from './LanguageSwitch.jsx';
 
 /** The frame for pages anyone can open, with no account: the report form and the tracking page. */
 export default function PublicShell() {
+  const t = useT();
   // A tracking link is a key, so other sites may see where the visitor came from but never the path.
   // Not 'no-referrer': the map's tile server refuses requests that carry no Referer at all.
   useEffect(() => {
@@ -25,19 +28,22 @@ export default function PublicShell() {
             <LogoMark />
             <span className="heading-weight text-xl tracking-[-0.02em]">Umuriro</span>
           </Link>
-          <Link
-            to="/login"
-            className="inline-flex min-h-11 items-center text-sm font-semibold text-accent"
-          >
-            Sign in
-          </Link>
+          <div className="flex items-center gap-4">
+            <LanguageSwitch />
+            <Link
+              to="/login"
+              className="inline-flex min-h-11 items-center text-sm font-semibold text-accent"
+            >
+              {t('Sign in')}
+            </Link>
+          </div>
         </header>
         <main className="mx-auto flex w-full max-w-[1100px] flex-1 flex-col gap-3.5 px-5 pb-8 pt-3 md:gap-6 md:px-8 md:pb-12">
           <Outlet />
         </main>
         <footer className="px-5 pb-6 text-center md:px-8">
           <Link to="/privacy" className="text-xs text-grey">
-            Privacy policy
+            {t('Privacy policy')}
           </Link>
         </footer>
       </div>

@@ -18,7 +18,7 @@ which keeps free-tier hosting simple. Push is a courtesy on top of in-app notifi
 
 | Role        | Client       | Can do                                                              |
 | ----------- | ------------ | ------------------------------------------------------------------- |
-| Guest       | Web          | Report with a phone number and place; follow by private SMS link    |
+| Guest       | Web, Android | Report with a phone number and place; follow by private link or SMS |
 | Customer    | Web, Android | Report (optional photo), track on a timeline and map, notifications |
 | Technician  | Web, Android | See jobs, update status, resolve with outcome, share location       |
 | Coordinator | Web          | See and filter all faults, assign, set priority, cancel, analytics  |
@@ -106,6 +106,19 @@ most about 1 MB (prototype choice). Never edit an applied migration in `backend/
 - Some web files are copied verbatim (`statusTone.js`, `reportSteps.js`, `landingCopy.js`) and kept in step by
   `frontend/src/lib/sharedWithMobile.test.js`.
 - MapLibre with OpenFreeMap tiles (no key). Foreground location is shared while a job is active.
+
+## Languages (English and Kinyarwanda)
+
+- Screens call `t('English text')`. The English text is the key; `lib/messages.rw.js` maps it to Kinyarwanda, and a
+  text with no entry shows in English. `lib/i18n.js` and `messages.rw.js` are copied verbatim into `mobile/src/lib/`
+  (`sharedWithMobile.test.js` keeps them equal). `i18n.test.js` fails when a translated screen uses a text that has
+  no Kinyarwanda entry.
+- The EN | RW switch saves the choice on the device (`localStorage` on the web, SecureStore on Android).
+- When someone is signed in, `LanguageSync` saves the choice on their account (`PATCH /auth/language`,
+  `User.language`). The backend writes notifications in that language (`domain/notificationText.js`), so the bell,
+  the push and the SMS match. Guests have no account, so their texts stay in English.
+- Not translated yet: the coordinator pages, the privacy policy and error messages from the API.
+- Deploy order: `npx prisma migrate deploy` (adds `User.language`) before the new backend serves traffic.
 
 ## Quality gates
 

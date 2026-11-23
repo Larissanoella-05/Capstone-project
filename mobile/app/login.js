@@ -15,7 +15,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Eyebrow } from '../src/components/Bits.js';
 import { Brand } from '../src/components/Brand.js';
 import { FormError } from '../src/components/States.js';
+import LanguageSwitch from '../src/components/LanguageSwitch.js';
 import { useAuth } from '../src/context/AuthContext.js';
+import { useT } from '../src/context/LanguageContext.js';
 import { isDemoLogin } from '../src/lib/demo.js';
 import { identifierError } from '../src/lib/registration.js';
 import Backdrop from '../src/components/Backdrop.js';
@@ -47,6 +49,7 @@ const SLOW_AFTER_MS = 5000;
 
 export default function Login() {
   const { login } = useAuth();
+  const t = useT();
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
@@ -81,8 +84,8 @@ export default function Login() {
   async function onSubmit() {
     const nextErrors = {};
     const problem = identifierError(identifier);
-    if (problem) nextErrors.identifier = problem;
-    if (!password) nextErrors.password = 'Enter your password.';
+    if (problem) nextErrors.identifier = t(problem);
+    if (!password) nextErrors.password = t('Enter your password.');
     setErrors(nextErrors);
     setFormError('');
     if (Object.keys(nextErrors).length) return;
@@ -113,25 +116,28 @@ export default function Login() {
         <View style={[styles.hero, { paddingTop: insets.top + 16 }]}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Back"
+            accessibilityLabel={t('Back')}
             onPress={() => router.back()}
             style={styles.back}
           >
             <Feather name="arrow-left" size={22} color={colors.ink} />
           </Pressable>
           <Brand />
+          <View style={{ flex: 1, alignItems: 'flex-end' }}>
+            <LanguageSwitch />
+          </View>
         </View>
 
         <View style={[styles.form, { paddingBottom: insets.bottom + 32 }]}>
           <View>
-            <Eyebrow>Sign in</Eyebrow>
+            <Eyebrow>{t('Sign in')}</Eyebrow>
             <Text accessibilityRole="header" style={styles.formTitle}>
-              Login
+              {t('Login')}
             </Text>
           </View>
 
           <View style={{ gap: 8 }}>
-            <Eyebrow>Signing in as</Eyebrow>
+            <Eyebrow>{t('Signing in as')}</Eyebrow>
             <View accessibilityRole="radiogroup" style={styles.roles}>
               {ROLES.map((item) => {
                 const active = item.key === role.key;
@@ -148,41 +154,43 @@ export default function Login() {
                       size={20}
                       color={active ? colors.accent : colors.ink}
                     />
-                    <Text style={styles.roleLabel}>{item.label}</Text>
+                    <Text style={styles.roleLabel}>{t(item.label)}</Text>
                   </Pressable>
                 );
               })}
             </View>
             <Text style={styles.hint}>
-              {DEMO ? `${role.blurb} Signing in as ${role.person}.` : role.blurb}
+              {DEMO
+                ? `${t(role.blurb)} ${t('Signing in as {name}', { name: role.person })}.`
+                : t(role.blurb)}
             </Text>
           </View>
 
           <View style={{ gap: 8 }}>
-            <Eyebrow>Email or phone</Eyebrow>
+            <Eyebrow>{t('Email or phone')}</Eyebrow>
             <TextInput
               value={identifier}
               onChangeText={setIdentifier}
-              placeholder="Email or 078 123 4567"
+              placeholder={t('Email or 078 123 4567')}
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="username"
               autoCorrect={false}
-              accessibilityLabel="Email or phone"
+              accessibilityLabel={t('Email or phone')}
               style={[styles.field, errors.identifier && styles.fieldInvalid]}
             />
             {errors.identifier ? <Text style={styles.fieldError}>{errors.identifier}</Text> : null}
           </View>
 
           <View style={{ gap: 8 }}>
-            <Eyebrow>Password</Eyebrow>
+            <Eyebrow>{t('Password')}</Eyebrow>
             <TextInput
               value={password}
               onChangeText={setPassword}
               secureTextEntry
               autoCapitalize="none"
               autoComplete="current-password"
-              accessibilityLabel="Password"
+              accessibilityLabel={t('Password')}
               onSubmitEditing={onSubmit}
               style={[styles.field, errors.password && styles.fieldInvalid]}
             />
@@ -190,7 +198,7 @@ export default function Login() {
               <Text style={styles.fieldError}>{errors.password}</Text>
             ) : DEMO ? (
               <Text style={styles.hint}>
-                Prototype: every demo account uses the password{' '}
+                {t('Prototype: every demo account uses the password')}{' '}
                 <Text style={{ fontFamily: fonts.medium }}>demo1234</Text>.
               </Text>
             ) : null}
@@ -205,12 +213,12 @@ export default function Login() {
             onPress={onSubmit}
             style={({ pressed }) => [styles.submit, (submitting || pressed) && { opacity: 0.75 }]}
           >
-            <Text style={styles.submitText}>{submitting ? 'Signing in…' : 'Sign in'}</Text>
+            <Text style={styles.submitText}>{submitting ? t('Signing in…') : t('Sign in')}</Text>
           </Pressable>
 
           {slow ? (
             <Text accessibilityLiveRegion="polite" style={styles.hint}>
-              Waking the server, this can take up to a minute…
+              {t('Waking the server, this can take up to a minute…')}
             </Text>
           ) : null}
 

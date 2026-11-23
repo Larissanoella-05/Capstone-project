@@ -1,3 +1,4 @@
+import { useT } from '../../../../src/context/LanguageContext.js';
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
@@ -14,6 +15,7 @@ import {
 import { colors, fonts, radius } from '../../../../src/theme.js';
 
 export default function JobClosed() {
+  const t = useT();
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const state = useApi(`/faults/${id}`);
@@ -28,10 +30,10 @@ export default function JobClosed() {
                 <Feather name="check" size={32} color={colors.onAccent} />
               </View>
               <Text accessibilityRole="header" style={styles.title}>
-                Job closed
+                {t('Job closed')}
               </Text>
               <Text style={styles.note}>
-                Fault marked as resolved. The customer has been notified.
+                {t('Fault marked as resolved. The customer has been notified.')}
               </Text>
             </View>
 
@@ -39,9 +41,9 @@ export default function JobClosed() {
               <KeyRow label="Fault ID" mono>
                 {fault.reference}
               </KeyRow>
-              <KeyRow label="Category">{CATEGORY_LABEL[fault.category]}</KeyRow>
+              <KeyRow label="Category">{t(CATEGORY_LABEL[fault.category])}</KeyRow>
               <KeyRow label="Location">{locationLine(fault.serviceLocation)}</KeyRow>
-              <KeyRow label="Outcome">{OUTCOME_LABEL[fault.outcome] ?? 'Resolved'}</KeyRow>
+              <KeyRow label="Outcome">{t(OUTCOME_LABEL[fault.outcome] ?? 'Resolved')}</KeyRow>
               <KeyRow label="Completed" last>
                 {fmtTime(fault.resolvedAt)}
               </KeyRow>

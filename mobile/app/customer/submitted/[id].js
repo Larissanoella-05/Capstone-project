@@ -1,3 +1,4 @@
+import { useT } from '../../../src/context/LanguageContext.js';
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
@@ -12,6 +13,8 @@ import { colors, fonts, radius } from '../../../src/theme.js';
 export default function Submitted() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const t = useT();
+
   const state = useApi(`/faults/${id}`);
 
   return (
@@ -24,16 +27,18 @@ export default function Submitted() {
                 <Feather name="check" size={32} color={colors.onAccent} />
               </View>
               <Text accessibilityRole="header" style={styles.title}>
-                Fault report submitted
+                {t('Fault report submitted')}
               </Text>
-              <Text style={styles.reference}>Reference #{fault.reference}</Text>
+              <Text style={styles.reference}>
+                {t('Reference #{reference}', { reference: fault.reference })}
+              </Text>
             </View>
 
             <Panel style={{ paddingHorizontal: 16, paddingVertical: 4 }}>
               <KeyRow label="Report ID" mono>
                 {fault.reference}
               </KeyRow>
-              <KeyRow label="Category">{CATEGORY_LABEL[fault.category]}</KeyRow>
+              <KeyRow label="Category">{t(CATEGORY_LABEL[fault.category])}</KeyRow>
               <KeyRow label="Location">{locationLine(fault.serviceLocation)}</KeyRow>
               <KeyRow label="Reported">{fmtTime(fault.reportedAt)}</KeyRow>
               <KeyRow label="Status" last>
@@ -42,12 +47,13 @@ export default function Submitted() {
             </Panel>
 
             <Text style={styles.note}>
-              A service coordinator will now assign a technician. The technician is sent to your
-              registered service location, so you do not need to call to give directions.
+              {t(
+                'A service coordinator will now assign a technician. The technician is sent to your registered service location, so you do not need to call to give directions.'
+              )}
             </Text>
 
             <Panel>
-              <PanelHead>What happens next</PanelHead>
+              <PanelHead>{t('What happens next')}</PanelHead>
               <Timeline fault={fault} audience="customer" />
             </Panel>
 

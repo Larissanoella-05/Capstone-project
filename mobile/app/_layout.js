@@ -16,6 +16,8 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '../src/context/AuthContext.js';
+import LanguageSync from '../src/components/LanguageSync.js';
+import { LanguageProvider } from '../src/context/LanguageContext.js';
 import { ToastProvider } from '../src/context/ToastContext.js';
 
 import { usePushRegistration } from '../src/hooks/usePushRegistration.js';
@@ -83,6 +85,8 @@ function RootStack() {
         <Stack.Screen name="index" />
         {/* Open to everyone: a signed-in user reaches it from the home icon in the header. */}
         <Stack.Screen name="landing" />
+        {/* Reporting a fault needs no account, so these screens are open to everyone too. */}
+        <Stack.Screen name="guest" />
         <Stack.Protected guard={!user}>
           <Stack.Screen name="login" />
           <Stack.Screen name="register" />
@@ -103,12 +107,15 @@ function RootStack() {
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <ToastProvider>
-          <StatusBar style="dark" />
-          <RootStack />
-        </ToastProvider>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <StatusBar style="dark" />
+            <LanguageSync />
+            <RootStack />
+          </ToastProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </SafeAreaProvider>
   );
 }

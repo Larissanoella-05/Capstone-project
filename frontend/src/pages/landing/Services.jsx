@@ -1,9 +1,12 @@
-import { SERVICES } from '../../lib/landingContent.js';
+import { useTranslated } from '../../context/LanguageContext.jsx';
+import { SERVICES as SERVICES_COPY } from '../../lib/landingContent.js';
 import { ArrowUpRight, LoginLink } from './LandingBits.jsx';
 
 const DELAYS = ['', 'lp-d2', 'lp-d3', 'lp-d4'];
 
 export default function Services({ seen }) {
+  const SERVICES = useTranslated(SERVICES_COPY);
+
   return (
     <section id="services" className={`lp-sec lp-alt ${seen ? 'lp-seen' : ''}`}>
       <div className="lp-bgd lp-cct" aria-hidden="true" style={{ inset: 0, opacity: 0.8 }} />

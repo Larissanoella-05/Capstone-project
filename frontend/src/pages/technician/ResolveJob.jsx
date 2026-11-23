@@ -1,3 +1,4 @@
+import { useT } from '../../context/LanguageContext.jsx';
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
@@ -8,6 +9,8 @@ import { KeyRow } from '../../components/Bits.jsx';
 import { Async, FormError } from '../../components/States.jsx';
 
 export default function ResolveJob() {
+  const t = useT();
+
   const { id } = useParams();
   const navigate = useNavigate();
   const state = useApi(`/faults/${id}`);
@@ -24,8 +27,8 @@ export default function ResolveJob() {
     event.preventDefault();
     const nextErrors = {};
     if (resolutionNote.trim().length < 5)
-      nextErrors.resolutionNote = 'Describe how the fault was resolved.';
-    if (!workCompleted.trim()) nextErrors.workCompleted = 'List the work that was completed.';
+      nextErrors.resolutionNote = t('Describe how the fault was resolved.');
+    if (!workCompleted.trim()) nextErrors.workCompleted = t('List the work that was completed.');
     setErrors(nextErrors);
     setFormError('');
     if (Object.keys(nextErrors).length) return;
@@ -62,31 +65,33 @@ export default function ResolveJob() {
               className="flex items-center gap-2 self-start text-sm font-semibold no-underline"
             >
               <ArrowLeft size={16} aria-hidden="true" />
-              Job details
+              {t('Job details')}
             </Link>
 
             <div>
-              <div className="eyebrow">Fault #{fault.reference}</div>
-              <h1 className="display mt-1.5 text-[26px]">Close job</h1>
+              <div className="eyebrow">
+                {t('Fault #{reference}', { reference: fault.reference })}
+              </div>
+              <h1 className="display mt-1.5 text-[26px]">{t('Close job')}</h1>
             </div>
 
             <div className="grid gap-5 lg:grid-cols-2 lg:items-start lg:gap-8">
               <div className="flex min-w-0 flex-col gap-5">
                 <section className="panel px-4 py-1">
-                  <KeyRow label="Fault ID" mono>
+                  <KeyRow label={t('Fault ID')} mono>
                     {fault.reference}
                   </KeyRow>
-                  <KeyRow label="Category">{CATEGORY_LABEL[fault.category]}</KeyRow>
-                  <KeyRow label="Location">{locationLine(fault.serviceLocation)}</KeyRow>
-                  <KeyRow label="Arrival">{fmtTime(fault.arrivedAt)}</KeyRow>
-                  <KeyRow label="Completed" last>
-                    {fmtTime(new Date())} (now)
+                  <KeyRow label={t('Category')}>{t(CATEGORY_LABEL[fault.category])}</KeyRow>
+                  <KeyRow label={t('Location')}>{locationLine(fault.serviceLocation)}</KeyRow>
+                  <KeyRow label={t('Arrival')}>{fmtTime(fault.arrivedAt)}</KeyRow>
+                  <KeyRow label={t('Completed')} last>
+                    {fmtTime(new Date())} ({t('now')})
                   </KeyRow>
                 </section>
 
                 <div className="flex flex-col gap-2">
                   <label htmlFor="outcome" className="eyebrow">
-                    Outcome
+                    {t('Outcome')}
                   </label>
                   <select
                     id="outcome"
@@ -96,7 +101,7 @@ export default function ResolveJob() {
                   >
                     {OUTCOMES.map((item) => (
                       <option key={item.value} value={item.value}>
-                        {item.label}
+                        {t(item.label)}
                       </option>
                     ))}
                   </select>
@@ -106,13 +111,13 @@ export default function ResolveJob() {
               <div className="flex min-w-0 flex-col gap-5">
                 <div className="flex flex-col gap-2">
                   <label htmlFor="resolution-note" className="eyebrow">
-                    Resolution description
+                    {t('Resolution description')}
                   </label>
                   <textarea
                     id="resolution-note"
                     rows={3}
                     className="field"
-                    placeholder="What was wrong and how it was fixed."
+                    placeholder={t('What was wrong and how it was fixed.')}
                     value={resolutionNote}
                     aria-invalid={Boolean(errors.resolutionNote)}
                     onChange={(event) => {
@@ -126,20 +131,22 @@ export default function ResolveJob() {
                     </span>
                   ) : (
                     <span className="text-sm text-muted">
-                      An outcome note is required before a fault can be resolved.
+                      {t('An outcome note is required before a fault can be resolved.')}
                     </span>
                   )}
                 </div>
 
                 <div className="flex flex-col gap-2">
                   <label htmlFor="work-completed" className="eyebrow">
-                    Work completed
+                    {t('Work completed')}
                   </label>
                   <textarea
                     id="work-completed"
                     rows={3}
                     className="field"
-                    placeholder="For example: replaced service fuse, tightened terminals, tested supply at the meter."
+                    placeholder={t(
+                      'For example: replaced service fuse, tightened terminals, tested supply at the meter.'
+                    )}
                     value={workCompleted}
                     aria-invalid={Boolean(errors.workCompleted)}
                     onChange={(event) => {
@@ -156,13 +163,13 @@ export default function ResolveJob() {
 
                 <div className="flex flex-col gap-2">
                   <label htmlFor="contacts" className="eyebrow">
-                    Clarification contacts
+                    {t('Clarification contacts')}
                   </label>
                   <div className="flex overflow-hidden rounded-control border border-border bg-white">
                     <button
                       type="button"
                       className="h-12 w-14 cursor-pointer border-0 border-r border-border bg-white text-xl heading-weight"
-                      aria-label="One fewer"
+                      aria-label={t('One fewer')}
                       onClick={() => setContacts((n) => Math.max(0, n - 1))}
                     >
                       −
@@ -182,14 +189,16 @@ export default function ResolveJob() {
                     <button
                       type="button"
                       className="h-12 w-14 cursor-pointer border-0 border-l border-border bg-white text-xl heading-weight"
-                      aria-label="One more"
+                      aria-label={t('One more')}
                       onClick={() => setContacts((n) => Math.min(50, n + 1))}
                     >
                       +
                     </button>
                   </div>
                   <span className="text-sm text-muted">
-                    How many times you had to call or message the customer to find the location.
+                    {t(
+                      'How many times you had to call or message the customer to find the location.'
+                    )}
                   </span>
                 </div>
               </div>
@@ -198,8 +207,9 @@ export default function ResolveJob() {
             <FormError>{formError}</FormError>
 
             <p className="m-0 text-sm text-muted">
-              The customer will be notified and the fault closed. Status times cannot be edited
-              afterwards.
+              {t(
+                'The customer will be notified and the fault closed. Status times cannot be edited afterwards.'
+              )}
             </p>
             <div className="sticky-bar">
               <button
@@ -207,7 +217,7 @@ export default function ResolveJob() {
                 className="btn btn-volt btn-lg w-full lg:w-auto lg:px-12"
                 disabled={submitting}
               >
-                {submitting ? 'Saving…' : 'Mark as resolved'}
+                {submitting ? t('Saving…') : t('Mark as resolved')}
               </button>
             </div>
           </form>

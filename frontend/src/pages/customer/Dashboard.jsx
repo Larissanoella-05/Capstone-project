@@ -1,3 +1,4 @@
+import { useT } from '../../context/LanguageContext.jsx';
 import { Phone, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -17,6 +18,7 @@ import { StatusPill } from '../../components/Pills.jsx';
 import { Async, EmptyState } from '../../components/States.jsx';
 
 export default function CustomerDashboard() {
+  const t = useT();
   const { user } = useAuth();
   const state = useApi('/faults', { interval: 5000 });
 
@@ -28,10 +30,10 @@ export default function CustomerDashboard() {
     <>
       <div className="flex flex-col gap-1.5">
         <div className="text-sm text-grey">
-          {greeting()}, {firstNames(user.name)}
+          {t(greeting())}, {firstNames(user.name)}
         </div>
         <h1 className="display text-[26px]">
-          {current ? 'Your fault is being handled' : 'Is your electricity not working?'}
+          {current ? t('Your fault is being handled') : t('Is your electricity not working?')}
         </h1>
       </div>
 
@@ -41,9 +43,10 @@ export default function CustomerDashboard() {
             {current ? (
               <CurrentFault fault={current} />
             ) : (
-              <EmptyState title="No open fault">
-                Nothing in progress. If your power is out or something is wrong at the meter, report
-                it and we will send a technician.
+              <EmptyState title={t('No open fault')}>
+                {t(
+                  'Nothing in progress. If your power is out or something is wrong at the meter, report it and we will send a technician.'
+                )}
               </EmptyState>
             )}
 
@@ -53,7 +56,7 @@ export default function CustomerDashboard() {
                 className="flex min-h-28 flex-col justify-between rounded-card bg-accent p-4 text-on-accent no-underline shadow-sm"
               >
                 <Zap size={26} strokeWidth={1.75} aria-hidden="true" />
-                <span className="heading-weight text-base">Report a fault</span>
+                <span className="heading-weight text-base">{t('Report a fault')}</span>
               </Link>
               <a
                 href="tel:2727"
@@ -61,24 +64,24 @@ export default function CustomerDashboard() {
               >
                 <Phone size={26} strokeWidth={1.75} className="text-accent" aria-hidden="true" />
                 <span>
-                  <span className="heading-weight block text-base">Real emergency?</span>
-                  <span className="block text-xs text-grey">Call 2727</span>
+                  <span className="heading-weight block text-base">{t('Real emergency?')}</span>
+                  <span className="block text-xs text-grey">{t('Call 2727')}</span>
                 </span>
               </a>
             </div>
 
-            <section className="flex flex-col gap-3" aria-label="Recent reports">
+            <section className="flex flex-col gap-3" aria-label={t('Recent reports')}>
               <div className="flex items-center justify-between pt-1.5">
-                <h2 className="heading-weight m-0 text-base">Recent reports</h2>
+                <h2 className="heading-weight m-0 text-base">{t('Recent reports')}</h2>
                 <Link
                   to="/customer/reports"
                   className="relative text-sm font-semibold text-accent after:absolute after:-inset-y-3 after:inset-x-0 after:content-['']"
                 >
-                  View all
+                  {t('View all')}
                 </Link>
               </div>
               {recent.length === 0 ? (
-                <p className="m-0 text-sm text-grey">No reports yet.</p>
+                <p className="m-0 text-sm text-grey">{t('No reports yet.')}</p>
               ) : (
                 recent.map((fault) => (
                   <Link
@@ -89,10 +92,10 @@ export default function CustomerDashboard() {
                     <FaultIcon category={fault.category} />
                     <div className="min-w-0 flex-1">
                       <div className="heading-weight text-[15px]">
-                        {CATEGORY_LABEL[fault.category]}
+                        {t(CATEGORY_LABEL[fault.category])}
                       </div>
                       <div className="text-[11px] text-grey">
-                        #{fault.reference} · {timeAgo(fault.reportedAt)}
+                        #{fault.reference} · {timeAgo(fault.reportedAt, t)}
                       </div>
                     </div>
                     <StatusPill status={fault.status} />
@@ -108,13 +111,14 @@ export default function CustomerDashboard() {
 }
 
 function CurrentFault({ fault }) {
+  const t = useT();
   return (
     <StatusCard
-      eyebrow={`Current status · Fault #${fault.reference}`}
-      title={CUSTOMER_HEADLINE[fault.status]}
-      updated={`Last updated ${timeAgo(fault.updatedAt)}`}
+      eyebrow={t('Current status · Fault #{reference}', { reference: fault.reference })}
+      title={t(CUSTOMER_HEADLINE[fault.status])}
+      updated={t('Last updated {when}', { when: timeAgo(fault.updatedAt, t) })}
     >
-      <KeyRow label="Technician">{fault.technician?.name ?? 'Not assigned yet'}</KeyRow>
+      <KeyRow label="Technician">{fault.technician?.name ?? t('Not assigned yet')}</KeyRow>
       <KeyRow label="Location" last>
         {locationLine(fault.serviceLocation)}
       </KeyRow>
@@ -122,7 +126,7 @@ function CurrentFault({ fault }) {
         <Stepper status={fault.status} />
       </div>
       <Link to={`/customer/faults/${fault.id}`} className="btn btn-ink mt-4 w-full">
-        Track live
+        {t('Track live')}
       </Link>
     </StatusCard>
   );

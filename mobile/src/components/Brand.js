@@ -1,5 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
+import { useT } from '../context/LanguageContext.js';
 import { colors, fonts, radius } from '../theme.js';
 
 export function Brand({ onDark = false, iconSize = 22 }) {
@@ -12,10 +13,11 @@ export function Brand({ onDark = false, iconSize = 22 }) {
 }
 
 export function PilotBanner() {
+  const t = useT();
   return (
     <View style={styles.banner}>
-      <Text style={styles.pilot}>PILOT</Text>
-      <Text style={styles.bannerText}>Test reports only. Real fault: call 2727.</Text>
+      <Text style={styles.pilot}>{t('PILOT')}</Text>
+      <Text style={styles.bannerText}>{t('Test reports only. Real fault: call 2727.')}</Text>
     </View>
   );
 }

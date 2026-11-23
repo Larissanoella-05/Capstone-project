@@ -4,8 +4,8 @@ import { env } from '../config/env.js';
 import { requireAuth, signToken } from '../middleware/auth.js';
 import { createRateLimiter } from '../middleware/rateLimit.js';
 import { validate } from '../middleware/validate.js';
-import { findUserByIdentifier, registerCustomer } from '../services/authService.js';
-import { loginSchema, registerSchema } from '../validators/auth.schemas.js';
+import { findUserByIdentifier, registerCustomer, setLanguage } from '../services/authService.js';
+import { languageSchema, loginSchema, registerSchema } from '../validators/auth.schemas.js';
 import { asyncHandler, unauthorized } from '../utils/httpError.js';
 
 const router = Router();
@@ -40,6 +40,7 @@ function publicUser(user) {
     email: user.email,
     phone: user.phone,
     role: user.role,
+    language: user.language,
     customerId: user.customer?.id ?? null,
     technicianId: user.technician?.id ?? null,
     coordinatorId: user.coordinator?.id ?? null,
@@ -84,5 +85,14 @@ router.post(
 router.get('/me', requireAuth, (req, res) => {
   res.json({ user: publicUser(req.user) });
 });
+
+router.patch(
+  '/language',
+  requireAuth,
+  validate(languageSchema),
+  asyncHandler(async (req, res) => {
+    res.json(await setLanguage(req.user.id, req.body.language));
+  })
+);
 
 export default router;

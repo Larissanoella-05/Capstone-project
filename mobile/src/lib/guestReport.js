@@ -1,5 +1,7 @@
 // Rules and helpers for reporting a fault without an account.
 
+import { plain } from './i18n.js';
+
 const MAX_DESCRIPTION = 1000;
 const MAX_PLACE = 300;
 const MAX_SAVED = 10;
@@ -74,12 +76,14 @@ export function pointFromPosition({ coords }) {
   return point;
 }
 
-/** How far to trust the point, in words. */
-export function accuracyText(metres) {
+/** How far to trust the point, in words. `t` translates it; without one the text stays English. */
+export function accuracyText(metres, t = plain) {
   if (!Number.isFinite(metres)) return '';
-  if (metres <= 50) return `Accurate to about ${metres} m`;
-  if (metres < 1000) return `Roughly ${metres} m, check the place below`;
-  return `Very rough, about ${(metres / 1000).toFixed(1)} km. Describe the place below`;
+  if (metres <= 50) return t('Accurate to about {metres} m', { metres });
+  if (metres < 1000) return t('Roughly {metres} m, check the place below', { metres });
+  return t('Very rough, about {km} km. Describe the place below', {
+    km: (metres / 1000).toFixed(1),
+  });
 }
 
 /** @param {number} code a GeolocationPositionError code: 1 denied, 2 unavailable, 3 timeout */

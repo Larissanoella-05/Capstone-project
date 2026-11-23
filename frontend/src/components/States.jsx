@@ -1,34 +1,37 @@
 import { useEffect, useRef } from 'react';
 import { AlertTriangle, LoaderCircle } from 'lucide-react';
+import { useT } from '../context/LanguageContext.jsx';
 
 export function Loading({ label = 'Loading' }) {
+  const t = useT();
   return (
     <div
       role="status"
       className="flex items-center justify-center gap-3 rounded-card border border-border bg-white px-4 py-10 text-grey"
     >
       <LoaderCircle size={18} className="animate-spin" aria-hidden="true" />
-      <span className="eyebrow">{label}…</span>
+      <span className="eyebrow">{t(label)}…</span>
     </div>
   );
 }
 
 export function ErrorState({ error, onRetry }) {
+  const t = useT();
   return (
     <div role="alert" className="overflow-hidden rounded-card border border-red bg-white">
       <div className="flex items-start gap-3 p-4">
         <AlertTriangle size={20} className="mt-0.5 shrink-0 text-red" aria-hidden="true" />
         <div>
-          <div className="heading-weight text-base">This did not load</div>
+          <div className="heading-weight text-base">{t('This did not load')}</div>
           <p className="mt-1 text-sm">
-            {error?.message || 'Could not load this. Check your connection and try again.'}
+            {error?.message || t('Could not load this. Check your connection and try again.')}
           </p>
         </div>
       </div>
       {onRetry && (
         <div className="border-t border-line p-3">
           <button type="button" className="btn btn-outline w-full" onClick={onRetry}>
-            Try again
+            {t('Try again')}
           </button>
         </div>
       )}
@@ -61,6 +64,7 @@ export function FormError({ children }) {
 
 /** Focus moves here when it appears; `items` come from `errorSummary` in lib/formErrors.js. */
 export function ErrorSummary({ items }) {
+  const t = useT();
   const ref = useRef(null);
   const count = items.length;
   useEffect(() => {
@@ -74,7 +78,7 @@ export function ErrorSummary({ items }) {
       tabIndex={-1}
       className="rounded-card border-2 border-red bg-white p-4 focus:outline-none"
     >
-      <h2 className="heading-weight m-0 text-base text-red">There is a problem</h2>
+      <h2 className="heading-weight m-0 text-base text-red">{t('There is a problem')}</h2>
       <ul className="mb-0 mt-2 list-none p-0 text-sm font-semibold">
         {items.map((item) => (
           <li key={item.id}>

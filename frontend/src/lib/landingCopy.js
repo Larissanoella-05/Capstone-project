@@ -54,7 +54,7 @@ export const FAQ = {
   items: [
     {
       q: 'How do I report a fault?',
-      a: 'Sign in, open the report page, pick the type of fault, confirm your location and send. You get a reference you can use to follow progress.',
+      a: 'Open the report page, pick the type of fault, confirm your location and send. No account is needed. You get a reference and a link you can use to follow progress.',
     },
     {
       q: 'Who gets my report?',
@@ -78,7 +78,7 @@ export const FAQ = {
     },
     {
       q: 'Do I need an account?',
-      a: 'Yes. Sign in with your account to report a fault, so the report is tied to you and you can follow it.',
+      a: 'No. You can report a fault and follow it without one. Sign in only if you have an account and want your reports kept in one list.',
     },
     {
       q: 'How do I know it is fixed?',

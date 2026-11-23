@@ -11,12 +11,15 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext.js';
+import { useT } from '../context/LanguageContext.js';
 import { colors, fonts, radius } from '../theme.js';
 import Backdrop from './Backdrop.js';
 import { Brand, PilotBanner } from './Brand.js';
+import LanguageSwitch from './LanguageSwitch.js';
 
 /** `back` adds a back arrow, for the detail screens that open above the tabs. */
 export function AppHeader({ base, unread = 0, back = false }) {
+  const t = useT();
   const { logout } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -29,7 +32,7 @@ export function AppHeader({ base, unread = 0, back = false }) {
           {back ? (
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Back"
+              accessibilityLabel={t('Back')}
               onPress={() => router.back()}
               style={styles.action}
             >
@@ -38,17 +41,19 @@ export function AppHeader({ base, unread = 0, back = false }) {
           ) : null}
           <Pressable
             accessibilityRole="link"
-            accessibilityLabel="Umuriro, go to your home screen"
+            accessibilityLabel={t('Umuriro, go to your home screen')}
             onPress={() => router.navigate(base)}
             style={[styles.brand, back && { paddingLeft: 0 }]}
           >
             <Brand />
           </Pressable>
         </View>
-        <View style={styles.actions}>
+        <View style={[styles.actions, { alignItems: 'center' }]}>
+          {/* On the detail screens the back arrow takes the room, so the switch stays on the main ones. */}
+          {back ? null : <LanguageSwitch />}
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Landing page"
+            accessibilityLabel={t('Landing page')}
             onPress={() => router.navigate('/landing')}
             style={styles.action}
           >
@@ -56,7 +61,9 @@ export function AppHeader({ base, unread = 0, back = false }) {
           </Pressable>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={unread ? `Notifications, ${unread} unread` : 'Notifications'}
+            accessibilityLabel={
+              unread ? t('Notifications, {count} unread', { count: unread }) : t('Notifications')
+            }
             onPress={() => router.navigate(`${base}/notifications`)}
             style={styles.action}
           >
@@ -69,11 +76,57 @@ export function AppHeader({ base, unread = 0, back = false }) {
           </Pressable>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Sign out"
+            accessibilityLabel={t('Sign out')}
             onPress={logout}
             style={styles.action}
           >
             <Feather name="log-out" size={20} color={colors.ink} />
+          </Pressable>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+/** The header for the screens open to everyone: no account, so no notifications or sign out. */
+export function GuestHeader({ back = false }) {
+  const t = useT();
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+
+  return (
+    <View style={{ backgroundColor: colors.white, paddingTop: insets.top }}>
+      <PilotBanner />
+      <View style={styles.bar}>
+        <View style={styles.left}>
+          {back ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('Back')}
+              onPress={() => router.back()}
+              style={styles.action}
+            >
+              <Feather name="arrow-left" size={22} color={colors.ink} />
+            </Pressable>
+          ) : null}
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel={t('Umuriro, go to the landing page')}
+            onPress={() => router.navigate('/landing')}
+            style={[styles.brand, back && { paddingLeft: 0 }]}
+          >
+            <Brand />
+          </Pressable>
+        </View>
+        <View style={[styles.actions, { alignItems: 'center', gap: 4, paddingRight: 8 }]}>
+          <LanguageSwitch />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('Landing page')}
+            onPress={() => router.navigate('/landing')}
+            style={styles.action}
+          >
+            <Feather name="home" size={20} color={colors.ink} />
           </Pressable>
         </View>
       </View>

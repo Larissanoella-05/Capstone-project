@@ -71,6 +71,8 @@ model User {
   phone        String?  @unique
   passwordHash String
   role         Role
+  /// The language of this person's notifications: 'en' or 'rw'
+  language     String   @default("en")
   createdAt    DateTime @default(now())
 
   customer      Customer?

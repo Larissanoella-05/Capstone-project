@@ -9,6 +9,7 @@ import {
   locationLine,
   timeAgo,
 } from '../lib/format.js';
+import { useT } from '../context/LanguageContext.jsx';
 import { VerticalTimeline } from './Bits.jsx';
 import { Card } from './Card.jsx';
 import MapView, { faultMapParts } from './MapView.jsx';
@@ -21,6 +22,7 @@ const BANNER_STYLE = {
 
 /** One fault as its reporter sees it. A guest's payload has no phone numbers, so the Call button hides itself. */
 export default function TrackingView({ fault, fetchedAt }) {
+  const t = useT();
   const { markers, lines } = faultMapParts(fault);
   const technician = fault.technician;
   const enRoute = fault.status === 'ON_THE_WAY';
@@ -30,35 +32,38 @@ export default function TrackingView({ fault, fetchedAt }) {
   return (
     <>
       <div className="eyebrow">
-        Fault #{fault.reference} · {CATEGORY_LABEL[fault.category]}
+        {t('Fault #{reference}', { reference: fault.reference })} ·{' '}
+        {t(CATEGORY_LABEL[fault.category])}
       </div>
       <div
         className={`flex flex-col gap-1.5 rounded-card px-5 py-[18px] ${BANNER_STYLE[fault.status] ?? 'bg-accent text-on-accent'}`}
       >
-        <h1 className="display text-[24px]">{CUSTOMER_HEADLINE[fault.status]}</h1>
-        <div className="text-xs">Last updated {timeAgo(fault.updatedAt)}</div>
+        <h1 className="display text-[24px]">{t(CUSTOMER_HEADLINE[fault.status])}</h1>
+        <div className="text-xs">
+          {t('Last updated {when}', { when: timeAgo(fault.updatedAt, t) })}
+        </div>
       </div>
       <div>
-        <p className="m-0 text-xs">{nextStepFor(fault.status)}</p>
-        <p className="mb-0 mt-1 text-[11px] text-grey">{checkedLabel(fetchedAt)}</p>
+        <p className="m-0 text-xs">{t(nextStepFor(fault.status))}</p>
+        <p className="mb-0 mt-1 text-[11px] text-grey">{checkedLabel(fetchedAt, t)}</p>
       </div>
 
       <div className="grid gap-3.5 lg:grid-cols-5 lg:items-start lg:gap-6">
         <div className="flex min-w-0 flex-col gap-3.5 lg:col-span-3">
           <Card className="flex items-center justify-between gap-3 px-[18px] py-3.5">
             <div>
-              <div className="eyebrow">Technician</div>
+              <div className="eyebrow">{t('Technician')}</div>
               <div className="heading-weight mt-0.5 text-base">
-                {technician?.name ?? 'Not assigned yet'}
+                {technician?.name ?? t('Not assigned yet')}
               </div>
             </div>
             <div className="text-right">
-              <div className="eyebrow">Distance</div>
+              <div className="eyebrow">{t('Distance')}</div>
               <div className="heading-weight mt-0.5 text-base">
                 {enRoute || fault.status === 'ASSIGNED'
                   ? fmtKm(technician?.distanceKm)
                   : fault.status === 'ARRIVED' || fault.status === 'WORKING'
-                    ? 'On site'
+                    ? t('On site')
                     : '—'}
               </div>
             </div>
@@ -69,12 +74,14 @@ export default function TrackingView({ fault, fetchedAt }) {
               markers={markers}
               lines={lines}
               className="h-[170px] md:h-96 lg:h-[30rem]"
-              ariaLabel="Map showing your service location, the technician and the link between them"
+              ariaLabel={t(
+                'Map showing your service location, the technician and the link between them'
+              )}
             />
           </div>
           <div className="eyebrow flex justify-between">
             <span>{technician?.name ?? ''}</span>
-            <span>Your location</span>
+            <span>{t('Your location')}</span>
           </div>
 
           {canCall && (
@@ -83,55 +90,59 @@ export default function TrackingView({ fault, fetchedAt }) {
               className="btn btn-accent w-full"
             >
               <Phone size={18} aria-hidden="true" />
-              Call {firstNames(technician.name)}
+              {t('Call {name}', { name: firstNames(technician.name) })}
             </a>
           )}
         </div>
 
         <div className="flex min-w-0 flex-col gap-3.5 lg:col-span-2">
-          <h2 className="heading-weight m-0 text-base">Response timeline</h2>
+          <h2 className="heading-weight m-0 text-base">{t('Response timeline')}</h2>
           <Card className="p-[18px]">
             <VerticalTimeline fault={fault} audience="customer" />
           </Card>
 
           {fault.status === 'RESOLVED' && (
             <Card>
-              <div className="panel-head bg-green text-white">Resolution</div>
+              <div className="panel-head bg-green text-white">{t('Resolution')}</div>
               <div className="flex flex-col gap-2 p-[18px]">
                 <div className="heading-weight text-base">
-                  {OUTCOME_LABEL[fault.outcome] ?? 'Resolved'}
+                  {t(OUTCOME_LABEL[fault.outcome] ?? 'Resolved')}
                 </div>
                 <p className="m-0 text-sm">{fault.resolutionNote}</p>
-                <div className="text-xs text-grey">Completed {fmtDateTime(fault.resolvedAt)}</div>
+                <div className="text-xs text-grey">
+                  {t('Completed {when}', { when: fmtDateTime(fault.resolvedAt, t) })}
+                </div>
               </div>
             </Card>
           )}
 
           <Card>
-            <div className="panel-head">Your report</div>
+            <div className="panel-head">{t('Your report')}</div>
             <div className="flex flex-col gap-3 p-[18px] text-sm">
               <div>
-                <div className="eyebrow">Service location</div>
+                <div className="eyebrow">{t('Service location')}</div>
                 <div className="mt-1 font-semibold">
                   {locationLine(location)}
-                  {location.meterNumber && <> · Meter {location.meterNumber}</>}
+                  {location.meterNumber && (
+                    <> · {t('Meter {number}', { number: location.meterNumber })}</>
+                  )}
                 </div>
                 {fault.isGuest && location.landmark && (
                   <div className="mt-0.5 text-grey">{location.landmark}</div>
                 )}
               </div>
               <div>
-                <div className="eyebrow">Reported</div>
-                <div className="mt-1 font-semibold">{fmtDateTime(fault.reportedAt)}</div>
+                <div className="eyebrow">{t('Reported')}</div>
+                <div className="mt-1 font-semibold">{fmtDateTime(fault.reportedAt, t)}</div>
               </div>
               <div>
-                <div className="eyebrow">Description</div>
-                <div className="mt-1">{fault.description || 'No description given.'}</div>
+                <div className="eyebrow">{t('Description')}</div>
+                <div className="mt-1">{fault.description || t('No description given.')}</div>
               </div>
               {fault.photo && (
                 <img
                   src={fault.photo}
-                  alt="Photo attached to the report"
+                  alt={t('Photo attached to the report')}
                   className="max-h-64 w-full rounded-control border border-line object-cover"
                 />
               )}

@@ -1,3 +1,4 @@
+import { useT } from '../../../../src/context/LanguageContext.js';
 import { Feather } from '@expo/vector-icons';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -11,6 +12,7 @@ import { CATEGORY_LABEL, OUTCOMES, fmtTime, locationLine } from '../../../../src
 import { colors, fonts, radius } from '../../../../src/theme.js';
 
 export default function ResolveJob() {
+  const t = useT();
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const state = useApi(`/faults/${id}`);
@@ -37,8 +39,8 @@ export default function ResolveJob() {
   async function onSubmit() {
     const nextErrors = {};
     if (resolutionNote.trim().length < 5)
-      nextErrors.resolutionNote = 'Describe how the fault was resolved.';
-    if (!workCompleted.trim()) nextErrors.workCompleted = 'List the work that was completed.';
+      nextErrors.resolutionNote = t('Describe how the fault was resolved.');
+    if (!workCompleted.trim()) nextErrors.workCompleted = t('List the work that was completed.');
     setErrors(nextErrors);
     setFormError('');
     if (Object.keys(nextErrors).length) return;
@@ -86,9 +88,9 @@ export default function ResolveJob() {
               </Pressable>
 
               <View style={styles.hero}>
-                <Eyebrow>Fault #{fault.reference}</Eyebrow>
+                <Eyebrow>{t('Fault #{reference}', { reference: fault.reference })}</Eyebrow>
                 <Text accessibilityRole="header" style={styles.title}>
-                  Close job
+                  {t('Close job')}
                 </Text>
               </View>
 
@@ -96,11 +98,11 @@ export default function ResolveJob() {
                 <KeyRow label="Fault ID" mono>
                   {fault.reference}
                 </KeyRow>
-                <KeyRow label="Category">{CATEGORY_LABEL[fault.category]}</KeyRow>
+                <KeyRow label="Category">{t(CATEGORY_LABEL[fault.category])}</KeyRow>
                 <KeyRow label="Location">{locationLine(fault.serviceLocation)}</KeyRow>
                 <KeyRow label="Arrival">{fmtTime(fault.arrivedAt)}</KeyRow>
                 <KeyRow label="Completed" last>
-                  {fmtTime(new Date())} (now)
+                  {fmtTime(new Date())} ({t('now')})
                 </KeyRow>
               </Panel>
 
@@ -126,7 +128,7 @@ export default function ResolveJob() {
                         <View style={styles.radio}>
                           {selected ? <View style={styles.radioDot} /> : null}
                         </View>
-                        <Text style={styles.optionLabel}>{item.label}</Text>
+                        <Text style={styles.optionLabel}>{t(item.label)}</Text>
                       </Pressable>
                     );
                   })}
@@ -143,16 +145,16 @@ export default function ResolveJob() {
                   }}
                   multiline
                   textAlignVertical="top"
-                  placeholder="What was wrong and how it was fixed."
+                  placeholder={t('What was wrong and how it was fixed.')}
                   placeholderTextColor={colors.ash}
-                  accessibilityLabel="Resolution description"
+                  accessibilityLabel={t('Resolution description')}
                   style={[styles.field, errors.resolutionNote && styles.fieldInvalid]}
                 />
                 {errors.resolutionNote ? (
                   <Text style={styles.error}>{errors.resolutionNote}</Text>
                 ) : (
                   <Text style={styles.hint}>
-                    An outcome note is required before a fault can be resolved.
+                    {t('An outcome note is required before a fault can be resolved.')}
                   </Text>
                 )}
               </View>
@@ -167,9 +169,11 @@ export default function ResolveJob() {
                   }}
                   multiline
                   textAlignVertical="top"
-                  placeholder="For example: replaced service fuse, tightened terminals, tested supply at the meter."
+                  placeholder={t(
+                    'For example: replaced service fuse, tightened terminals, tested supply at the meter.'
+                  )}
                   placeholderTextColor={colors.ash}
-                  accessibilityLabel="Work completed"
+                  accessibilityLabel={t('Work completed')}
                   style={[styles.field, errors.workCompleted && styles.fieldInvalid]}
                 />
                 {errors.workCompleted ? (
@@ -182,18 +186,21 @@ export default function ResolveJob() {
                 <View style={styles.stepper}>
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel="One fewer"
+                    accessibilityLabel={t('One fewer')}
                     onPress={() => setContacts((n) => Math.max(0, n - 1))}
                     style={[styles.step, { borderRightWidth: 1 }]}
                   >
                     <Text style={styles.stepText}>−</Text>
                   </Pressable>
-                  <Text accessibilityLabel={`${contacts} contacts`} style={styles.count}>
+                  <Text
+                    accessibilityLabel={t('{count} contacts', { count: contacts })}
+                    style={styles.count}
+                  >
                     {contacts}
                   </Text>
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel="One more"
+                    accessibilityLabel={t('One more')}
                     onPress={() => setContacts((n) => Math.min(50, n + 1))}
                     style={[styles.step, { borderLeftWidth: 1 }]}
                   >
@@ -201,15 +208,18 @@ export default function ResolveJob() {
                   </Pressable>
                 </View>
                 <Text style={styles.hint}>
-                  How many times you had to call or message the customer to find the location.
+                  {t(
+                    'How many times you had to call or message the customer to find the location.'
+                  )}
                 </Text>
               </View>
 
               <FormError>{formError}</FormError>
 
               <Text style={styles.hint}>
-                The customer will be notified and the fault closed. Status times cannot be edited
-                afterwards.
+                {t(
+                  'The customer will be notified and the fault closed. Status times cannot be edited afterwards.'
+                )}
               </Text>
             </>
           );

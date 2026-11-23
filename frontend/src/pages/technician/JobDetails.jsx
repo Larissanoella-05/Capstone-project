@@ -1,3 +1,4 @@
+import { useT } from '../../context/LanguageContext.jsx';
 import { useState } from 'react';
 import { Check, LocateFixed, Navigation, Phone, Route } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -34,6 +35,7 @@ const NEXT_ACTION = {
 };
 
 export default function JobDetails() {
+  const t = useT();
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
@@ -47,7 +49,7 @@ export default function JobDetails() {
     try {
       await task();
       await state.reload();
-      if (successMessage) toast(successMessage);
+      if (successMessage) toast(t(successMessage));
     } catch (error) {
       setActionError(error.message);
     } finally {
@@ -89,7 +91,7 @@ export default function JobDetails() {
                   latitude: from.latitude + (location.latitude - from.latitude) * 0.3,
                   longitude: from.longitude + (location.longitude - from.longitude) * 0.3,
                   faultId: fault.id,
-                  label: `On the way to ${location.cell}`,
+                  label: t('On the way to {cell}', { cell: location.cell }),
                 },
               });
             },
@@ -98,7 +100,7 @@ export default function JobDetails() {
 
         const useDeviceLocation = () => {
           if (!navigator.geolocation) {
-            setActionError('This device does not share its location.');
+            setActionError(t('This device does not share its location.'));
             return;
           }
           setBusy('gps');
@@ -114,7 +116,7 @@ export default function JobDetails() {
                       latitude: result.coords.latitude,
                       longitude: result.coords.longitude,
                       faultId: fault.id,
-                      label: 'Device location',
+                      label: t('Device location'),
                     },
                   }),
                 'Location updated from this device.'
@@ -122,7 +124,9 @@ export default function JobDetails() {
             () => {
               setBusy('');
               setActionError(
-                'Location permission was refused. Use “Move closer” to simulate movement instead.'
+                t(
+                  'Location permission was refused. Use “Move closer” to simulate movement instead.'
+                )
               );
             },
             { enableHighAccuracy: true, timeout: 8000 }
@@ -133,9 +137,10 @@ export default function JobDetails() {
           <>
             <div className="flex flex-col gap-3">
               <div className="eyebrow text-muted">
-                Fault #{fault.reference} · Reported {fmtTime(fault.reportedAt)}
+                {t('Fault #{reference}', { reference: fault.reference })} ·{' '}
+                {t('Reported {when}', { when: fmtTime(fault.reportedAt) })}
               </div>
-              <h1 className="display mt-1.5 text-[26px]">{CATEGORY_LABEL[fault.category]}</h1>
+              <h1 className="display mt-1.5 text-[26px]">{t(CATEGORY_LABEL[fault.category])}</h1>
               <div className="mt-3 flex flex-wrap gap-2">
                 <PriorityPill priority={fault.priority} withLabel />
                 <StatusPill status={fault.status} />
@@ -150,20 +155,28 @@ export default function JobDetails() {
                     markers={markers}
                     lines={lines}
                     className="h-60 md:h-80"
-                    ariaLabel={`Map showing the service location for fault ${fault.reference} and your position`}
+                    ariaLabel={t(
+                      'Map showing the service location for fault {reference} and your position',
+                      {
+                        reference: fault.reference,
+                      }
+                    )}
                   />
                   <div className="border-t border-line p-4">
-                    <div className="eyebrow text-muted">Service location</div>
+                    <div className="eyebrow text-muted">{t('Service location')}</div>
                     <div className="mt-1 text-lg heading-weight">{locationLine(location)}</div>
                     <div className="mt-1 text-sm">
-                      {[location.village && `${location.village} village`, location.landmark]
+                      {[
+                        location.village && t('{village} village', { village: location.village }),
+                        location.landmark,
+                      ]
                         .filter(Boolean)
                         .join('. ')}
                     </div>
                     <div className="mt-2 font-mono text-xs">
                       {coordinatesText(location)}
                       {canMove && fault.technician?.distanceKm !== null
-                        ? ` · ${fmtKm(fault.technician.distanceKm)} away`
+                        ? ` · ${t('{distance} away', { distance: fmtKm(fault.technician.distanceKm) })}`
                         : ''}
                     </div>
                   </div>
@@ -175,7 +188,7 @@ export default function JobDetails() {
                       className="btn btn-ink"
                     >
                       <Navigation size={16} aria-hidden="true" />
-                      Navigate
+                      {t('Navigate')}
                     </a>
                     {customerPhone ? (
                       <a
@@ -183,7 +196,7 @@ export default function JobDetails() {
                         className="btn btn-outline"
                       >
                         <Phone size={16} aria-hidden="true" />
-                        Call customer
+                        {t('Call customer')}
                       </a>
                     ) : (
                       <span />
@@ -192,7 +205,7 @@ export default function JobDetails() {
                 </section>
 
                 <section className="panel">
-                  <div className="panel-head">Response status</div>
+                  <div className="panel-head">{t('Response status')}</div>
                   <ol className="m-0 list-none p-0">
                     {STAGES.slice(1).map((stage, index) => {
                       const step = index + 1;
@@ -216,10 +229,10 @@ export default function JobDetails() {
                           <span
                             className={`flex-1 text-sm ${done || active ? 'font-bold' : 'text-muted'}`}
                           >
-                            {STATUS_LABEL[stage]}
+                            {t(STATUS_LABEL[stage])}
                           </span>
                           <span className="font-mono text-xs">
-                            {active ? `Now · ${fmtTime(time)}` : fmtTime(time)}
+                            {active ? `${t('Now')} · ${fmtTime(time)}` : fmtTime(time)}
                           </span>
                         </li>
                       );
@@ -230,14 +243,20 @@ export default function JobDetails() {
                 {canMove && (
                   <section className="panel">
                     <div className="panel-head">
-                      <span>My location</span>
-                      <span className="text-muted">Prototype</span>
+                      <span>{t('My location')}</span>
+                      <span className="text-muted">{t('Prototype')}</span>
                     </div>
                     <div className="flex flex-col gap-3 p-4">
                       <p className="m-0 text-sm">
                         {position
-                          ? `Last position: ${position.label ?? 'recorded'} at ${fmtTime(position.recordedAt)}. The customer and the coordinator see it on their maps.`
-                          : 'No position recorded yet.'}
+                          ? t(
+                              'Last position: {label} at {time}. The customer and the coordinator see it on their maps.',
+                              {
+                                label: position.label ?? t('recorded'),
+                                time: fmtTime(position.recordedAt),
+                              }
+                            )
+                          : t('No position recorded yet.')}
                       </p>
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <button
@@ -247,7 +266,7 @@ export default function JobDetails() {
                           onClick={moveCloser}
                         >
                           <Route size={16} aria-hidden="true" />
-                          {busy === 'move' ? 'Moving…' : 'Move closer'}
+                          {busy === 'move' ? t('Moving…') : t('Move closer')}
                         </button>
                         <button
                           type="button"
@@ -256,7 +275,7 @@ export default function JobDetails() {
                           onClick={useDeviceLocation}
                         >
                           <LocateFixed size={16} aria-hidden="true" />
-                          {busy === 'gps' ? 'Locating…' : 'Use device location'}
+                          {busy === 'gps' ? t('Locating…') : t('Use device location')}
                         </button>
                       </div>
                     </div>
@@ -267,32 +286,35 @@ export default function JobDetails() {
               <div className="flex min-w-0 flex-col gap-5">
                 {fault.status === 'RESOLVED' && (
                   <section className="panel">
-                    <div className="panel-head bg-ok text-white">Resolution recorded</div>
+                    <div className="panel-head bg-ok text-white">{t('Resolution recorded')}</div>
                     <div className="flex flex-col gap-2 p-4 text-sm">
-                      <div className="text-base heading-weight">{OUTCOME_LABEL[fault.outcome]}</div>
+                      <div className="text-base heading-weight">
+                        {t(OUTCOME_LABEL[fault.outcome])}
+                      </div>
                       <p className="m-0">{fault.resolutionNote}</p>
                       {fault.workCompleted && (
                         <p className="m-0">
-                          <span className="font-bold">Work completed:</span> {fault.workCompleted}
+                          <span className="font-bold">{t('Work completed')}:</span>{' '}
+                          {fault.workCompleted}
                         </p>
                       )}
                       <div className="font-mono text-xs text-muted">
-                        Completed {fmtDateTime(fault.resolvedAt)}
+                        {t('Completed {when}', { when: fmtDateTime(fault.resolvedAt, t) })}
                       </div>
                     </div>
                   </section>
                 )}
 
                 <section className="panel">
-                  <div className="panel-head">Description</div>
+                  <div className="panel-head">{t('Description')}</div>
                   <div className="flex flex-col gap-3 p-4 text-sm">
                     <p className="m-0">
-                      {fault.description || 'The customer did not add a description.'}
+                      {fault.description || t('The customer did not add a description.')}
                     </p>
                     {fault.photo && (
                       <img
                         src={fault.photo}
-                        alt="Photo attached by the customer"
+                        alt={t('Photo attached by the customer')}
                         className="max-h-64 w-full border border-line object-cover"
                       />
                     )}
@@ -300,12 +322,14 @@ export default function JobDetails() {
                 </section>
 
                 <section className="panel">
-                  <div className="panel-head">Customer</div>
+                  <div className="panel-head">{t('Customer')}</div>
                   <div className="flex items-center justify-between gap-3 p-4">
                     <div>
-                      <div className="text-base font-bold">{reporterName(fault)}</div>
+                      <div className="text-base font-bold">{t(reporterName(fault))}</div>
                       {location.meterNumber && (
-                        <div className="font-mono text-xs">Meter {location.meterNumber}</div>
+                        <div className="font-mono text-xs">
+                          {t('Meter {number}', { number: location.meterNumber })}
+                        </div>
                       )}
                     </div>
                     {customerPhone && (
@@ -314,14 +338,14 @@ export default function JobDetails() {
                         className="btn btn-outline"
                       >
                         <Phone size={16} aria-hidden="true" />
-                        Call
+                        {t('Call')}
                       </a>
                     )}
                   </div>
                 </section>
 
                 <Link to="/technician/jobs" className="btn btn-outline">
-                  Back to my jobs
+                  {t('Back to my jobs')}
                 </Link>
               </div>
             </div>
@@ -336,7 +360,7 @@ export default function JobDetails() {
                     disabled={Boolean(busy)}
                     onClick={advance}
                   >
-                    {busy === 'status' ? 'Updating…' : next.label}
+                    {busy === 'status' ? t('Updating…') : t(next.label)}
                   </button>
                 ) : (
                   <button
@@ -344,7 +368,7 @@ export default function JobDetails() {
                     className="btn btn-volt btn-lg w-full lg:w-auto lg:self-end lg:px-12"
                     onClick={() => navigate(`/technician/jobs/${fault.id}/resolve`)}
                   >
-                    Record resolution
+                    {t('Record resolution')}
                   </button>
                 )}
               </div>

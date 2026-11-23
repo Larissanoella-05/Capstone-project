@@ -1,3 +1,4 @@
+import { useT } from '../context/LanguageContext.jsx';
 import { useState } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { api } from '../lib/api.js';
@@ -10,6 +11,8 @@ import { Async, EmptyState } from '../components/States.jsx';
 
 /** Shared by the customer and the technician. `faultPath` builds the link to a fault for that role. */
 export default function Notifications({ faultPath, intro }) {
+  const t = useT();
+
   const state = useApi('/notifications', { interval: 6000 });
   const { reloadNotifications } = useOutletContext() ?? {};
   const navigate = useNavigate();
@@ -27,7 +30,7 @@ export default function Notifications({ faultPath, intro }) {
     try {
       await api('/notifications/read-all', { method: 'PATCH' });
       await refreshAll();
-      toast('All notifications marked as read.');
+      toast(t('All notifications marked as read.'));
     } catch (error) {
       toast(error.message, 'error');
     } finally {
@@ -54,8 +57,8 @@ export default function Notifications({ faultPath, intro }) {
   return (
     <>
       <PageHeading
-        eyebrow={state.data ? `${unread} unread` : 'Alerts'}
-        title="Alerts"
+        eyebrow={state.data ? t('{count} unread', { count: unread }) : t('Alerts')}
+        title={t('Alerts')}
         action={
           hasAny && (
             <button
@@ -64,19 +67,19 @@ export default function Notifications({ faultPath, intro }) {
               disabled={busy || unread === 0}
               onClick={markAllRead}
             >
-              Mark all as read
+              {t('Mark all as read')}
             </button>
           )
         }
       >
-        {intro && <p className="mb-0 mt-3.5 text-xs text-grey">{intro}</p>}
+        {intro && <p className="mb-0 mt-3.5 text-xs text-grey">{t(intro)}</p>}
       </PageHeading>
 
       <Async state={state} label="Loading notifications">
         {(data) =>
           data.notifications.length === 0 ? (
-            <EmptyState title="No notifications yet">
-              Updates about your faults will appear here.
+            <EmptyState title={t('No notifications yet')}>
+              {t('Updates about your faults will appear here.')}
             </EmptyState>
           ) : (
             <>
@@ -99,7 +102,7 @@ export default function Notifications({ faultPath, intro }) {
                           <span className="heading-weight text-[14px]">{notification.title}</span>
                         </span>
                         <span className="shrink-0 text-[11px] text-grey">
-                          {timeAgo(notification.createdAt)}
+                          {timeAgo(notification.createdAt, t)}
                         </span>
                       </div>
                       <p className="m-0 text-xs text-grey">{notification.message}</p>
@@ -113,7 +116,9 @@ export default function Notifications({ faultPath, intro }) {
                   className="btn btn-outline self-start"
                   onClick={() => setShown((count) => count + NOTIFICATION_STEP)}
                 >
-                  Load more ({showFirst(data.notifications, shown).hidden} older)
+                  {t('Load more ({count} older)', {
+                    count: showFirst(data.notifications, shown).hidden,
+                  })}
                 </button>
               )}
             </>
