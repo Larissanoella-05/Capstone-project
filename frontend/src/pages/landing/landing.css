@@ -90,7 +90,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 16px;
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
@@ -106,8 +106,9 @@
 }
 .landing .lp-nav {
   display: flex;
+  flex: 0 1 auto;
   align-items: center;
-  gap: 6px;
+  gap: 2px;
 }
 .landing .lp-nl {
   position: relative;
@@ -115,17 +116,18 @@
   align-items: center;
   gap: 6px;
   min-height: 44px;
-  padding: 0 14px;
+  padding: 0 11px;
   font-size: 15px;
   font-weight: 500;
+  white-space: nowrap;
   color: #e8e8e8;
   transition: color 0.2s;
 }
 .landing .lp-nl::after {
   content: '';
   position: absolute;
-  left: 14px;
-  right: 14px;
+  left: 11px;
+  right: 11px;
   bottom: 8px;
   height: 2px;
   background: var(--y);
@@ -176,8 +178,9 @@
 }
 .landing .lp-hdr-end {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
-  gap: 20px;
+  gap: 14px;
 }
 .landing .lp-call {
   display: inline-flex;
@@ -916,12 +919,66 @@
     margin-left: 0;
   }
 }
+@media (max-width: 1100px) {
+  /* The phone icon stays; its words make way for the menu and the language switch. */
+  .landing .lp-call-text {
+    display: none;
+  }
+  .landing .lp-call {
+    justify-content: center;
+    min-width: 44px;
+  }
+}
 @media (max-width: 900px) {
   .landing .lp-nav {
     display: none;
   }
   .landing .lp-about-row {
     gap: 40px;
+  }
+}
+@media (max-width: 480px) {
+  /* Logo, language switch, phone and the report button must fit one row on a 360px phone. */
+  .landing .lp-hdr {
+    gap: 8px;
+    padding: 12px;
+  }
+  .landing .lp-hdr .lp-logo {
+    gap: 6px;
+    font-size: 16px;
+  }
+  .landing .lp-hdr-end {
+    gap: 2px;
+  }
+  .landing .lp-hdr-end [role='group'] button {
+    min-width: 32px;
+    padding: 0 6px;
+  }
+  .landing .lp-hdr .lp-call {
+    min-width: 38px;
+  }
+  .landing .lp-hdr .lp-btn {
+    padding: 0 12px;
+    font-size: 13px;
+  }
+  .landing .lp-hdr .lp-btn svg {
+    display: none;
+  }
+}
+@media (max-width: 400px) {
+  .landing .lp-hdr .lp-logo {
+    font-size: 15px;
+  }
+  .landing .lp-hdr-end [role='group'] button {
+    min-width: 28px;
+    padding: 0 4px;
+  }
+  .landing .lp-hdr .lp-call {
+    min-width: 32px;
+  }
+  .landing .lp-hdr .lp-btn {
+    padding: 0 10px;
+    font-size: 12.5px;
   }
 }
 @media (max-width: 800px) {
