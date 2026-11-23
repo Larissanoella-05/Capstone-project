@@ -35,6 +35,11 @@ export default function PublicShell() {
         <main className="mx-auto flex w-full max-w-[1100px] flex-1 flex-col gap-3.5 px-5 pb-8 pt-3 md:gap-6 md:px-8 md:pb-12">
           <Outlet />
         </main>
+        <footer className="px-5 pb-6 text-center md:px-8">
+          <Link to="/privacy" className="text-xs text-grey">
+            Privacy policy
+          </Link>
+        </footer>
       </div>
     </div>
   );

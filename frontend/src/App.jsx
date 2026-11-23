@@ -17,6 +17,7 @@ import Notifications from './pages/Notifications.jsx';
 import GuestReport from './pages/public/GuestReport.jsx';
 import GuestSubmitted from './pages/public/GuestSubmitted.jsx';
 import GuestTracking from './pages/public/GuestTracking.jsx';
+import Privacy from './pages/public/Privacy.jsx';
 
 import CustomerDashboard from './pages/customer/Dashboard.jsx';
 import ReportFault from './pages/customer/ReportFault.jsx';
@@ -111,6 +112,7 @@ export default function App() {
         <Route path="/report" element={<GuestReport />} />
         <Route path="/report/sent/:token" element={<GuestSubmitted />} />
         <Route path="/track/:token" element={<GuestTracking />} />
+        <Route path="/privacy" element={<Privacy />} />
       </Route>
 
       <Route
