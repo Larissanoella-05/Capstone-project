@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
+import { escapeHtml } from '../lib/escapeHtml.js';
 
 // Centre of the pilot area: Ndera Sector, Gasabo District, Kigali.
 const NDERA_CENTRE = [-1.9495, 30.171];
@@ -87,8 +88,9 @@ export default function MapView({
         title: marker.label,
         zIndexOffset: marker.kind === 'technician' || marker.kind === 'onsite' ? 500 : 0,
       }).addTo(layer);
+      // Leaflet reads a string tooltip as HTML, and a label can hold text a customer typed.
       if (marker.label)
-        leafletMarker.bindTooltip(marker.label, { direction: 'top', offset: [0, -12] });
+        leafletMarker.bindTooltip(escapeHtml(marker.label), { direction: 'top', offset: [0, -12] });
       if (marker.onClick) leafletMarker.on('click', marker.onClick);
     });
 
