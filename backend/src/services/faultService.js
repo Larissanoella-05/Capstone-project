@@ -8,6 +8,7 @@ import { serializeFault, serializePublicFault } from '../domain/FaultSerializer.
 import { faultCell, faultPoint } from '../domain/faultPoint.js';
 import { newTrackingToken, trackingLinkExpired } from '../domain/trackingLink.js';
 import { buildFaultFilter, pageMeta, pagingFor } from './faultQuery.js';
+import { noticeText } from '../domain/notificationText.js';
 import { customerMessageFor, notify } from './notificationService.js';
 import { sendPushForNotifications } from './pushService.js';
 import { isSmsSimulated, sendGuestSms, sendSmsForNotifications } from './smsService.js';
@@ -25,7 +26,9 @@ async function guardedUpdate(tx, id, expected, data) {
 
 /** Everything the three interfaces need to draw a fault. */
 const faultInclude = /** @satisfies {import('@prisma/client').Prisma.FaultReportInclude} */ ({
-  customer: { include: { user: { select: { id: true, name: true, phone: true } } } },
+  customer: {
+    include: { user: { select: { id: true, name: true, phone: true, language: true } } },
+  },
   serviceLocation: true,
   technician: {
     include: {
@@ -127,8 +130,7 @@ export async function createFault(user, body) {
       userId: user.id,
       faultId: created.id,
       type: 'FAULT_SUBMITTED',
-      title: 'Fault received',
-      message: `We have received your electricity fault report #${reference}. A service coordinator will assign a technician.`,
+      ...noticeText('FAULT_SUBMITTED', user.language, { reference }),
     });
     return { id: created.id, notices: [notice] };
   });
@@ -252,16 +254,20 @@ export async function assignTechnician(user, id, technicianId) {
           userId: fault.customer.userId,
           faultId: id,
           type: 'TECHNICIAN_ASSIGNED',
-          title: 'Technician assigned',
-          message: `${technician.user.name} has been assigned to your electricity fault #${fault.reference}.`,
+          ...noticeText('TECHNICIAN_ASSIGNED', fault.customer.user.language, {
+            technician: technician.user.name,
+            reference: fault.reference,
+          }),
         })
       : null;
     const toTechnician = await notify(tx, {
       userId: technician.userId,
       faultId: id,
       type: 'JOB_ASSIGNED',
-      title: 'New job assigned',
-      message: `Fault #${fault.reference} at ${faultCell(fault)} Cell has been assigned to you.`,
+      ...noticeText('JOB_ASSIGNED', technician.user.language, {
+        reference: fault.reference,
+        cell: faultCell(fault),
+      }),
     });
     return toCustomer ? [toCustomer, toTechnician] : [toTechnician];
   });
@@ -299,6 +305,7 @@ export async function changeStatus(user, id, body) {
   const message = customerMessageFor(next, {
     reference: fault.reference,
     technicianName: fault.technician?.user.name,
+    language: fault.customer?.user.language,
   });
 
   const notices = await prisma.$transaction(async (tx) => {

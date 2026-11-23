@@ -1,7 +1,16 @@
-import { ABOUT, HOTLINE, HOTLINE_HREF, REPORT_LINK } from '../../lib/landingContent.js';
+import { useT, useTranslated } from '../../context/LanguageContext.jsx';
+import {
+  ABOUT as ABOUT_COPY,
+  HOTLINE,
+  HOTLINE_HREF,
+  REPORT_LINK,
+} from '../../lib/landingContent.js';
 import { ArrowUpRight, LoginLink, PathIcon, PhoneIcon } from './LandingBits.jsx';
 
 export default function About({ seen }) {
+  const t = useT();
+  const ABOUT = useTranslated(ABOUT_COPY);
+
   return (
     <section
       id="about"
@@ -43,14 +52,14 @@ export default function About({ seen }) {
           <div
             className="lp-collage-main lp-img lp-img-panel"
             role="img"
-            aria-label="Technician testing a distribution board"
+            aria-label={t('Technician testing a distribution board')}
           />
           <div className="lp-collage-label">{ABOUT.imageLabel}</div>
           <div className="lp-collage-inset">
             <div
               className="lp-img lp-img-poles"
               role="img"
-              aria-label="Power poles and lines over a street"
+              aria-label={t('Power poles and lines over a street')}
               style={{ position: 'absolute', inset: 0 }}
             />
           </div>
@@ -78,7 +87,7 @@ export default function About({ seen }) {
           </div>
           <div className="lp-about-actions lp-rv lp-d4">
             <LoginLink className="lp-btn" link={REPORT_LINK}>
-              Report a fault <ArrowUpRight />
+              {t('Report a fault')} <ArrowUpRight />
             </LoginLink>
             <a className="lp-callblock" href={HOTLINE_HREF}>
               <span className="lp-mi" style={{ width: 46, height: 46 }}>
@@ -86,7 +95,7 @@ export default function About({ seen }) {
               </span>
               <span>
                 <small>{ABOUT.callLabel}</small>
-                <strong>Real fault? Call {HOTLINE}</strong>
+                <strong>{t('Real fault? Call {hotline}', { hotline: HOTLINE })}</strong>
               </span>
             </a>
           </div>

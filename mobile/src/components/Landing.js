@@ -5,10 +5,14 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { HOME_BY_ROLE, useAuth } from '../context/AuthContext.js';
+import { useT } from '../context/LanguageContext.js';
 import { useToast } from '../context/ToastContext.js';
+
 import { coverFrame } from '../lib/focalImage.js';
 import Backdrop from './Backdrop.js';
 import { Brand } from './Brand.js';
+import LanguageSwitch from './LanguageSwitch.js';
+
 import { FAQ, FOOTER_COPY, HERO, HOTLINE, ROLES_COPY, STEP_CARDS } from '../lib/landingCopy.js';
 import { openLink } from '../lib/links.js';
 import { colors, fonts, radius, shadow } from '../theme.js';
@@ -74,6 +78,7 @@ function Photo({ photo, style, children }) {
 export default function Landing() {
   const router = useRouter();
   const toast = useToast();
+  const t = useT();
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const scroll = useRef(null);
@@ -81,11 +86,13 @@ export default function Landing() {
 
   // Signed in, the app is already open underneath this screen: go back to it instead of stacking a copy.
   const signIn = () => (user ? router.navigate(HOME_BY_ROLE[user.role]) : router.push('/login'));
+  // Reporting needs no account: a visitor goes straight to the report form.
+  const report = () => (user ? signIn() : router.push('/guest/report'));
   const reportLabel = user ? 'Open my app' : HERO.report;
   const open = async (url, failure) => {
     if (!(await openLink(url))) toast(failure, 'error');
   };
-  const call = () => open(`tel:${HOTLINE}`, 'This phone cannot make calls.');
+  const call = () => open(`tel:${HOTLINE}`, t('This phone cannot make calls.'));
   const goTo = (section) => scroll.current?.scrollTo({ y: offsets[section] ?? 0, animated: true });
   // Offsets are inside the light section, which starts below the hero.
   const measure = (section) => (event) => {
@@ -127,9 +134,11 @@ export default function Landing() {
           >
             <Brand onDark />
             <View style={styles.headerActions}>
+              <LanguageSwitch onDark />
+
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={`Call ${HOTLINE}`}
+                accessibilityLabel={t('Call {hotline}', { hotline: HOTLINE })}
                 hitSlop={8}
                 onPress={call}
                 style={styles.iconButton}
@@ -138,22 +147,25 @@ export default function Landing() {
               </Pressable>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={reportLabel}
-                onPress={signIn}
+                accessibilityLabel={t(reportLabel)}
+                onPress={report}
                 style={({ pressed }) => [styles.reportButton, pressed && { opacity: 0.85 }]}
               >
-                <Text style={styles.reportText}>{reportLabel}</Text>
+                <Text style={styles.reportText}>{t(reportLabel)}</Text>
                 <Feather name="arrow-up-right" size={14} color={colors.onAccent} />
               </Pressable>
             </View>
           </View>
           <View style={styles.heroBody}>
             <Text accessibilityRole="header" style={styles.headline}>
-              {HERO.headline.join('\n').toUpperCase()}
+              {HERO.headline
+                .map((line) => t(line))
+                .join('\n')
+                .toUpperCase()}
               {'\n'}
-              <Text style={{ color: colors.accent }}>{HERO.accentWord.toUpperCase()}</Text>
+              <Text style={{ color: colors.accent }}>{t(HERO.accentWord).toUpperCase()}</Text>
             </Text>
-            <Text style={styles.tagline}>{HERO.tagline}</Text>
+            <Text style={styles.tagline}>{t(HERO.tagline)}</Text>
             <Pressable
               accessibilityRole="button"
               onPress={signIn}
@@ -163,7 +175,7 @@ export default function Landing() {
                 pressed && { opacity: 0.85 },
               ]}
             >
-              <Text style={styles.reportText}>{user ? 'Open my app' : 'Sign in'}</Text>
+              <Text style={styles.reportText}>{user ? t('Open my app') : t('Sign in')}</Text>
             </Pressable>
           </View>
         </Photo>
@@ -182,15 +194,15 @@ export default function Landing() {
                     strokeLinejoin="round"
                   />
                 </Svg>
-                <Text style={styles.stepTitle}>{card.title}</Text>
+                <Text style={styles.stepTitle}>{t(card.title)}</Text>
               </View>
             ))}
           </View>
 
           <View onLayout={measure('roles')} style={{ gap: 12 }}>
-            <Text style={styles.eyebrow}>{ROLES_COPY.eyebrow}</Text>
+            <Text style={styles.eyebrow}>{t(ROLES_COPY.eyebrow)}</Text>
             <Text accessibilityRole="header" style={styles.h2}>
-              {ROLES_COPY.title}
+              {t(ROLES_COPY.title)}
             </Text>
             {ROLES_COPY.items.map((item) => {
               const mobile = item.title !== 'Service coordinator';
@@ -198,16 +210,18 @@ export default function Landing() {
                 <Pressable
                   key={item.title}
                   accessibilityRole={mobile ? 'button' : 'text'}
-                  accessibilityLabel={`${item.title}. ${item.body}. ${mobile ? item.go : COORDINATOR_NOTE}`}
+                  accessibilityLabel={`${t(item.title)}. ${t(item.body)}. ${t(mobile ? item.go : COORDINATOR_NOTE)}`}
                   disabled={!mobile}
                   onPress={signIn}
                   style={[styles.role, item.highlight && styles.roleOn]}
                 >
                   <Photo photo={PHOTOS[item.image]} style={styles.rolePhoto} />
                   <View style={styles.roleText}>
-                    <Text style={styles.roleTitle}>{item.title}</Text>
-                    <Text style={styles.roleBody}>{item.body}</Text>
-                    <Text style={styles.roleGo}>{mobile ? `${item.go} ↗` : COORDINATOR_NOTE}</Text>
+                    <Text style={styles.roleTitle}>{t(item.title)}</Text>
+                    <Text style={styles.roleBody}>{t(item.body)}</Text>
+                    <Text style={styles.roleGo}>
+                      {mobile ? `${t(item.go)} ↗` : t(COORDINATOR_NOTE)}
+                    </Text>
                   </View>
                 </Pressable>
               );
@@ -215,9 +229,9 @@ export default function Landing() {
           </View>
 
           <View onLayout={measure('faq')} style={{ marginTop: 20, gap: 12 }}>
-            <Text style={styles.eyebrow}>{FAQ.eyebrow}</Text>
+            <Text style={styles.eyebrow}>{t(FAQ.eyebrow)}</Text>
             <Text accessibilityRole="header" style={styles.h2}>
-              {FAQ.title}
+              {t(FAQ.title)}
             </Text>
             <View style={styles.faq}>
               {FAQ.items.map((item, index) => (
@@ -229,39 +243,39 @@ export default function Landing() {
 
         <View style={styles.footer}>
           <Brand iconSize={24} />
-          <Text style={styles.footerBlurb}>{FOOTER_COPY.blurb}</Text>
+          <Text style={styles.footerBlurb}>{t(FOOTER_COPY.blurb)}</Text>
 
-          <FooterColumn title="Quick Links">
-            <FooterLink label="Home" onPress={() => goToSection('top')} />
-            <FooterLink label="Dashboards" onPress={() => goToSection('roles')} />
-            <FooterLink label="FAQ" onPress={() => goToSection('faq')} />
+          <FooterColumn title={t('Quick Links')}>
+            <FooterLink label={t('Home')} onPress={() => goToSection('top')} />
+            <FooterLink label={t('Dashboards')} onPress={() => goToSection('roles')} />
+            <FooterLink label={t('FAQ')} onPress={() => goToSection('faq')} />
           </FooterColumn>
 
-          <FooterColumn title="Services">
-            <FooterLink label="Report a fault" onPress={signIn} />
-            <FooterLink label="Technician jobs" onPress={signIn} />
-            <FooterLink label="Safety guidance" onPress={() => goToSection('faq')} />
+          <FooterColumn title={t('Services')}>
+            <FooterLink label={t('Report a fault')} onPress={report} />
+            <FooterLink label={t('Technician jobs')} onPress={signIn} />
+            <FooterLink label={t('Safety guidance')} onPress={() => goToSection('faq')} />
           </FooterColumn>
 
-          <FooterColumn title={FOOTER_COPY.contactTitle}>
+          <FooterColumn title={t(FOOTER_COPY.contactTitle)}>
             {FOOTER_COPY.contact.map((line) =>
               line.href ? (
                 <FooterLink
                   key={line.label}
-                  label={line.label}
-                  onPress={() => open(line.href, 'This phone cannot open that link.')}
+                  label={t(line.label)}
+                  onPress={() => open(line.href, t('This phone cannot open that link.'))}
                 />
               ) : (
                 <Text key={line.label} style={styles.footerText}>
-                  {line.label}
+                  {t(line.label)}
                 </Text>
               )
             )}
           </FooterColumn>
 
           <View style={styles.footerBase}>
-            <Text style={styles.footerSmall}>{FOOTER_COPY.copyright}</Text>
-            <Text style={styles.footerSmall}>{FOOTER_COPY.legal}</Text>
+            <Text style={styles.footerSmall}>{t(FOOTER_COPY.copyright)}</Text>
+            <Text style={styles.footerSmall}>{t(FOOTER_COPY.legal)}</Text>
           </View>
         </View>
       </ScrollView>
@@ -293,6 +307,8 @@ function FooterLink({ label, onPress }) {
 }
 
 function FaqRow({ item, first }) {
+  const t = useT();
+
   const [open, setOpen] = useState(false);
   return (
     <View style={[styles.faqRow, !first && { borderTopWidth: 1, borderTopColor: colors.line }]}>
@@ -302,10 +318,10 @@ function FaqRow({ item, first }) {
         onPress={() => setOpen((value) => !value)}
         style={styles.faqQuestion}
       >
-        <Text style={styles.faqQ}>{item.q}</Text>
+        <Text style={styles.faqQ}>{t(item.q)}</Text>
         <Feather name={open ? 'minus' : 'plus'} size={18} color={colors.accent} />
       </Pressable>
-      {open ? <Text style={styles.faqA}>{item.a}</Text> : null}
+      {open ? <Text style={styles.faqA}>{t(item.a)}</Text> : null}
     </View>
   );
 }

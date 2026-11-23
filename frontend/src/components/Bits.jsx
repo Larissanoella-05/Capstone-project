@@ -5,6 +5,7 @@ import {
   STATUS_TIME_FIELD,
   fmtTime,
 } from '../lib/format.js';
+import { useT } from '../context/LanguageContext.jsx';
 import { STEPPER_STEPS, stepperState } from '../lib/stepper.js';
 
 const CATEGORY_ICON = {
@@ -42,9 +43,10 @@ export function Avatar({ name }) {
 }
 
 export function KeyRow({ label, children, mono = false, last = false }) {
+  const t = useT();
   return (
     <div className={`flex justify-between gap-4 py-2.5 ${last ? '' : 'border-b border-line'}`}>
-      <span className="eyebrow shrink-0 leading-5">{label}</span>
+      <span className="eyebrow shrink-0 leading-5">{t(label)}</span>
       <span className={`text-right text-[13px] ${mono ? 'font-medium' : 'font-semibold'}`}>
         {children}
       </span>
@@ -62,12 +64,13 @@ export function Cell({ label, children, className = '' }) {
 }
 
 export function PageHeading({ eyebrow, title, action, children }) {
+  const t = useT();
   return (
     <div>
       <div className="flex items-end justify-between gap-4">
         <div>
-          {eyebrow && <div className="eyebrow">{eyebrow}</div>}
-          <h1 className="display mt-1.5 text-[26px]">{title}</h1>
+          {eyebrow && <div className="eyebrow">{t(eyebrow)}</div>}
+          <h1 className="display mt-1.5 text-[26px]">{t(title)}</h1>
         </div>
         {action}
       </div>
@@ -78,6 +81,8 @@ export function PageHeading({ eyebrow, title, action, children }) {
 
 /** Five segments: done steps are the accent colour, the current step is a lighter accent. */
 export function Stepper({ status }) {
+  const t = useT();
+
   const { current, resolved } = stepperState(status);
   return (
     <div>
@@ -97,8 +102,8 @@ export function Stepper({ status }) {
       </div>
       <div className="eyebrow mt-2">
         {current >= 0
-          ? `Stage ${current + 1} of ${STEPPER_STEPS.length} · ${STATUS_LABEL[status]}`
-          : (STATUS_LABEL[status] ?? status)}
+          ? `${t('Stage {step} of {total}', { step: current + 1, total: STEPPER_STEPS.length })} · ${t(STATUS_LABEL[status])}`
+          : t(STATUS_LABEL[status] ?? status)}
       </div>
     </div>
   );
@@ -106,6 +111,7 @@ export function Stepper({ status }) {
 
 /** Times come from each stage's stored timestamp; `plain` lists the five status names without times. */
 export function VerticalTimeline({ fault, audience = 'customer', plain = false }) {
+  const t = useT();
   const { current, resolved } = stepperState(fault.status);
   const labels = audience === 'customer' && !plain ? CUSTOMER_TIMELINE_LABEL : STATUS_LABEL;
   const cancelled = fault.status === 'CANCELLED';
@@ -141,7 +147,7 @@ export function VerticalTimeline({ fault, audience = 'customer', plain = false }
               <span
                 className={`heading-weight text-sm ${done || active ? 'text-ink' : 'text-mute'}`}
               >
-                {labels[step]}
+                {t(labels[step])}
               </span>
               {!plain && (
                 <span className="text-xs text-grey">

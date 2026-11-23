@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { parseLoginIdentifier } from '../domain/loginIdentifier.js';
+import { LANGUAGES } from '../domain/notificationText.js';
 import { normaliseRwandanPhone } from '../utils/phone.js';
 import { optionalText } from './fault.schemas.js';
 
@@ -8,6 +9,10 @@ const PHONE_MESSAGE = 'Enter a Rwandan mobile number, for example 078 123 4567.'
 const METER_MESSAGE = 'A meter number has 11 or 13 digits.';
 const WHERE_MESSAGE = 'Use your location so we can find your home on the map.';
 const client = z.enum(['web', 'mobile']).optional();
+
+export const languageSchema = z.object({
+  language: z.enum(LANGUAGES, { errorMap: () => ({ message: 'Choose English or Kinyarwanda.' }) }),
+});
 
 /** Sign-in takes `identifier`; `email` is still read (and named in errors) for apps installed before phone sign-in. */
 export const loginSchema = z

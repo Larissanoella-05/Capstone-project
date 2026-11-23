@@ -1,3 +1,4 @@
+import { useT } from '../context/LanguageContext.js';
 import { StyleSheet, Text, View } from 'react-native';
 import { PRIORITY_LABEL, STATUS_LABEL } from '../lib/format.js';
 import { PRIORITY_TONE, STATUS_TONE } from '../lib/statusTone.js';
@@ -6,9 +7,10 @@ import { colors, fonts, radius } from '../theme.js';
 const OUTLINE = { bg: colors.white, fg: colors.ink };
 
 function Pill({ label, tone = OUTLINE }) {
+  const t = useT();
   return (
     <View style={[styles.pill, { backgroundColor: tone.bg }]}>
-      <Text style={[styles.text, { color: tone.fg }]}>{label}</Text>
+      <Text style={[styles.text, { color: tone.fg }]}>{t(label)}</Text>
     </View>
   );
 }
@@ -18,9 +20,10 @@ export function StatusPill({ status }) {
 }
 
 export function PriorityPill({ priority, withLabel = false }) {
+  const t = useT();
   return (
     <Pill
-      label={`${withLabel ? 'Priority: ' : ''}${PRIORITY_LABEL[priority] ?? priority}`}
+      label={`${withLabel ? `${t('Priority')}: ` : ''}${t(PRIORITY_LABEL[priority] ?? priority)}`}
       tone={PRIORITY_TONE[priority]}
     />
   );

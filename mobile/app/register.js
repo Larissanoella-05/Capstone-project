@@ -1,6 +1,8 @@
+import LanguageSwitch from '../src/components/LanguageSwitch.js';
+import { useT } from '../src/context/LanguageContext.js';
+import { translateErrors } from '../src/lib/i18n.js';
 import { Feather } from '@expo/vector-icons';
-import * as Location from 'expo-location';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
 import {
   KeyboardAvoidingView,
@@ -19,7 +21,8 @@ import { Brand } from '../src/components/Brand.js';
 import MapView from '../src/components/MapView.js';
 import { FormError } from '../src/components/States.js';
 import { useAuth } from '../src/context/AuthContext.js';
-import { accuracyText, pointFromPosition } from '../src/lib/guestReport.js';
+import { useFindMe } from '../src/hooks/useFindMe.js';
+import { accuracyText } from '../src/lib/guestReport.js';
 import { buildRegisterPayload, validateRegisterForm } from '../src/lib/registration.js';
 import { colors, fonts, radius } from '../src/theme.js';
 
@@ -31,11 +34,12 @@ const FIELD_KEYS = ['name', 'phone', 'email', 'password', 'meterNumber', 'cell',
 const SLOW_AFTER_MS = 5000;
 
 function TextField({ label, hint, error, ...input }) {
+  const t = useT();
   return (
     <View style={{ gap: 8 }}>
-      <Eyebrow>{hint ? `${label} (${hint})` : label}</Eyebrow>
+      <Eyebrow>{hint ? `${t(label)} (${t(hint)})` : label}</Eyebrow>
       <TextInput
-        accessibilityLabel={label}
+        accessibilityLabel={t(label)}
         autoCorrect={false}
         style={[styles.field, error && styles.fieldInvalid]}
         {...input}
@@ -46,6 +50,7 @@ function TextField({ label, hint, error, ...input }) {
 }
 
 export default function Register() {
+  const t = useT();
   const { register } = useAuth();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -59,13 +64,17 @@ export default function Register() {
   const [cell, setCell] = useState('');
   const [village, setVillage] = useState('');
   const [landmark, setLandmark] = useState('');
-  const [point, setPoint] = useState(null); // { latitude, longitude, accuracyM }
-  const [locating, setLocating] = useState(false);
-  const [locationNote, setLocationNote] = useState('');
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [slow, setSlow] = useState(false);
+
+  const clearError = useCallback(
+    (key) => setErrors((current) => ({ ...current, [key]: undefined })),
+    []
+  );
+  const clearLocationError = useCallback(() => clearError('location'), [clearError]);
+  const { point, locating, note: locationNote, findMe } = useFindMe(clearLocationError);
 
   const markers = useMemo(
     () =>
@@ -75,38 +84,9 @@ export default function Register() {
     [point]
   );
 
-  function clearError(key) {
-    setErrors((current) => ({ ...current, [key]: undefined }));
-  }
-
-  async function findMe() {
-    setLocationNote('');
-    setLocating(true);
-    try {
-      let permission = await Location.getForegroundPermissionsAsync();
-      if (!permission.granted) permission = await Location.requestForegroundPermissionsAsync();
-      if (!permission.granted) {
-        setLocationNote('Location is off for this app. Allow it in Settings, then try again.');
-        return;
-      }
-      const position = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-      });
-      setPoint(pointFromPosition(position));
-      clearError('location');
-    } catch (error) {
-      console.warn('[location] could not read the position:', error.message);
-      setLocationNote(
-        'Your phone could not find its position. Check that GPS is on and try again.'
-      );
-    } finally {
-      setLocating(false);
-    }
-  }
-
   async function onSubmit() {
     const form = { name, phone, email, password, meterNumber, cell, village, landmark, point };
-    const nextErrors = validateRegisterForm(form);
+    const nextErrors = translateErrors(t, validateRegisterForm(form));
     setErrors(nextErrors);
     setFormError('');
     if (Object.keys(nextErrors).length) return;
@@ -145,20 +125,23 @@ export default function Register() {
         <View style={[styles.hero, { paddingTop: insets.top + 16 }]}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Back"
+            accessibilityLabel={t('Back')}
             onPress={() => router.back()}
             style={styles.back}
           >
             <Feather name="arrow-left" size={22} color={colors.ink} />
           </Pressable>
           <Brand />
+          <View style={{ flex: 1, alignItems: 'flex-end' }}>
+            <LanguageSwitch />
+          </View>
         </View>
 
         <View style={[styles.form, { paddingBottom: insets.bottom + 32 }]}>
           <View>
             <Eyebrow>Customer</Eyebrow>
             <Text accessibilityRole="header" style={styles.formTitle}>
-              Create your account
+              {t('Create your account')}
             </Text>
           </View>
 
@@ -183,12 +166,12 @@ export default function Register() {
               }}
               keyboardType="phone-pad"
               autoComplete="tel"
-              placeholder="078 123 4567"
+              placeholder={t('078 123 4567')}
               error={errors.phone}
             />
             {errors.phone ? null : (
               <Text style={styles.hint}>
-                You can sign in with it, and it is where we text updates.
+                {t('You can sign in with it, and it is where we text updates.')}
               </Text>
             )}
           </View>
@@ -219,29 +202,29 @@ export default function Register() {
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
                 autoComplete="new-password"
-                accessibilityLabel="Password"
+                accessibilityLabel={t('Password')}
                 style={[styles.field, styles.passwordField, errors.password && styles.fieldInvalid]}
               />
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                accessibilityLabel={showPassword ? t('Hide password') : t('Show password')}
                 onPress={() => setShowPassword((shown) => !shown)}
                 style={styles.showPassword}
               >
-                <Text style={styles.showPasswordText}>{showPassword ? 'Hide' : 'Show'}</Text>
+                <Text style={styles.showPasswordText}>{showPassword ? t('Hide') : t('Show')}</Text>
               </Pressable>
             </View>
             {errors.password ? (
               <Text style={styles.fieldError}>{errors.password}</Text>
             ) : (
-              <Text style={styles.hint}>At least 8 characters.</Text>
+              <Text style={styles.hint}>{t('At least 8 characters.')}</Text>
             )}
           </View>
 
           <View style={styles.meter}>
             <View style={styles.meterHead}>
               <Feather name="map-pin" size={18} color={colors.accent} />
-              <Text style={styles.meterTitle}>Your meter</Text>
+              <Text style={styles.meterTitle}>{t('Your meter')}</Text>
             </View>
 
             <View style={{ gap: 8 }}>
@@ -258,8 +241,9 @@ export default function Register() {
               />
               {errors.meterNumber ? null : (
                 <Text style={styles.hint}>
-                  Printed on your meter and on your token receipt. Shared meter? Enter your
-                  landlord's meter number.
+                  {t(
+                    "Printed on your meter and on your token receipt. Shared meter? Enter your landlord's meter number."
+                  )}
                 </Text>
               )}
             </View>
@@ -286,7 +270,7 @@ export default function Register() {
               hint="optional"
               value={landmark}
               onChangeText={setLandmark}
-              placeholder="For example: near the blue gate"
+              placeholder={t('For example: near the blue gate')}
               autoComplete="off"
             />
 
@@ -300,10 +284,10 @@ export default function Register() {
               <Feather name="crosshair" size={18} color={colors.onAccent} />
               <Text style={styles.locateText}>
                 {locating
-                  ? 'Finding your location…'
+                  ? t('Finding your location…')
                   : point
-                    ? 'Update my location'
-                    : 'Use my location'}
+                    ? t('Update my location')
+                    : t('Use my location')}
               </Text>
             </Pressable>
             {errors.location ? (
@@ -313,13 +297,13 @@ export default function Register() {
             ) : null}
             {point ? (
               <View accessibilityLiveRegion="polite" style={{ gap: 2 }}>
-                <Text style={styles.found}>Location found</Text>
-                <Text style={styles.hint}>{accuracyText(point.accuracyM)}</Text>
+                <Text style={styles.found}>{t('Location found')}</Text>
+                <Text style={styles.hint}>{accuracyText(point.accuracyM, t)}</Text>
               </View>
             ) : null}
             {locationNote ? (
               <Text accessibilityRole="alert" style={styles.fieldError}>
-                {locationNote}
+                {t(locationNote)}
               </Text>
             ) : null}
             {point ? (
@@ -327,7 +311,7 @@ export default function Register() {
                 markers={markers}
                 interactive={false}
                 height={160}
-                label="Map showing the location your phone found"
+                label={t('Map showing the location your phone found')}
               />
             ) : null}
           </View>
@@ -342,13 +326,13 @@ export default function Register() {
             style={({ pressed }) => [styles.submit, (submitting || pressed) && { opacity: 0.75 }]}
           >
             <Text style={styles.submitText}>
-              {submitting ? 'Creating your account…' : 'Create account'}
+              {submitting ? t('Creating your account…') : t('Create account')}
             </Text>
           </Pressable>
 
           {slow ? (
             <Text accessibilityLiveRegion="polite" style={styles.hint}>
-              Waking the server, this can take up to a minute…
+              {t('Waking the server, this can take up to a minute…')}
             </Text>
           ) : null}
 
@@ -358,7 +342,7 @@ export default function Register() {
             style={styles.signIn}
           >
             <Text style={styles.hint}>
-              Already registered? <Text style={styles.link}>Sign in</Text>
+              {t('Already registered?')} <Text style={styles.link}>{t('Sign in')}</Text>
             </Text>
           </Pressable>
         </View>

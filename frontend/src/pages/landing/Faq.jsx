@@ -1,9 +1,12 @@
+import { useTranslated } from '../../context/LanguageContext.jsx';
 import { useState } from 'react';
-import { FAQ } from '../../lib/landingContent.js';
+import { FAQ as FAQ_COPY } from '../../lib/landingContent.js';
 import { ChevronDown } from './LandingBits.jsx';
 
 /** Two-column accordion: one answer open at a time, the first open to start. */
 export default function Faq({ seen }) {
+  const FAQ = useTranslated(FAQ_COPY);
+
   const [open, setOpen] = useState(0);
 
   return (

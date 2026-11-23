@@ -1,3 +1,4 @@
+import { useT } from '../../../src/context/LanguageContext.js';
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -41,6 +42,7 @@ const NEXT_ACTION = {
 };
 
 export default function JobDetails() {
+  const t = useT();
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const toast = useToast();
@@ -49,7 +51,7 @@ export default function JobDetails() {
   const [busy, setBusy] = useState(false);
 
   const open = async (url, failure) => {
-    if (!(await openLink(url))) toast(failure, 'error');
+    if (!(await openLink(url))) toast(t(failure), 'error');
   };
   const [actionError, setActionError] = useState('');
 
@@ -59,7 +61,7 @@ export default function JobDetails() {
     try {
       await api(`/faults/${fault.id}/status`, { method: 'PATCH', body: { status: next.status } });
       await state.reload();
-      toast(next.done);
+      toast(t(next.done));
     } catch (error) {
       setActionError(error.message);
       if (error.status === 409) state.reload(); // someone else changed it: show the real status
@@ -106,10 +108,11 @@ export default function JobDetails() {
             <>
               <View style={styles.hero}>
                 <Eyebrow>
-                  Fault #{fault.reference} · Reported {fmtTime(fault.reportedAt)}
+                  {t('Fault #{reference}', { reference: fault.reference })} ·{' '}
+                  {t('Reported {when}', { when: fmtTime(fault.reportedAt) })}
                 </Eyebrow>
                 <Text accessibilityRole="header" style={styles.title}>
-                  {CATEGORY_LABEL[fault.category]}
+                  {t(CATEGORY_LABEL[fault.category])}
                 </Text>
                 <View style={styles.pills}>
                   <PriorityPill priority={fault.priority} withLabel />
@@ -126,14 +129,17 @@ export default function JobDetails() {
                   <Eyebrow>Service location</Eyebrow>
                   <Text style={styles.location}>{locationLine(location)}</Text>
                   <Text style={styles.text}>
-                    {[location.village && `${location.village} village`, location.landmark]
+                    {[
+                      location.village && t('{village} village', { village: location.village }),
+                      location.landmark,
+                    ]
                       .filter(Boolean)
                       .join('. ')}
                   </Text>
                   <Text style={[styles.mono, { marginTop: 8 }]}>
                     {coordinatesText(location)}
                     {approaching && Number.isFinite(fault.technician?.distanceKm)
-                      ? ` · ${fmtKm(fault.technician.distanceKm)} away`
+                      ? ` · ${t('{distance} away', { distance: fmtKm(fault.technician.distanceKm) })}`
                       : ''}
                   </Text>
                 </View>
@@ -168,7 +174,7 @@ export default function JobDetails() {
               </Panel>
 
               <Panel>
-                <PanelHead>Response status</PanelHead>
+                <PanelHead>{t('Response status')}</PanelHead>
                 {STAGES.slice(1).map((stage, index) => {
                   const step = index + 1;
                   const time = fault[STATUS_TIME_FIELD[stage]];
@@ -201,10 +207,10 @@ export default function JobDetails() {
                           done || active ? { fontFamily: fonts.bold } : { color: colors.muted },
                         ]}
                       >
-                        {STATUS_LABEL[stage]}
+                        {t(STATUS_LABEL[stage])}
                       </Text>
                       <Text style={styles.mono}>
-                        {active ? `Now · ${fmtTime(time)}` : fmtTime(time)}
+                        {active ? `${t('Now')} · ${fmtTime(time)}` : fmtTime(time)}
                       </Text>
                     </View>
                   );
@@ -215,33 +221,35 @@ export default function JobDetails() {
 
               {fault.status === 'RESOLVED' ? (
                 <Panel>
-                  <PanelHead style={{ backgroundColor: colors.ok }}>Resolution recorded</PanelHead>
+                  <PanelHead style={{ backgroundColor: colors.ok }}>
+                    {t('Resolution recorded')}
+                  </PanelHead>
                   <View style={styles.body}>
-                    <Text style={styles.outcome}>{OUTCOME_LABEL[fault.outcome]}</Text>
+                    <Text style={styles.outcome}>{t(OUTCOME_LABEL[fault.outcome])}</Text>
                     <Text style={styles.text}>{fault.resolutionNote}</Text>
                     {fault.workCompleted ? (
                       <Text style={styles.text}>
-                        <Text style={{ fontFamily: fonts.bold }}>Work completed: </Text>
+                        <Text style={{ fontFamily: fonts.bold }}>{t('Work completed')}: </Text>
                         {fault.workCompleted}
                       </Text>
                     ) : null}
                     <Text style={[styles.mono, { color: colors.muted }]}>
-                      Completed {fmtDateTime(fault.resolvedAt)}
+                      {t('Completed {when}', { when: fmtDateTime(fault.resolvedAt, t) })}
                     </Text>
                   </View>
                 </Panel>
               ) : null}
 
               <Panel>
-                <PanelHead>Description</PanelHead>
+                <PanelHead>{t('Description')}</PanelHead>
                 <View style={styles.body}>
                   <Text style={styles.text}>
-                    {fault.description || 'The customer did not add a description.'}
+                    {fault.description || t('The customer did not add a description.')}
                   </Text>
                   {fault.photo ? (
                     <Image
                       source={{ uri: fault.photo }}
-                      accessibilityLabel="Photo attached by the customer"
+                      accessibilityLabel={t('Photo attached by the customer')}
                       resizeMode="cover"
                       style={styles.photo}
                     />
@@ -250,7 +258,7 @@ export default function JobDetails() {
               </Panel>
 
               <Panel>
-                <PanelHead>Customer</PanelHead>
+                <PanelHead>{t('Customer')}</PanelHead>
                 <View
                   style={[
                     styles.body,
@@ -258,8 +266,10 @@ export default function JobDetails() {
                   ]}
                 >
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.customer}>{customerName}</Text>
-                    {meter ? <Text style={styles.mono}>Meter {meter}</Text> : null}
+                    <Text style={styles.customer}>{t(customerName)}</Text>
+                    {meter ? (
+                      <Text style={styles.mono}>{t('Meter {number}', { number: meter })}</Text>
+                    ) : null}
                   </View>
                   {customerPhone ? (
                     <Button
@@ -309,6 +319,8 @@ const TRACKING_NOTICE = {
 
 /** Says what the tracker is really doing, including when permission was refused or GPS is off. */
 function TrackingNotice({ status }) {
+  const t = useT();
+
   const [icon, message, problem] = TRACKING_NOTICE[status] ?? TRACKING_NOTICE.idle;
   return (
     <View
@@ -316,7 +328,7 @@ function TrackingNotice({ status }) {
       style={[styles.sharing, problem && styles.sharingProblem]}
     >
       <Feather name={icon} size={18} color={problem ? colors.danger : colors.ink} />
-      <Text style={[styles.sharingText, problem && { color: colors.danger }]}>{message}</Text>
+      <Text style={[styles.sharingText, problem && { color: colors.danger }]}>{t(message)}</Text>
     </View>
   );
 }

@@ -1,10 +1,12 @@
+import { useT } from '../context/LanguageContext.jsx';
 import { Link } from 'react-router-dom';
 
 /** Tabs are `{ to, label, icon, isActive }`; a numeric badge marks `unreadPath` when `unread` is above 0. */
 export default function BottomNav({ tabs, pathname, unreadPath, unread = 0 }) {
+  const t = useT();
   return (
     <nav
-      aria-label="Main"
+      aria-label={t('Main')}
       className="sticky bottom-0 z-[1000] grid h-(--nav-h) box-content border-t border-line bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
       style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
     >
@@ -37,7 +39,7 @@ export default function BottomNav({ tabs, pathname, unreadPath, unread = 0 }) {
                 </span>
               )}
             </span>
-            <span>{tab.label}</span>
+            <span>{t(tab.label)}</span>
           </Link>
         );
       })}

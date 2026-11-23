@@ -1,7 +1,16 @@
-import { CTA, HOTLINE_HREF, REGISTER_LINK, REPORT_LINK } from '../../lib/landingContent.js';
+import { useT, useTranslated } from '../../context/LanguageContext.jsx';
+import {
+  CTA as CTA_COPY,
+  HOTLINE_HREF,
+  REGISTER_LINK,
+  REPORT_LINK,
+} from '../../lib/landingContent.js';
 import { ArrowUpRight, LoginLink } from './LandingBits.jsx';
 
 export default function Cta({ seen }) {
+  const t = useT();
+  const CTA = useTranslated(CTA_COPY);
+
   return (
     <section id="cta" className={`lp-sec lp-alt lp-cta-sec ${seen ? 'lp-seen' : ''}`}>
       <div className="lp-bgd lp-cct" aria-hidden="true" style={{ inset: 0, opacity: 0.8 }} />
@@ -44,7 +53,7 @@ export default function Cta({ seen }) {
           <div
             className="lp-cta-photo lp-img lp-img-tower"
             role="img"
-            aria-label="Lineman looking up at a pole"
+            aria-label={t('Lineman looking up at a pole')}
           />
         </div>
       </div>

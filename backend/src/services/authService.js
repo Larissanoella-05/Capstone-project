@@ -22,6 +22,15 @@ function taken(/** @type {'phone' | 'email'} */ field) {
   return error;
 }
 
+/** Saves the language this person's notifications are written in. */
+export function setLanguage(userId, language) {
+  return prisma.user.update({
+    where: { id: userId },
+    data: { language },
+    select: { language: true },
+  });
+}
+
 /**
  * Finds the account for what was typed in the "Email or phone" box, with its role profiles.
  * @param {string} identifier

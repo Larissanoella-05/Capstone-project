@@ -1,3 +1,4 @@
+import { useT } from '../context/LanguageContext.js';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -17,6 +18,7 @@ export default function NotificationsList({ intro }) {
   const { user } = useAuth();
   const router = useRouter();
   const toast = useToast();
+  const t = useT();
   const state = useNotifications();
   const [busy, setBusy] = useState(false);
 
@@ -25,7 +27,7 @@ export default function NotificationsList({ intro }) {
     try {
       await api('/notifications/read-all', { method: 'PATCH' });
       await state.reload();
-      toast('All notifications marked as read.');
+      toast(t('All notifications marked as read.'));
     } catch (error) {
       toast(error.message, 'error');
     } finally {
@@ -50,15 +52,18 @@ export default function NotificationsList({ intro }) {
 
   return (
     <Screen>
-      <PageHeading eyebrow={state.data ? `${state.unread} unread` : 'Alerts'} title="Alerts">
-        {intro ? <Text style={styles.intro}>{intro}</Text> : null}
+      <PageHeading
+        eyebrow={state.data ? t('{count} unread', { count: state.unread }) : 'Alerts'}
+        title="Alerts"
+      >
+        {intro ? <Text style={styles.intro}>{t(intro)}</Text> : null}
       </PageHeading>
 
       <Async state={state} label="Loading notifications">
         {(data) =>
           data.notifications.length === 0 ? (
-            <EmptyState title="No notifications yet">
-              Updates about your faults will appear here.
+            <EmptyState title={t('No notifications yet')}>
+              {t('Updates about your faults will appear here.')}
             </EmptyState>
           ) : (
             <>
@@ -74,7 +79,7 @@ export default function NotificationsList({ intro }) {
                   <Pressable
                     key={notification.id}
                     accessibilityRole="button"
-                    accessibilityLabel={`${notification.read ? '' : 'Unread. '}${notification.title}. ${notification.message}`}
+                    accessibilityLabel={`${notification.read ? '' : `${t('Unread')}. `}${notification.title}. ${notification.message}`}
                     onPress={() => open(notification)}
                     style={styles.item}
                   >
@@ -83,7 +88,7 @@ export default function NotificationsList({ intro }) {
                         {!notification.read ? <View style={styles.dot} /> : null}
                         <Text style={styles.title}>{notification.title}</Text>
                       </View>
-                      <Eyebrow>{timeAgo(notification.createdAt)}</Eyebrow>
+                      <Eyebrow>{timeAgo(notification.createdAt, t)}</Eyebrow>
                     </View>
                     <Text style={styles.message}>{notification.message}</Text>
                   </Pressable>

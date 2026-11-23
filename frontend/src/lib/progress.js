@@ -1,3 +1,5 @@
+import { plain } from './i18n.js';
+
 /** One plain sentence about what happens after each status, for the customer. */
 const NEXT_STEP = {
   REPORTED: 'A coordinator will assign a technician to your report.',
@@ -16,11 +18,11 @@ export const nextStepFor = (status) => NEXT_STEP[status] ?? '';
  * "Checked 2:05 PM" for the last time a screen asked the server, or an empty string before the first answer.
  * @param {number | null | undefined} fetchedAt a Date.now() value
  */
-export function checkedLabel(fetchedAt) {
+export function checkedLabel(fetchedAt, t = plain) {
   if (!fetchedAt) return '';
   const time = new Date(fetchedAt).toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
   });
-  return `Checked ${time}`;
+  return t('Checked {time}', { time });
 }

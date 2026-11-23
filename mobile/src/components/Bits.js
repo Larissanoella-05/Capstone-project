@@ -6,6 +6,7 @@ import {
   STATUS_TIME_FIELD,
   fmtTime,
 } from '../lib/format.js';
+import { useT } from '../context/LanguageContext.js';
 import { colors, fonts, radius } from '../theme.js';
 
 // The five steps the segments and the timeline show. WORKING folds into ARRIVED, as on the web.
@@ -37,6 +38,8 @@ const BUTTON_TONES = {
 
 /** Button in the web's three tones (`volt` is the accent fill). `icon` is a Feather icon name. */
 export function Button({ label, onPress, tone = 'volt', icon, disabled = false, style }) {
+  const t = useT();
+
   const palette = BUTTON_TONES[tone];
   return (
     <Pressable
@@ -52,12 +55,13 @@ export function Button({ label, onPress, tone = 'volt', icon, disabled = false, 
       ]}
     >
       {icon ? <Feather name={icon} size={18} color={palette.color} /> : null}
-      <Text style={[styles.buttonText, { color: palette.color }]}>{label}</Text>
+      <Text style={[styles.buttonText, { color: palette.color }]}>{t(label)}</Text>
     </Pressable>
   );
 }
 
 export function Chip({ label, active, onPress }) {
+  const t = useT();
   return (
     <Pressable
       accessibilityRole="radio"
@@ -65,7 +69,7 @@ export function Chip({ label, active, onPress }) {
       onPress={onPress}
       style={[styles.chip, active && styles.chipActive]}
     >
-      <Text style={[styles.chipText, active && { color: colors.white }]}>{label}</Text>
+      <Text style={[styles.chipText, active && { color: colors.white }]}>{t(label)}</Text>
     </Pressable>
   );
 }
@@ -131,6 +135,7 @@ export function StageBar({ status }) {
 }
 
 export function Timeline({ fault, audience = 'customer' }) {
+  const t = useT();
   const current = stepIndex(fault.status);
   const resolved = fault.status === 'RESOLVED';
   const labels = audience === 'customer' ? CUSTOMER_TIMELINE_LABEL : STATUS_LABEL;
@@ -169,9 +174,9 @@ export function Timeline({ fault, audience = 'customer' }) {
                   done || active ? { fontFamily: fonts.bold } : { color: colors.ash },
                 ]}
               >
-                {labels[step]}
+                {t(labels[step])}
               </Text>
-              {active ? <Text style={styles.currentNote}>Current stage</Text> : null}
+              {active ? <Text style={styles.currentNote}>{t('Current stage')}</Text> : null}
             </View>
             <Text style={styles.timelineTime}>{fmtTime(time)}</Text>
           </View>
@@ -188,7 +193,7 @@ export function Timeline({ fault, audience = 'customer' }) {
             />
           </View>
           <Text style={[styles.timelineLabel, { flex: 1, fontFamily: fonts.bold }]}>
-            Report cancelled
+            {t('Report cancelled')}
           </Text>
           <Text style={styles.timelineTime}>{fmtTime(fault.cancelledAt)}</Text>
         </View>
@@ -222,7 +227,12 @@ export function MapLegend({ items }) {
 }
 
 export function Eyebrow({ children, style }) {
-  return <Text style={[styles.eyebrow, style]}>{children}</Text>;
+  const t = useT();
+  return (
+    <Text style={[styles.eyebrow, style]}>
+      {typeof children === 'string' ? t(children) : children}
+    </Text>
+  );
 }
 
 export function KeyRow({ label, children, mono = false, last = false }) {
@@ -244,11 +254,12 @@ export function Cell({ label, children, style }) {
 }
 
 export function PageHeading({ eyebrow, title, children }) {
+  const t = useT();
   return (
     <View style={styles.heading}>
       {eyebrow ? <Eyebrow>{eyebrow}</Eyebrow> : null}
       <Text accessibilityRole="header" style={styles.title}>
-        {title}
+        {t(title)}
       </Text>
       {children}
     </View>

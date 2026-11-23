@@ -1,5 +1,6 @@
+import { useT, useTranslated } from '../../context/LanguageContext.jsx';
 import { Link } from 'react-router-dom';
-import { FOOTER } from '../../lib/landingContent.js';
+import { FOOTER as FOOTER_COPY } from '../../lib/landingContent.js';
 import { Bolt, LoginLink } from './LandingBits.jsx';
 
 function FooterLink({ item }) {
@@ -25,6 +26,9 @@ function FooterLink({ item }) {
 }
 
 export default function LandingFooter() {
+  const t = useT();
+  const FOOTER = useTranslated(FOOTER_COPY);
+
   return (
     <footer className="lp-footer">
       <div className="lp-bgd lp-cct" aria-hidden="true" style={{ inset: 0, opacity: 0.6 }} />
@@ -62,7 +66,7 @@ export default function LandingFooter() {
           )}
         </div>
         <div>
-          <h4>Quick Links</h4>
+          <h4>{t('Quick Links')}</h4>
           <div className="lp-fcol">
             {FOOTER.quickLinks.map((item) => (
               <FooterLink key={item.label} item={item} />
@@ -70,7 +74,7 @@ export default function LandingFooter() {
           </div>
         </div>
         <div>
-          <h4>Services</h4>
+          <h4>{t('Services')}</h4>
           <div className="lp-fcol">
             {FOOTER.services.map((item) => (
               <FooterLink key={item.label} item={item} />

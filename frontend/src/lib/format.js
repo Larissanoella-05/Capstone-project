@@ -1,4 +1,5 @@
 // Labels and formatting shared by every screen, so the three roles always use the same words.
+import { plain } from './i18n.js';
 
 export const STAGES = ['REPORTED', 'ASSIGNED', 'ON_THE_WAY', 'ARRIVED', 'WORKING', 'RESOLVED'];
 export const OPEN_STATUSES = ['REPORTED', 'ASSIGNED', 'ON_THE_WAY', 'ARRIVED', 'WORKING'];
@@ -96,11 +97,11 @@ export function fmtTime(value) {
   return new Date(value).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
-export function fmtDateTime(value) {
+export function fmtDateTime(value, t = plain) {
   if (!value) return '—';
   const date = new Date(value);
   const today = new Date();
-  if (date.toDateString() === today.toDateString()) return `Today, ${fmtTime(date)}`;
+  if (date.toDateString() === today.toDateString()) return `${t('Today')}, ${fmtTime(date)}`;
   const day = date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   return `${day}, ${fmtTime(date)}`;
 }
@@ -113,16 +114,17 @@ export function fmtDate(value = new Date()) {
   });
 }
 
-export function timeAgo(value) {
+/** `t` translates the words; without one the text stays English. */
+export function timeAgo(value, t = plain) {
   if (!value) return '—';
   const seconds = Math.max(0, Math.round((Date.now() - new Date(value).getTime()) / 1000));
-  if (seconds < 45) return 'just now';
+  if (seconds < 45) return t('just now');
   const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `${minutes} min ago`;
+  if (minutes < 60) return t('{minutes} min ago', { minutes });
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+  if (hours < 24) return t(hours === 1 ? '{hours} hour ago' : '{hours} hours ago', { hours });
   const days = Math.round(hours / 24);
-  return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+  return t(days === 1 ? '{days} day ago' : '{days} days ago', { days });
 }
 
 export function minutesBetween(from, to) {

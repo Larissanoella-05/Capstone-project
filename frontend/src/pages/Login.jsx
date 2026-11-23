@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { HOME_BY_ROLE, useAuth } from '../context/AuthContext.jsx';
+import { useT } from '../context/LanguageContext.jsx';
+import LanguageSwitch from '../components/LanguageSwitch.jsx';
 import { LogoMark, PilotBanner } from '../components/Brand.jsx';
 import { Field } from '../components/Field.jsx';
 import { FormError } from '../components/States.jsx';
@@ -33,6 +35,7 @@ const ROLES = [
 
 export default function Login() {
   const { user, login } = useAuth();
+  const t = useT();
   const location = useLocation();
 
   const [role, setRole] = useState(ROLES[0]);
@@ -59,8 +62,8 @@ export default function Login() {
     event.preventDefault();
     const nextErrors = {};
     const problem = identifierError(identifier);
-    if (problem) nextErrors.identifier = problem;
-    if (!password) nextErrors.password = 'Enter your password.';
+    if (problem) nextErrors.identifier = t(problem);
+    if (!password) nextErrors.password = t('Enter your password.');
     setErrors(nextErrors);
     setFormError('');
     if (Object.keys(nextErrors).length) return;
@@ -82,7 +85,9 @@ export default function Login() {
         <div className="relative flex h-[220px] flex-col justify-between overflow-hidden p-5 lg:h-auto lg:p-10">
           <img
             src="/landing/silhouette.jpg"
-            alt="Silhouette of a lineworker in a hard hat and harness climbing a timber frame, with a crane behind"
+            alt={t(
+              'Silhouette of a lineworker in a hard hat and harness climbing a timber frame, with a crane behind'
+            )}
             className="absolute inset-0 h-full w-full object-cover"
           />
           <div
@@ -97,22 +102,25 @@ export default function Login() {
             <span className="heading-weight text-2xl tracking-[-0.02em]">Umuriro</span>
           </Link>
           <p className="display relative m-0 max-w-md text-xl text-white lg:text-[34px]">
-            Assign technicians and keep every fault moving.
+            {t('Assign technicians and keep every fault moving.')}
           </p>
         </div>
 
         <div className="flex items-start justify-center px-5 py-8 lg:items-center lg:p-12">
           <div className="w-full max-w-[440px] rounded-card bg-white p-6 text-ink shadow-lg sm:p-8">
-            <h1 className="display text-[28px]">Sign in</h1>
+            <div className="flex items-start justify-between gap-3">
+              <h1 className="display text-[28px]">{t('Sign in')}</h1>
+              <LanguageSwitch />
+            </div>
             <p className="mb-6 mt-2 text-sm text-grey">
-              Use your email address or your phone number.
+              {t('Use your email address or your phone number.')}
             </p>
 
             <form onSubmit={onSubmit} noValidate className="flex flex-col gap-[18px]">
               {DEMO && (
                 <div className="flex flex-col gap-2">
                   <div className="eyebrow" id="role-label">
-                    Signing in as
+                    {t('Signing in as')}
                   </div>
                   <div role="group" aria-labelledby="role-label" className="grid grid-cols-3 gap-2">
                     {ROLES.map((item) => {
@@ -129,23 +137,25 @@ export default function Login() {
                               : 'border-border bg-white font-medium text-ink'
                           }`}
                         >
-                          {item.label}
+                          {t(item.label)}
                         </button>
                       );
                     })}
                   </div>
-                  <p className="m-0 text-xs text-grey">Signing in as {role.person}</p>
+                  <p className="m-0 text-xs text-grey">
+                    {t('Signing in as {name}', { name: role.person })}
+                  </p>
                 </div>
               )}
 
-              <Field id="identifier" label="Email or phone" error={errors.identifier}>
+              <Field id="identifier" label={t('Email or phone')} error={errors.identifier}>
                 <input
                   id="identifier"
                   type="text"
                   inputMode="email"
                   autoComplete="username"
                   autoCapitalize="none"
-                  placeholder="Email or 078 123 4567"
+                  placeholder={t('Email or 078 123 4567')}
                   className="field"
                   value={identifier}
                   aria-invalid={Boolean(errors.identifier)}
@@ -156,12 +166,13 @@ export default function Login() {
 
               <Field
                 id="password"
-                label="Password"
+                label={t('Password')}
                 error={errors.password}
                 help={
                   DEMO ? (
                     <>
-                      Prototype: every demo account uses the password <strong>demo1234</strong>.
+                      {t('Prototype: every demo account uses the password')}{' '}
+                      <strong>demo1234</strong>.
                     </>
                   ) : undefined
                 }
@@ -171,7 +182,7 @@ export default function Login() {
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="current-password"
-                    placeholder="Enter your password"
+                    placeholder={t('Enter your password')}
                     className="field pr-16"
                     value={password}
                     aria-invalid={Boolean(errors.password)}
@@ -182,13 +193,13 @@ export default function Login() {
                   />
                   <button
                     type="button"
-                    aria-label="Show password"
+                    aria-label={t('Show password')}
                     aria-pressed={showPassword}
                     aria-controls="password"
                     className="absolute inset-y-0 right-0 min-w-11 cursor-pointer bg-transparent px-3 text-xs font-semibold text-grey focus-visible:outline-2 focus-visible:outline-accent"
                     onClick={() => setShowPassword((shown) => !shown)}
                   >
-                    {showPassword ? 'Hide' : 'Show'}
+                    {showPassword ? t('Hide') : t('Show')}
                   </button>
                 </div>
               </Field>
@@ -196,23 +207,23 @@ export default function Login() {
               <FormError>{formError}</FormError>
 
               <button type="submit" className="btn btn-accent btn-lg w-full" disabled={submitting}>
-                {submitting ? 'Signing in…' : 'Sign in'}
+                {submitting ? t('Signing in…') : t('Sign in')}
               </button>
             </form>
 
             <div className="mt-6 flex flex-col gap-1 border-t border-line pt-4 text-xs text-grey">
               <p className="m-0">
-                New customer?{' '}
+                {t('New customer?')}{' '}
                 <Link to="/register" className="font-semibold text-accent">
-                  Create an account
+                  {t('Create an account')}
                 </Link>
-                . Technicians and coordinators: ask your administrator for access.
+                . {t('Technicians and coordinators: ask your administrator for access.')}
               </p>
               <Link
                 to="/"
                 className="inline-flex min-h-11 items-center self-start text-sm font-semibold text-accent focus-visible:outline-accent"
               >
-                ← Back to Umuriro
+                ← {t('Back to Umuriro')}
               </Link>
             </div>
           </div>

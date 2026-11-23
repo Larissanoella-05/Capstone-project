@@ -1,3 +1,4 @@
+import { useT } from '../../../src/context/LanguageContext.js';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -30,6 +31,7 @@ import { faultMapParts } from '../../../src/lib/mapParts.js';
 import { colors, fonts, radius, shadow } from '../../../src/theme.js';
 
 export default function CustomerDashboard() {
+  const t = useT();
   const { user } = useAuth();
   const router = useRouter();
   const toast = useToast();
@@ -43,10 +45,10 @@ export default function CustomerDashboard() {
     <Screen>
       <View style={styles.hero}>
         <Text style={styles.greeting}>
-          {greeting()}, {firstNames(user.name)}
+          {t(greeting())}, {firstNames(user.name)}
         </Text>
         <Text accessibilityRole="header" style={styles.title}>
-          {current ? 'Your fault is being handled' : 'Is your electricity not working?'}
+          {current ? t('Your fault is being handled') : t('Is your electricity not working?')}
         </Text>
       </View>
 
@@ -59,9 +61,10 @@ export default function CustomerDashboard() {
                 onTrack={() => router.push(`/customer/faults/${current.id}`)}
               />
             ) : (
-              <EmptyState title="No open fault">
-                Nothing in progress. If your power is out or something is wrong at the meter, report
-                it and we will send a technician.
+              <EmptyState title={t('No open fault')}>
+                {t(
+                  'Nothing in progress. If your power is out or something is wrong at the meter, report it and we will send a technician.'
+                )}
               </EmptyState>
             )}
 
@@ -72,38 +75,40 @@ export default function CustomerDashboard() {
                 style={[styles.tile, styles.tileAccent]}
               >
                 <Feather name="zap" size={26} color={colors.onAccent} />
-                <Text style={[styles.tileTitle, { color: colors.onAccent }]}>Report a fault</Text>
+                <Text style={[styles.tileTitle, { color: colors.onAccent }]}>
+                  {t('Report a fault')}
+                </Text>
               </Pressable>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="Real emergency? Call 2727"
+                accessibilityLabel={t('Real emergency? Call 2727')}
                 onPress={async () => {
                   if (!(await openLink('tel:2727')))
-                    toast('This phone cannot make calls.', 'error');
+                    toast(t('This phone cannot make calls.'), 'error');
                 }}
                 style={[styles.tile, styles.tileWhite]}
               >
                 <Feather name="phone" size={26} color={colors.accent} />
                 <View>
-                  <Text style={styles.tileTitle}>Real emergency?</Text>
-                  <Text style={styles.tileNote}>Call 2727</Text>
+                  <Text style={styles.tileTitle}>{t('Real emergency?')}</Text>
+                  <Text style={styles.tileNote}>{t('Call 2727')}</Text>
                 </View>
               </Pressable>
             </View>
 
             <View style={{ gap: 12 }}>
               <View style={styles.sectionRow}>
-                <Text style={styles.sectionTitle}>Recent reports</Text>
+                <Text style={styles.sectionTitle}>{t('Recent reports')}</Text>
                 <Pressable
                   accessibilityRole="link"
                   hitSlop={12}
                   onPress={() => router.navigate('/customer/reports')}
                 >
-                  <Text style={styles.link}>View all</Text>
+                  <Text style={styles.link}>{t('View all')}</Text>
                 </Pressable>
               </View>
               {recent.length === 0 ? (
-                <Text style={styles.empty}>No reports yet.</Text>
+                <Text style={styles.empty}>{t('No reports yet.')}</Text>
               ) : (
                 recent.map((fault) => (
                   <Pressable
@@ -114,9 +119,9 @@ export default function CustomerDashboard() {
                     <Panel style={styles.recent}>
                       <FaultIcon category={fault.category} />
                       <View style={{ flex: 1 }}>
-                        <Text style={styles.category}>{CATEGORY_LABEL[fault.category]}</Text>
+                        <Text style={styles.category}>{t(CATEGORY_LABEL[fault.category])}</Text>
                         <Text style={styles.ref}>
-                          #{fault.reference} · {timeAgo(fault.reportedAt)}
+                          #{fault.reference} · {timeAgo(fault.reportedAt, t)}
                         </Text>
                       </View>
                       <StatusPill status={fault.status} />
@@ -133,22 +138,26 @@ export default function CustomerDashboard() {
 }
 
 function CurrentFault({ fault, onTrack }) {
+  const t = useT();
+
   const { markers, lines } = faultMapParts(fault);
   return (
-    <Panel accessibilityLabel={`Current fault ${fault.reference}`}>
+    <Panel accessibilityLabel={t('Current fault {reference}', { reference: fault.reference })}>
       <View style={styles.statusBlock}>
         <Eyebrow style={{ color: colors.onAccent, opacity: 0.85 }}>
-          Current status · Fault #{fault.reference}
+          {t('Current status · Fault #{reference}', { reference: fault.reference })}
         </Eyebrow>
-        <Text style={styles.headline}>{CUSTOMER_HEADLINE[fault.status]}</Text>
-        <Text style={styles.updated}>Last updated {timeAgo(fault.updatedAt)}</Text>
+        <Text style={styles.headline}>{t(CUSTOMER_HEADLINE[fault.status])}</Text>
+        <Text style={styles.updated}>
+          {t('Last updated {when}', { when: timeAgo(fault.updatedAt, t) })}
+        </Text>
       </View>
       <View style={styles.details}>
         <KeyRow label="Report ID" mono>
           #{fault.reference}
         </KeyRow>
-        <KeyRow label="Fault category">{CATEGORY_LABEL[fault.category]}</KeyRow>
-        <KeyRow label="Technician">{fault.technician?.name ?? 'Not assigned yet'}</KeyRow>
+        <KeyRow label="Fault category">{t(CATEGORY_LABEL[fault.category])}</KeyRow>
+        <KeyRow label="Technician">{fault.technician?.name ?? t('Not assigned yet')}</KeyRow>
         <KeyRow label="Location" last>
           {locationLine(fault.serviceLocation)}
         </KeyRow>

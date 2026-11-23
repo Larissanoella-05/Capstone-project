@@ -16,6 +16,7 @@ import {
   trackingPath,
   validateGuestForm,
 } from '../../lib/guestReport.js';
+import { useT } from '../../context/LanguageContext.jsx';
 import { Card } from '../../components/Card.jsx';
 import { CategoryOption, Field } from '../../components/Field.jsx';
 import MapView from '../../components/MapView.jsx';
@@ -55,6 +56,7 @@ function saveReport(entry) {
 
 export default function GuestReport() {
   const navigate = useNavigate();
+  const t = useT();
 
   const [category, setCategory] = useState('');
   const [point, setPoint] = useState(null); // { latitude, longitude, accuracyM }
@@ -80,11 +82,11 @@ export default function GuestReport() {
               lat: point.latitude,
               lng: point.longitude,
               kind: 'unassigned',
-              label: 'Where the fault is',
+              label: t('Where the fault is'),
             },
           ]
         : [],
-    [point]
+    [point, t]
   );
 
   function clearError(key) {
@@ -94,7 +96,7 @@ export default function GuestReport() {
   function findMe() {
     setLocationNote('');
     if (!('geolocation' in navigator)) {
-      setLocationNote(locationErrorMessage(0));
+      setLocationNote(t(locationErrorMessage(0)));
       return;
     }
     setLocating(true);
@@ -105,7 +107,7 @@ export default function GuestReport() {
         setLocating(false);
       },
       (error) => {
-        setLocationNote(locationErrorMessage(error.code));
+        setLocationNote(t(locationErrorMessage(error.code)));
         setLocating(false);
       },
       LOCATION_OPTIONS
@@ -118,7 +120,7 @@ export default function GuestReport() {
     if (!file) return;
     const problem = photoProblem(file);
     if (problem) {
-      setErrors((current) => ({ ...current, photo: problem }));
+      setErrors((current) => ({ ...current, photo: t(problem) }));
       return;
     }
     try {
@@ -132,7 +134,9 @@ export default function GuestReport() {
   async function onSubmit(event) {
     event.preventDefault();
     const form = { category, contactPhone, point, placeText, claimedMeter, description, photo };
-    const nextErrors = validateGuestForm(form);
+    const nextErrors = Object.fromEntries(
+      Object.entries(validateGuestForm(form)).map(([key, message]) => [key, t(message)])
+    );
     setErrors(nextErrors);
     setFormError('');
     if (Object.keys(nextErrors).length) return;
@@ -149,7 +153,9 @@ export default function GuestReport() {
         state: { reference: fault.reference, sms: fault.sms },
       });
     } catch (error) {
-      setFormError(`Your report was not sent. What you typed is still here. ${error.message}`);
+      setFormError(
+        `${t('Your report was not sent. What you typed is still here.')} ${error.message}`
+      );
       setSubmitting(false);
     }
   }
@@ -157,15 +163,18 @@ export default function GuestReport() {
   return (
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-3.5">
       <div>
-        <h1 className="display text-[26px]">Report a fault</h1>
-        <p className="mb-0 mt-1.5 text-sm text-grey">No account needed. It takes about a minute.</p>
+        <h1 className="display text-[26px]">{t('Report a fault')}</h1>
+        <p className="mb-0 mt-1.5 text-sm text-grey">
+          {t('No account needed. It takes about a minute.')}
+        </p>
       </div>
 
       <p className="m-0 flex items-start gap-2.5 rounded-card border border-red bg-white p-4 text-[13px]">
         <TriangleAlert size={18} className="mt-0.5 shrink-0 text-red" aria-hidden="true" />
         <span>
-          If you can see a fallen, sparking or exposed wire, stay away from it and call{' '}
-          <strong>2727</strong> now. This report is for the pilot and is not an emergency line.
+          {t('If you can see a fallen, sparking or exposed wire, stay away from it and call')}{' '}
+          <strong>2727</strong>{' '}
+          {t('now. This report is for the pilot and is not an emergency line.')}
         </span>
       </p>
 
@@ -174,15 +183,15 @@ export default function GuestReport() {
       <div className="grid gap-3.5 lg:grid-cols-2 lg:items-start lg:gap-8">
         <div className="flex min-w-0 flex-col gap-3.5">
           <fieldset id="category-group" className="m-0 flex min-w-0 flex-col border-0 p-0">
-            <legend className="heading-weight mb-3 p-0 text-lg">What is the problem?</legend>
+            <legend className="heading-weight mb-3 p-0 text-lg">{t('What is the problem?')}</legend>
             <div className="grid gap-2.5">
               {CATEGORIES.map((item) => (
                 <CategoryOption
                   key={item.value}
                   name="category"
                   value={item.value}
-                  label={item.label}
-                  hint={item.hint}
+                  label={t(item.label)}
+                  hint={t(item.hint)}
                   checked={category === item.value}
                   onChange={() => {
                     setCategory(item.value);
@@ -201,7 +210,7 @@ export default function GuestReport() {
           <Card className="flex flex-col gap-3 px-[18px] py-4">
             <div className="heading-weight flex items-center gap-2 text-lg">
               <MapPin size={18} className="shrink-0 text-accent" aria-hidden="true" />
-              Where is the fault?
+              {t('Where is the fault?')}
             </div>
             <button
               type="button"
@@ -211,17 +220,17 @@ export default function GuestReport() {
             >
               <LocateFixed size={18} aria-hidden="true" />
               {locating
-                ? 'Finding your location…'
+                ? t('Finding your location…')
                 : point
-                  ? 'Update my location'
-                  : 'Use my location'}
+                  ? t('Update my location')
+                  : t('Use my location')}
             </button>
             {point && (
               <div role="status" className="text-sm">
-                <div className="font-semibold">Location found</div>
-                <div className="text-grey">{accuracyText(point.accuracyM)}</div>
+                <div className="font-semibold">{t('Location found')}</div>
+                <div className="text-grey">{accuracyText(point.accuracyM, t)}</div>
                 <div className="text-xs text-grey">
-                  If the fault is somewhere else, describe where below.
+                  {t('If the fault is somewhere else, describe where below.')}
                 </div>
               </div>
             )}
@@ -236,22 +245,22 @@ export default function GuestReport() {
                   markers={markers}
                   interactive={false}
                   className="h-40"
-                  ariaLabel="Map showing the location your phone found"
+                  ariaLabel={t('Map showing the location your phone found')}
                 />
               </div>
             )}
             <Field
               id="place"
-              label="Describe the place"
-              hint={point ? '(optional)' : undefined}
+              label={t('Describe the place')}
+              hint={point ? t('(optional)') : undefined}
               error={errors.location}
-              help="Village, cell, a landmark, or the house number."
+              help={t('Village, cell, a landmark, or the house number.')}
             >
               <textarea
                 id="place"
                 rows={2}
                 className="field"
-                placeholder="For example: near the blue gate, Kibenga cell"
+                placeholder={t('For example: near the blue gate, Kibenga cell')}
                 value={placeText}
                 aria-invalid={Boolean(errors.location)}
                 aria-describedby={errors.location ? 'place-error' : 'place-help'}
@@ -265,9 +274,11 @@ export default function GuestReport() {
 
           <Field
             id="contact-phone"
-            label="Your phone number"
+            label={t('Your phone number')}
             error={errors.contactPhone}
-            help="We use it to text you updates about this fault only, and so the technician can call you."
+            help={t(
+              'We use it to text you updates about this fault only, and so the technician can call you.'
+            )}
           >
             <input
               id="contact-phone"
@@ -292,15 +303,15 @@ export default function GuestReport() {
         <div className="flex min-w-0 flex-col gap-3.5">
           <Field
             id="description"
-            label="What happened?"
-            hint="(optional)"
+            label={t('What happened?')}
+            hint={t('(optional)')}
             error={errors.description}
           >
             <textarea
               id="description"
               rows={4}
               className="field"
-              placeholder="Describe the problem"
+              placeholder={t('Describe the problem')}
               value={description}
               aria-invalid={Boolean(errors.description)}
               aria-describedby={errors.description ? 'description-error' : undefined}
@@ -310,10 +321,12 @@ export default function GuestReport() {
 
           <Field
             id="meter"
-            label="Meter number"
-            hint="(optional)"
+            label={t('Meter number')}
+            hint={t('(optional)')}
             error={errors.claimedMeter}
-            help="Printed on your meter and on your token receipt. It helps us match your report; it is not checked."
+            help={t(
+              'Printed on your meter and on your token receipt. It helps us match your report; it is not checked.'
+            )}
           >
             <input
               id="meter"
@@ -331,21 +344,21 @@ export default function GuestReport() {
 
         <div className="flex min-w-0 flex-col gap-1.5">
           <div className="eyebrow flex justify-between">
-            <span>Photo</span>
-            <span>(optional)</span>
+            <span>{t('Photo')}</span>
+            <span>{t('(optional)')}</span>
           </div>
           {photo ? (
             <div className="flex items-center gap-3 rounded-control border border-border bg-white p-2">
               <img
                 src={photo.dataUrl}
-                alt="Selected fault"
+                alt={t('Selected fault')}
                 className="h-16 w-16 rounded-control border border-line object-cover"
               />
               <span className="min-w-0 flex-1 truncate text-sm font-semibold">{photo.name}</span>
               <button
                 type="button"
                 className="btn btn-outline px-3"
-                aria-label="Remove photo"
+                aria-label={t('Remove photo')}
                 onClick={() => setPhoto(null)}
               >
                 <X size={16} aria-hidden="true" />
@@ -355,7 +368,7 @@ export default function GuestReport() {
             <div className="grid grid-cols-2 gap-2.5">
               <label className="flex min-h-[88px] cursor-pointer flex-col items-center justify-center gap-2 rounded-control border border-dashed border-border bg-white px-3 py-4 has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-ink">
                 <Camera size={26} strokeWidth={1.75} aria-hidden="true" />
-                <span className="text-xs font-semibold">Take a photo</span>
+                <span className="text-xs font-semibold">{t('Take a photo')}</span>
                 <input
                   id="photo-camera"
                   type="file"
@@ -367,7 +380,7 @@ export default function GuestReport() {
               </label>
               <label className="flex min-h-[88px] cursor-pointer flex-col items-center justify-center gap-2 rounded-control border border-dashed border-border bg-white px-3 py-4 has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-ink">
                 <Upload size={26} strokeWidth={1.75} aria-hidden="true" />
-                <span className="text-xs font-semibold">Choose a photo</span>
+                <span className="text-xs font-semibold">{t('Choose a photo')}</span>
                 <input
                   id="photo-file"
                   type="file"
@@ -385,7 +398,7 @@ export default function GuestReport() {
       {/* Hidden from people; a simple bot fills every field it finds. */}
       <div aria-hidden="true" className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
         <label>
-          Leave this empty
+          {t('Leave this empty')}
           <input
             type="text"
             name="website"
@@ -405,14 +418,14 @@ export default function GuestReport() {
           className="btn btn-accent btn-lg w-full lg:w-auto lg:px-12"
           disabled={submitting}
         >
-          {submitting ? 'Sending…' : 'Send report'}
+          {submitting ? t('Sending…') : t('Send report')}
         </button>
       </div>
 
       {saved.length > 0 && (
         <section aria-labelledby="saved-heading" className="flex flex-col gap-2">
           <h2 id="saved-heading" className="heading-weight m-0 text-base">
-            Reports from this phone
+            {t('Reports from this phone')}
           </h2>
           <Card className="divide-y divide-line">
             {saved.map((item) => (
@@ -422,7 +435,7 @@ export default function GuestReport() {
                 className="flex min-h-11 items-center justify-between px-[18px] py-3 text-sm font-semibold text-ink no-underline"
               >
                 <span>#{item.reference}</span>
-                <span className="text-accent">Track</span>
+                <span className="text-accent">{t('Track')}</span>
               </Link>
             ))}
           </Card>

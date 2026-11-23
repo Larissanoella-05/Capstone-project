@@ -1,3 +1,4 @@
+import { useT } from '../../context/LanguageContext.jsx';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi.js';
@@ -13,6 +14,8 @@ const FILTERS = [
 ];
 
 export default function Reports() {
+  const t = useT();
+
   const state = useApi('/faults', { interval: 5000 });
   const [filter, setFilter] = useState('ALL');
   const faults = state.data?.faults ?? [];
@@ -22,15 +25,19 @@ export default function Reports() {
     <>
       <PageHeading
         eyebrow={
-          state.data ? `${faults.length} ${faults.length === 1 ? 'report' : 'reports'}` : 'History'
+          state.data
+            ? t(faults.length === 1 ? '{count} report' : '{count} reports', {
+                count: faults.length,
+              })
+            : t('History')
         }
-        title="My reports"
+        title={t('My reports')}
       />
 
       <Async state={state} label="Loading your reports">
         {() => (
           <>
-            <div className="flex flex-wrap gap-2" role="group" aria-label="Filter reports">
+            <div className="flex flex-wrap gap-2" role="group" aria-label={t('Filter reports')}>
               {FILTERS.map((item) => (
                 <button
                   key={item.key}
@@ -39,23 +46,23 @@ export default function Reports() {
                   onClick={() => setFilter(item.key)}
                   className="chip"
                 >
-                  {item.label} {faults.filter(item.test).length}
+                  {t(item.label)} {faults.filter(item.test).length}
                 </button>
               ))}
             </div>
 
             {visible.length === 0 ? (
               <EmptyState
-                title={faults.length ? 'Nothing in this list' : 'No reports yet'}
+                title={faults.length ? t('Nothing in this list') : t('No reports yet')}
                 action={
                   <Link to="/customer/report" className="btn btn-accent">
-                    Report a fault
+                    {t('Report a fault')}
                   </Link>
                 }
               >
                 {faults.length
-                  ? 'Choose another filter to see your other reports.'
-                  : 'When you report a fault it is listed here.'}
+                  ? t('Choose another filter to see your other reports.')
+                  : t('When you report a fault it is listed here.')}
               </EmptyState>
             ) : (
               <ul className="m-0 grid list-none gap-3.5 p-0 md:grid-cols-2 2xl:grid-cols-3">
@@ -69,7 +76,7 @@ export default function Reports() {
                         <FaultIcon category={fault.category} />
                         <div className="min-w-0 flex-1">
                           <div className="heading-weight text-[15px]">
-                            {CATEGORY_LABEL[fault.category]}
+                            {t(CATEGORY_LABEL[fault.category])}
                           </div>
                           <div className="text-[11px] text-grey">
                             #{fault.reference} · {locationLine(fault.serviceLocation)}
@@ -79,12 +86,12 @@ export default function Reports() {
                       </div>
                       <div className="flex flex-col gap-1.5 border-t border-line pt-2.5 text-xs font-medium">
                         <div className="flex justify-between gap-3">
-                          <span className="eyebrow">Technician</span>
+                          <span className="eyebrow">{t('Technician')}</span>
                           <span>{fault.technician?.name ?? '—'}</span>
                         </div>
                         <div className="flex justify-between gap-3">
-                          <span className="eyebrow">Reported</span>
-                          <span>{fmtDateTime(fault.reportedAt)}</span>
+                          <span className="eyebrow">{t('Reported')}</span>
+                          <span>{fmtDateTime(fault.reportedAt, t)}</span>
                         </div>
                       </div>
                     </Link>

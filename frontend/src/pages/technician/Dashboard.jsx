@@ -1,3 +1,4 @@
+import { useT } from '../../context/LanguageContext.jsx';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -28,6 +29,7 @@ export function pickActiveJob(faults) {
 }
 
 export default function TechnicianDashboard() {
+  const t = useT();
   const { user } = useAuth();
   const state = useApi('/faults', { interval: 5000 });
 
@@ -43,7 +45,7 @@ export default function TechnicianDashboard() {
     <>
       <div className="flex items-center justify-between gap-3">
         <div>
-          <div className="text-sm text-grey">{greeting()},</div>
+          <div className="text-sm text-grey">{t(greeting())},</div>
           <h1 className="display text-[26px]">{firstNames(user.name)}</h1>
         </div>
         <Avatar name={user.name} />
@@ -54,9 +56,9 @@ export default function TechnicianDashboard() {
           <div className="flex flex-col gap-5">
             <div className="grid grid-cols-3 gap-3">
               {[
-                ["Today's assignments", assignedToday.length],
-                ['Pending', faults.filter(isOpen).length],
-                ['Completed today', completedToday.length],
+                [t("Today's assignments"), assignedToday.length],
+                [t('Pending'), faults.filter(isOpen).length],
+                [t('Completed today'), completedToday.length],
               ].map(([label, value]) => (
                 <div key={label} className="panel flex min-h-24 flex-col justify-between p-3">
                   <div className="text-xs font-medium text-grey">{label}</div>
@@ -67,16 +69,18 @@ export default function TechnicianDashboard() {
 
             <div className="grid gap-5 lg:grid-cols-2 lg:items-start lg:gap-6">
               {active ? (
-                <section className="panel" aria-label="Next job">
+                <section className="panel" aria-label={t('Next job')}>
                   <div className="flex items-center justify-between gap-3 bg-ink px-4 py-3 text-white">
-                    <span className="heading-weight text-sm">Next job</span>
+                    <span className="heading-weight text-sm">{t('Next job')}</span>
                     <span className="text-xs text-white/75">
-                      Assigned {timeAgo(active.assignedAt)}
+                      {t('Assigned {when}', { when: timeAgo(active.assignedAt, t) })}
                     </span>
                   </div>
                   <div className="flex flex-col gap-1 p-4">
-                    <div className="text-xs text-grey">Fault #{active.reference}</div>
-                    <div className="display text-[24px]">{CATEGORY_LABEL[active.category]}</div>
+                    <div className="text-xs text-grey">
+                      {t('Fault #{reference}', { reference: active.reference })}
+                    </div>
+                    <div className="display text-[24px]">{t(CATEGORY_LABEL[active.category])}</div>
                     <div className="mt-2 text-base font-bold">
                       {locationLine(active.serviceLocation)}
                     </div>
@@ -92,19 +96,20 @@ export default function TechnicianDashboard() {
                     to={`/technician/jobs/${active.id}`}
                     className="flex min-h-12 items-center justify-between bg-accent px-4 text-[15px] font-bold text-on-accent no-underline"
                   >
-                    Open job
+                    {t('Open job')}
+
                     <ChevronRight size={20} aria-hidden="true" />
                   </Link>
                 </section>
               ) : (
-                <EmptyState title="No active job">
-                  New jobs assigned by the service coordinator appear here automatically.
+                <EmptyState title={t('No active job')}>
+                  {t('New jobs assigned by the service coordinator appear here automatically.')}
                 </EmptyState>
               )}
 
               {pending.length > 0 && (
-                <section className="flex min-w-0 flex-col gap-3" aria-label="Waiting">
-                  <h2 className="heading-weight m-0 text-base">Waiting</h2>
+                <section className="flex min-w-0 flex-col gap-3" aria-label={t('Waiting')}>
+                  <h2 className="heading-weight m-0 text-base">{t('Waiting')}</h2>
                   {pending.map((fault) => (
                     <JobRow key={fault.id} fault={fault} />
                   ))}
@@ -119,6 +124,7 @@ export default function TechnicianDashboard() {
 }
 
 function JobRow({ fault }) {
+  const t = useT();
   return (
     <Link
       to={`/technician/jobs/${fault.id}`}
@@ -126,7 +132,7 @@ function JobRow({ fault }) {
     >
       <FaultIcon category={fault.category} />
       <div className="min-w-0 flex-1">
-        <div className="heading-weight text-[15px]">{CATEGORY_LABEL[fault.category]}</div>
+        <div className="heading-weight text-[15px]">{t(CATEGORY_LABEL[fault.category])}</div>
         <div className="truncate text-xs text-grey">
           #{fault.reference} · {locationLine(fault.serviceLocation)}
         </div>

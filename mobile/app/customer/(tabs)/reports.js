@@ -1,3 +1,4 @@
+import { useT } from '../../../src/context/LanguageContext.js';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -16,6 +17,7 @@ const FILTERS = [
 ];
 
 export default function Reports() {
+  const t = useT();
   const router = useRouter();
   const state = useApi('/faults', { interval: 5000 });
   const [filter, setFilter] = useState('ALL');
@@ -26,7 +28,11 @@ export default function Reports() {
     <Screen>
       <PageHeading
         eyebrow={
-          state.data ? `${faults.length} ${faults.length === 1 ? 'report' : 'reports'}` : 'History'
+          state.data
+            ? t(faults.length === 1 ? '{count} report' : '{count} reports', {
+                count: faults.length,
+              })
+            : 'History'
         }
         title="My reports"
       />
@@ -38,7 +44,7 @@ export default function Reports() {
               {FILTERS.map((item) => (
                 <Chip
                   key={item.key}
-                  label={`${item.label} ${faults.filter(item.test).length}`}
+                  label={`${t(item.label)} ${faults.filter(item.test).length}`}
                   active={filter === item.key}
                   onPress={() => setFilter(item.key)}
                 />
@@ -47,7 +53,7 @@ export default function Reports() {
 
             {visible.length === 0 ? (
               <EmptyState
-                title={faults.length ? 'Nothing in this list' : 'No reports yet'}
+                title={faults.length ? t('Nothing in this list') : t('No reports yet')}
                 action={
                   <Button
                     label="Report a fault"
@@ -56,8 +62,8 @@ export default function Reports() {
                 }
               >
                 {faults.length
-                  ? 'Choose another filter to see your other reports.'
-                  : 'When you report a fault it is listed here.'}
+                  ? t('Choose another filter to see your other reports.')
+                  : t('When you report a fault it is listed here.')}
               </EmptyState>
             ) : (
               <View style={{ gap: 12 }}>
@@ -71,7 +77,7 @@ export default function Reports() {
                       <View style={styles.cardTop}>
                         <FaultIcon category={fault.category} />
                         <View style={{ flex: 1 }}>
-                          <Text style={styles.category}>{CATEGORY_LABEL[fault.category]}</Text>
+                          <Text style={styles.category}>{t(CATEGORY_LABEL[fault.category])}</Text>
                           <Text style={styles.ref}>
                             #{fault.reference} · {locationLine(fault.serviceLocation)}
                           </Text>
@@ -79,9 +85,9 @@ export default function Reports() {
                         <StatusPill status={fault.status} />
                       </View>
                       <View style={styles.cardBottom}>
-                        <Text style={styles.meta}>{fmtDateTime(fault.reportedAt)}</Text>
+                        <Text style={styles.meta}>{fmtDateTime(fault.reportedAt, t)}</Text>
                         <Text style={styles.meta}>
-                          <Text style={{ color: colors.muted }}>Technician </Text>
+                          <Text style={{ color: colors.muted }}>{t('Technician')} </Text>
                           {fault.technician?.name ?? '—'}
                         </Text>
                       </View>
