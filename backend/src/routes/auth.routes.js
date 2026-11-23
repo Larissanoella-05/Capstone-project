@@ -17,6 +17,22 @@ const registrations = createRateLimiter({
   message: 'Too many sign-ups from this network. Please try again in an hour.',
 });
 
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const LOGIN_MESSAGE = 'Too many sign-in attempts. Please wait 15 minutes and try again.';
+// Runs after validation, so the identifier is already in one standard form.
+const loginsPerNetwork = createRateLimiter({
+  max: 30,
+  windowMs: LOGIN_WINDOW_MS,
+  message: LOGIN_MESSAGE,
+});
+// Stops one account being guessed at from many networks.
+const loginsPerAccount = createRateLimiter({
+  max: 10,
+  windowMs: LOGIN_WINDOW_MS,
+  keyOf: (req) => req.body.identifier,
+  message: LOGIN_MESSAGE,
+});
+
 function publicUser(user) {
   return {
     id: user.id,
@@ -49,6 +65,8 @@ router.post(
 router.post(
   '/login',
   validate(loginSchema),
+  loginsPerNetwork,
+  loginsPerAccount,
   asyncHandler(async (req, res) => {
     const { identifier, password, client } = req.body;
     const user = await findUserByIdentifier(identifier);

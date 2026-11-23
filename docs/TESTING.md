@@ -1,11 +1,11 @@
 # Testing
 
-Five approaches, each chosen for a specific risk. Counts taken on 9 Nov 2026 (Windows 11, Node 24, PostgreSQL 18).
+Five approaches, each chosen for a specific risk. Counts taken on 17 Nov 2026 (Windows 11, Node 24, PostgreSQL 18).
 
 | Approach                    | Why                                                      | Result                                          |
 | --------------------------- | -------------------------------------------------------- | ----------------------------------------------- |
-| Unit                        | Workflow rules, ranking and validation break quietly     | 534 pass: backend 222, frontend 148, mobile 164 |
-| Integration                 | The value is the hand-off between roles via one database | 104 pass, 27 suites, about 26 s                 |
+| Unit                        | Workflow rules, ranking and validation break quietly     | 537 pass: backend 222, frontend 148, mobile 167 |
+| Integration                 | The value is the hand-off between roles via one database | 129 pass, 35 suites, about 50 s                 |
 | Load                        | Every open screen polls the API every 4 to 15 s          | Tables below                                    |
 | Code review of both apps    | Finds what tests miss                                    | 8 problems fixed, no feature broken             |
 | Manual device and usability | Maps, GPS, camera and push need a real phone             | Section 5                                       |
@@ -47,6 +47,7 @@ npm run test:integration
 | Double taps               | five identical updates at once; two assignments at once                      | one succeeds, the rest 409; no duplicates             |
 | Guest report and tracking | invalid phone, no place, hidden field; right, wrong, expired token           | 400; guest sees progress, the rest 404                |
 | Guest limit               | 4 reports from one phone in an hour                                          | the fourth gets 429                                   |
+| Injection and role routes | five classic injection strings in six free-text inputs; wrong role, no token | no token, no 500, text stored unchanged; 403 / 401    |
 | SMS                       | each status change, gateway down                                             | one text each; failure never fails the report         |
 | Paging and analytics      | pages, bad `page`, 300 generated faults vs plain JavaScript                  | same numbers, no gaps or overlap                      |
 
@@ -67,20 +68,24 @@ read-only requests per endpoint, 10 at a time. Single runs on a laptop vary by a
 
 The list is now paged (20 per page) and averages are computed in PostgreSQL.
 
-**Live Render API** (9 Nov 2026, 1,600 requests, 0 errors, small demo database, includes network from a laptop):
+**Live Render API** (17 Nov 2026, `npm run test:perf`, 1,600 requests, 0 errors, small demo database, includes
+network from a laptop). This is the run quoted in the final report (Table 4.2).
 
-| Request                          | KB  | p50 (ms) | p95 (ms) | Requests/s |
-| -------------------------------- | --- | -------- | -------- | ---------- |
-| `GET /health`                    | 0   | 345      | 553      | 25         |
-| `GET /faults?status=ALL` (paged) | 28  | 616      | 765      | 15         |
-| `GET /stats/overview`            | 0   | 409      | 553      | 23         |
-| `GET /stats/analytics`           | 1   | 408      | 551      | 23         |
-| `GET /notifications`             | 0   | 405      | 453      | 24         |
-| `GET /technicians?faultId=…`     | 2   | 481      | 686      | 19         |
-| `GET /faults/:id`                | 717 | 869      | 1,856    | 10         |
+| Request                                   | KB  | p50 (ms) | p95 (ms) | p99 (ms) | Requests/s |
+| ----------------------------------------- | --- | -------- | -------- | -------- | ---------- |
+| `GET /health`                             | 0   | 412      | 869      | 1,086    | 20         |
+| `GET /faults?status=ALL` (not paged)      | 84  | 1,177    | 1,464    | 1,789    | 8          |
+| `GET /faults?status=ALL&page=1` (paged)   | 22  | 594      | 823      | 908      | 16         |
+| `GET /stats/overview`                     | 0   | 484      | 687      | 746      | 20         |
+| `GET /stats/analytics`                    | 1   | 435      | 687      | 771      | 21         |
+| `GET /notifications`                      | 0   | 455      | 647      | 651      | 20         |
+| `GET /faults/:id` (a fault with no photo) | 1   | 554      | 671      | 685      | 18         |
+| `GET /technicians?faultId=…`              | 1   | 537      | 700      | 762      | 18         |
 
-One fault is slowest because it carries photos as data URLs (a documented scope decision). **Cold start:** the
-first request after the free tier slept took 24.4 s; the next took 0.6 s.
+An earlier run on 9 Nov 2026 measured a fault that carries photos as data URLs (a documented scope decision) at
+717 KB and p50 869 ms, and a **cold start**: the first request after the free tier slept took 24.4 s and the next
+took 0.6 s. No cold start occurred in the 17 Nov run, so that figure is not repeated here. Ten requests at a time
+on a free plan is not a test of many users.
 
 ## 4. Android and review
 
@@ -88,13 +93,15 @@ first request after the free tier slept took 24.4 s; the next took 0.6 s.
 cd mobile && npm test && npx expo-doctor && npx expo export --platform android
 ```
 
-164 Jest tests in 20 suites, `expo-doctor` 20 of 20, and a full bundle. Two read-only reviews of both apps fixed
+167 Jest tests in 20 suites, `expo-doctor` 20 of 20, and a full bundle. Two read-only reviews of both apps fixed
 8 problems, e.g. sign-out could freeze for 70 s waiting on a sleeping server (now at most 3 s, with a test that
 fails on the old code).
 
 ## 5. Manual checks
 
-Device: TECNO KG5j, Android 11, EAS `preview` build of commit `74fcfaa`, against the live server.
+Devices: a TECNO KG5j (Android 11) with an EAS `preview` build of commit `74fcfaa`, against the live server; and a
+Pixel 6 (Android 17) running a development build over Wi-Fi against a development server and the live API. The Pixel
+found the job-screen crash for a guest-reported fault (FR-1055), which was fixed with a test written first.
 
 | #   | Check                                                         | Result                                                                                                         |
 | --- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
@@ -111,4 +118,7 @@ mode, and any browser other than desktop Chrome.
 **Lighthouse** (live landing page, mobile profile, 10 Nov 2026): performance 64, accessibility 98, best practices
 100, SEO 92. LCP 5.6 s.
 
-**Usability:** no sessions with real users have been run, so there is no usability result.
+**Usability:** an acceptance survey with 20 volunteers (18 customers, 2 technicians, no coordinators; 15 aged 18 to 24) completed five tasks on a test report and the System Usability Scale. Mean 88.6, SD 9.0, median 90.0, range 70 to
+100, 95% CI 84.4 to 92.8; all 20 scored 68 or more. It is a convenience sample of people who knew the author built
+the system, on test reports, so it shows the workflow is easy to use in a first trial. It does not show faster
+response, because no comparison with current practice was run. Detail: final report, section 4.5.7 and Appendix A.
